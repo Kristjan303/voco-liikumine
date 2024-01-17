@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+body {
+    font-family: "Montserrat", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+}
+
+/* ------HEADER------ */
+
+header {
+    background-color: #ffffff;
+    color: #000;
+    text-align: center;
+    padding: 1em;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+header .header-links {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: start;
+    align-items: center;
+}
+header .header-links a {
+    text-decoration: none;
+    margin: 0 1em;
+}
+header .header-search {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+}
+header .header-search input {
+    background-color: #ddd;
+    border: none;
+    width: 35em;
+    height: 2.5em;
+    border-radius: 7px;
+    padding-left: 10px;
+}
+header .header-search button {
+    border: none;
+    cursor: pointer;
+    background: transparent;
+    position: relative;
+    left: -35px;
+}
+header .header-search .sisene {
+    background-color: #2980b9;
+    color: #fff;
+    border: none;
+    text-decoration: none;
+    width: 8em;
+    height: 2.3em;
+    border-radius: 7px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ------NAV BAR------ */
+
+nav {
+    background-color: #000000;
+    padding: 0.2em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+nav .nav-links {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    margin-right: 10px;
+}
+nav .nav-logo {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100px;
+    margin-left: 10px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    padding: 0.5em 1em;
+    margin: 0 1em;
+}
+
+nav a:hover {
+    color: #2980b9;
+}
+
+/* ------MAIN------ */
+
+/* ------HIGHLIGHTS------ */
+section {
+    padding: 2em;
+}
+.highlights {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding-top: 4em;
+}
+.highlights div {
+    box-shadow: 0 10px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19) !important;
+    background-color: #fff;
+    width: 30em;
+    height: 20em;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+.highlights #left_highlight {
+    background-image: url(../img/1.jpg);
+    transform: translateX(200px);
+    background-color: antiquewhite;
+    font-size: 95%;
+}
+.highlights #right_highlight {
+    background-image: url(../img/2.jpg);
+    transform: translateX(-200px);
+    background-color: aquamarine;
+    font-size: 95%;
+}
+.highlights #main_highlight {
+    background-image: url(../img/3.jpg);
+    z-index: 2;
+}
+.highlights a .left {
+    position: relative;
+    transform: translateX(150px);
+}
+.highlights a .right {
+    position: relative;
+    transform: translateX(-150px);
+}
+
+/* ------HOT TOPICS------ */
+
+.hot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding-top: 2em;
+    background-color: #dddddd;
+}
+
+.hot div {
+    background-color: #fff;
+    border-radius: 10px;
+    width: 15em;
+    height: 15em;
+    margin: 1em;
+}
+.hot div h4 {
+    margin: 0;
+    font-size: 95%;
+    padding-left: 0.5em;
+    transform: translateY(10px);
+    color: #2980b9;
+}
+.hot div h1 {
+    padding-left: 0.5em;
+}
+.hot div p {
+    padding-left: 0.5em;
+}
+.hot div a {
+    color: #2980b9;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 1em;
+}
+
+/* ------FOOTER------ */
+
+
+footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 1em;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
