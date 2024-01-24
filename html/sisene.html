@@ -7,25 +7,31 @@
 </head>
 <body>
 <section class="login">
-    <p class="auth">Autoriseerimine</p>
+    <p class="auth" style="font-weight: bold">Autoriseerimine</p>
     <h1>VOCO Liikumine</h1>
 
-    <form action="/login"  method="post" class="login" enctype="application/x-www-form-urlencoded" onsubmit="return validateForm()">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="Sisesta email">
-
-        <label for="password">Parool</label>
-        <input type="password" id="password" name="password" placeholder="Sisesta parool">
-
+    <form action="/login"  method="post" class="signin" enctype="application/x-www-form-urlencoded" onsubmit="return validateForm()">
+        <div class="email">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Sisesta email">
+        </div>
+        <div class="password">
+            <label for="password">Parool</label>
+            <input type="password" id="password" name="password" placeholder="Sisesta parool">
+        </div>
         <div class="error" id="error-message-container">
             <!-- Error message will be dynamically inserted here -->
         </div>
     </form>
 
+    <div class="buttons">
+        <a class="pole-liige" href="/register">Pole veel liige?</a>
+        <a class="sisenen" href="">Sisene</a>
+    </div>
 </section>
 
 
-<a href="/register">wizardly test</a>
+
 
 
 
