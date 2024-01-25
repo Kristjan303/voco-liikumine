@@ -1,25 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="/css/register.css">
   <meta charset="UTF-8">
   <title>Registreeri</title>
 </head>
 <body>
-<form action="/signup" method="post" class="signup" enctype="application/x-www-form-urlencoded" onsubmit="return validateForm()">
-  <label for="username">Kasutajanimi</label>
-  <input type="text" id="username" name="username" placeholder="Sisesta Kasutajaniimi">
-  <label for="phonenumber">Telefon</label>
-  <input type="text" id="phonenumber" name="phonenumber" placeholder="Sisesta telefon">
-  <label for="email">Email</label>
-  <input type="email" id="email" name="email" placeholder="Sisesta email">
-  <label for="password">Parool</label>
-  <input type="password" id="password" name="password" placeholder="Sisesta parool">
-  <input type="submit" value="Sisene">
-</form>
 
-<div class="error" id="error-message-container">
-  <!-- Error message will be dynamically inserted here -->
-</div>
+<section class="register">
+  <p class="auth" style="font-weight: bold">Registreerimine</p>
+  <h1>VOCO Liikumine</h1>
+
+  <form action="/signup" method="post" class="signup" enctype="application/x-www-form-urlencoded" onsubmit="return validateForm()">
+    <div class="username">
+      <label for="username">Kasutajanimi</label>
+      <input type="text" id="username" name="username" placeholder="Sisesta Kasutajanimi" required>
+    </div>
+    <div class="telefon">
+      <label for="phonenumber">Telefon</label>
+      <input type="text" id="phonenumber" name="phonenumber" placeholder="Sisesta telefon" required>
+    </div>
+    <div class="email">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="Sisesta email" required>
+    </div>
+    <div class="password">
+    <label for="password">Parool</label>
+    <input type="password" id="password" name="password" placeholder="Sisesta parool" required>
+    </div>
+    <div class="error" id="error-message-container">
+      <!-- Error message will be dynamically inserted here -->
+    </div>
+    <div class="buttons">
+      <a class="pole-liige" href="/sisene">Oled juba Liige!?</a>
+      <input type="submit" class="sisenen" value="Sisene">
+    </div>
+  </form>
+</section>
+
+
+
 
 <!-- JavaScript to display error message -->
 
