@@ -10,7 +10,7 @@ const port = 3000;
 
 // Middleware to parse JSON requests
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 
 
 // Serve static files (HTML in this case)
@@ -32,7 +32,7 @@ app.get('/register', async (req, res) => {
 
 // Handle the sign-up form submission
 app.post('/signup', async (req, res) => {
-    const { username, phonenumber, email, password } = req.body;
+    const {username, phonenumber, email, password} = req.body;
 
     try {
         // Check if username or email already exists
@@ -40,37 +40,48 @@ app.post('/signup', async (req, res) => {
         db.query(checkQuery, [username, email], async (checkErr, checkResults) => {
             if (checkErr) {
                 console.error('Error checking existing username or email:', checkErr);
-                res.status(500).json({ success: false, message: 'Internal Server Error' });
+                res.status(500).json({success: false, message: 'Serveripoolne viga!'});
             } else {
                 if (checkResults.length > 0) {
                     // Username or email already exists
-                    res.status(400).json({ success: false, message: 'Username or email already in use' });
+                    res.status(400).json({success: false, message: 'Kasutajanimi või email on juba kasutusel!'});
                 } else {
-                    // Hash the password
-                    const hashedPassword = await bcrypt.hash(password, 10);
+                    // Check if the email has the required format
+                    const emailRegex = /^[\w-]+(\.[\w-]+)*@voco\.ee$/;
 
-                    // Insert user data into the database
-                    const insertQuery = 'INSERT INTO kasutajad (kasutajanimi, telefon, email, parool) VALUES (?, ?, ?, ?)';
-                    db.query(insertQuery, [username, phonenumber, email, hashedPassword], (err, results) => {
-                        if (err) {
-                            console.error('Error inserting user into database:', err);
-                            res.status(500).json({ success: false, message: 'Internal Server Error' });
-                        } else {
-                            console.log('User signed up successfully');
-                            res.json({ success: true, message: 'User signed up successfully' });
-                        }
-                    });
+                    if (!emailRegex.test(email)) {
+                        // Invalid email format
+                        res.status(400).json({
+                            success: false,
+                            message: 'E-mail peab olema ühendatud VOCO organisatsiooniga!'
+                        });
+                    } else {
+                        // Hash the password
+                        const hashedPassword = await bcrypt.hash(password, 10);
+
+                        // Insert user data into the database
+                        const insertQuery = 'INSERT INTO kasutajad (kasutajanimi, telefon, email, parool) VALUES (?, ?, ?, ?)';
+                        db.query(insertQuery, [username, phonenumber, email, hashedPassword], (err, results) => {
+                            if (err) {
+                                console.error('Error inserting user into database:', err);
+                                res.status(500).json({success: false, message: 'Serveripoolne viga!'});
+                            } else {
+                                console.log('User signed up successfully');
+                                res.json({success: true, message: 'Kasuaja loomine õnnestus!'});
+                            }
+                        });
+                    }
                 }
             }
         });
     } catch (error) {
         console.error('Error hashing password:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+        res.status(500).json({success: false, message: 'Serveripoolne viga!'});
     }
 });
 
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
     try {
         // Check if username exists
@@ -78,11 +89,11 @@ app.post('/login', async (req, res) => {
         db.query(checkQuery, [email], async (checkErr, checkResults) => {
             if (checkErr) {
                 console.error('Error checking existing username:', checkErr);
-                res.status(500).json({ success: false, message: 'Internal Server Error' });
+                res.status(500).json({success: false, message: 'Serveripoolne viga!'});
             } else {
                 if (checkResults.length === 0) {
                     // Username does not exist
-                    res.status(400).json({ success: false, message: 'Username does not exist' });
+                    res.status(400).json({success: false, message: 'Emailiga pole registreeritud!'});
                 } else {
                     // Check if password is correct
                     const user = checkResults[0];
@@ -90,16 +101,16 @@ app.post('/login', async (req, res) => {
 
                     if (passwordCorrect) {
                         console.log('User logged in successfully');
-                        res.json({ success: true, message: 'User logged in successfully' });
+                        res.json({success: true, message: 'Kasutaja sisselogimine õnnestus!'});
                     } else {
-                        res.status(400).json({ success: false, message: 'Incorrect password' });
+                        res.status(400).json({success: false, message: 'Ebakorrektne parool!'});
                     }
                 }
             }
         });
     } catch (error) {
         console.error('Error comparing passwords:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+        res.status(500).json({success: false, message: 'Serveripoolne viga!'});
     }
 });
 
