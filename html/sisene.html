@@ -22,12 +22,13 @@
         <div class="error" id="error-message-container">
             <!-- Error message will be dynamically inserted here -->
         </div>
+        <div class="buttons">
+            <a class="pole-liige" href="/register">Pole veel liige?</a>
+            <input type="submit" class="sisenen" value="Sisene">
+        </div>
     </form>
 
-    <div class="buttons">
-        <a class="pole-liige" href="/register">Pole veel liige?</a>
-        <a class="sisenen" href="">Sisene</a>
-    </div>
+
 </section>
 
 
@@ -45,14 +46,12 @@
         // Perform form validation if needed
 
         // Use fetch to submit the form data
-        fetch('/signup', {
+        fetch('/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                username: document.getElementById('username').value,
-                phonenumber: document.getElementById('phonenumber').value,
                 email: document.getElementById('email').value,
                 password: document.getElementById('password').value
             })
@@ -67,8 +66,8 @@
                     errorMessageElement.innerText = result.message;
                     errorMessageContainer.appendChild(errorMessageElement);
                 } else {
-                    // Redirect to the login page or perform any other action on successful signup
-                    window.location.href = '/sisene';
+                    // Redirect to the index page or perform any other action on successful login
+                    window.location.href = '/'; // Assuming your index page is at '/'
                 }
             })
             .catch(error => {
@@ -80,5 +79,4 @@
         return false;
     }
 </script>
-
 </html>

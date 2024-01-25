@@ -69,6 +69,41 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Check if username exists
+        const checkQuery = 'SELECT * FROM kasutajad WHERE email = ?';
+        db.query(checkQuery, [email], async (checkErr, checkResults) => {
+            if (checkErr) {
+                console.error('Error checking existing username:', checkErr);
+                res.status(500).json({ success: false, message: 'Internal Server Error' });
+            } else {
+                if (checkResults.length === 0) {
+                    // Username does not exist
+                    res.status(400).json({ success: false, message: 'Username does not exist' });
+                } else {
+                    // Check if password is correct
+                    const user = checkResults[0];
+                    const passwordCorrect = await bcrypt.compare(password, user.parool);
+
+                    if (passwordCorrect) {
+                        console.log('User logged in successfully');
+                        res.json({ success: true, message: 'User logged in successfully' });
+                    } else {
+                        res.status(400).json({ success: false, message: 'Incorrect password' });
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error comparing passwords:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+});
+
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server is running on port http://localhost:${port}/`);

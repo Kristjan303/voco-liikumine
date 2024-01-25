@@ -5,7 +5,7 @@ body {
     display: grid;
     background-repeat: no-repeat;
     background-size: cover;
-    background-color: rgba(0, 0, 0, 0.65);
+    background-color: rgba(255, 255, 255, 0.65);
     justify-content: center;
 }
 
@@ -15,7 +15,7 @@ body {
     padding: 10px;
     background-color: #fff;
     border-radius: 10px;
-}
+    box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);}
 
 .login p {
     margin: 30px;
@@ -32,7 +32,6 @@ body {
     align-items: center;
     margin: 0;
     padding: 0;
-    margin-bottom: 150px;
 }
 
 .signin input {
@@ -64,18 +63,20 @@ body {
     font-weight: bold;
 }
 
-.buttons {
+.signin .buttons {
     display: flex;
     flex-direction: row;
-    align-items: center;
     justify-content: space-around;
     margin-bottom: 50px;
+    width: 100%;
+    align-items: baseline;
+    margin-top: 50px;
 }
 
 .pole-liige{
     color: #2980b9;
 }
-.sisenen{
+.signin .buttons .sisenen{
     background-color: #2980b9;
     color: #fff;
     border: none;
@@ -86,7 +87,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 100%;
+    cursor: pointer;
 }
-.sisenen:hover{
+.signin .buttons .sisenen:hover{
     background-color: #2c3e50;
+}
+
+.error {
+    margin-bottom: 20px;
+    color: red;
 }
