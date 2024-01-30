@@ -114,6 +114,23 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// API configuration to accept RS256 signed access tokens
+const { auth } = require('express-oauth2-jwt-bearer');
+
+const port = process.env.PORT || 8080;
+
+const jwtCheck = auth({
+    audience: 'http://localhost:3000',
+    issuerBaseURL: 'https://dev-5pz881lrx6ra36wm.us.auth0.com/',
+    tokenSigningAlg: 'RS256'
+});
+
+// enforce on all endpoints
+app.use(jwtCheck);
+
+app.get('/authorized', function (req, res) {
+    res.send('Secured Resource');
+});
 
 // Start the server
 app.listen(port, () => {
