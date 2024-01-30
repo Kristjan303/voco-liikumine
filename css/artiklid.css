@@ -1,0 +1,10 @@
+.artiklid {
+    display: flex;
+    margin: 0 auto;
+    /* max-width: 1200px; */
+    padding: 0 20px;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+    justify-content: flex-start;
+}
