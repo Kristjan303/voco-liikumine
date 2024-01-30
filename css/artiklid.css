@@ -7,4 +7,24 @@
     align-content: center;
     align-items: center;
     justify-content: flex-start;
+    width: 1000px;
+}
+
+.articles-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+}
+
+.articles-content div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    width: 300px;
+    height: 300px;
+    margin: 20px;
+    border-radius: 10px;
+    background-color: #dfdfdf;
 }
