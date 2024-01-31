@@ -29,38 +29,19 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/css', express.static(path.join(__dirname, 'css')));
 
-app.get('/', async (req, res) => {
-    res.sendFile(path.join(__dirname, 'html/index.html'));
-});
+const sendFile = (page) => async (req, res) => {
+    res.sendFile(path.join(__dirname, `public/html/${page}.html`));
+};
 
-//treeningud
-app.get('/treeningud', async (req, res) => {
-    res.sendFile(path.join(__dirname, 'html/treeningud.html'));
-});
+app.get('/', sendFile('index'));
+app.get('/galerii', sendFile('galerii'));
+app.get('/treeningud', sendFile('treeningud'));
+app.get('/foorum', sendFile('foorum'));
+app.get('/artiklid', sendFile('artiklid'));
+app.get('/uudised', sendFile('uudised'));
+app.get('/sisene', sendFile('sisene'));
+app.get('/register', sendFile('register'));
 
-//foorum
-app.get('/foorum', async (req, res) => {
-    res.sendFile(path.join(__dirname, 'html/foorum.html'));
-});
-
-//artiklid
-app.get('/artiklid', async (req, res) => {
-    res.sendFile(path.join(__dirname, 'html/artiklid.html'));
-});
-
-//uudised
-app.get('/uudised', async (req, res) => {
-    res.sendFile(path.join(__dirname, 'html/uudised.html'));
-});
-
-// sisene
-app.get('/sisene', async (req, res) => {
-    res.sendFile(path.join(__dirname, 'html/sisene.html'));
-});
-
-app.get('/register', async (req, res) => {
-    res.sendFile(path.join(__dirname, 'html/register.html'));
-});
 app.get('/test', (req, res) => {
     // Log the session information
     console.log('User session in test route:', req.session.user);

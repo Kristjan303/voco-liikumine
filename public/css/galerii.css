@@ -1,0 +1,114 @@
+.galerii {
+    display: flex;
+    margin: 0 auto;
+    /* max-width: 1200px; */
+    padding: 0 20px;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+    justify-content: flex-start;
+    width: 1000px;
+}
+
+.gallery-content {
+    display: grid;
+
+}
+
+.gallery-content div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    width: 300px;
+    height: 300px;
+    margin: 20px;
+    border-radius: 10px;
+    background-color: #dfdfdf;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+#notification {
+    display: none;
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.custom-button {
+    padding: 5px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    height: 40px;
+    width: 40px;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-right: 10px;
+}
+.custom-button:hover {
+    color: #2980b9;
+    border-radius: 50%;
+}
+#fileList {
+    display: none;
+}
+#fileList li {
+    cursor: pointer;
+}
+#fileList li:hover {
+    color: red;
+    text-decoration: line-through;
+}
+
+#fileCount {
+    cursor: pointer;
+}
+.upload p {
+    margin-top: 20px;
+    color: #2980b9;
+    user-select: none;
+    padding: 2px;
+    transition: 0.2s;
+}
+.upload p:hover {
+    color: #000000;
+    text-decoration: underline;
+}
+
+.upload ul {
+    margin: 0;
+}
+.upload .upload-buttons button {
+    padding: 5px;
+    background-color: #2980b9;
+    color: #dddddd;
+    border-radius: 10px;
+    height: 40px;
+    width: 40px;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-right: 10px;
+    border-style: none;
+}
+.upload .upload-buttons button:hover{
+    border-radius: 50%;
+}
+
+.upload .upload-buttons{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    height: 0;
+}
