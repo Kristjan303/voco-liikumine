@@ -3,6 +3,9 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const db = require('./database');
 const bcrypt = require('bcrypt');
+const session = require('express-session');
+const uuid = require('uuid');
+const cors = require('cors');
 
 
 const app = express();
@@ -11,6 +14,15 @@ const port = 3000;
 // Middleware to parse JSON requests
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cors());
+
+
+app.use(session({
+    secret: 'your-secret-key', // Replace with a strong and secure secret key
+    resave: false,
+    saveUninitialized: true
+}));
+
 
 
 // Serve static files (HTML in this case)
@@ -21,11 +33,15 @@ app.get('/', async (req, res) => {
     res.sendFile(path.join(__dirname, 'html/index.html'));
 });
 
-//artikkel
+//artiklid
 app.get('/artiklid', async (req, res) => {
     res.sendFile(path.join(__dirname, 'html/artiklid.html'));
 });
 
+//uudised
+app.get('/uudised', async (req, res) => {
+    res.sendFile(path.join(__dirname, 'html/uudised.html'));
+});
 
 // sisene
 app.get('/sisene', async (req, res) => {
@@ -34,6 +50,13 @@ app.get('/sisene', async (req, res) => {
 
 app.get('/register', async (req, res) => {
     res.sendFile(path.join(__dirname, 'html/register.html'));
+});
+app.get('/test', (req, res) => {
+    // Log the session information
+    console.log('User session in test route:', req.session.user);
+
+    // Send the session information in the response
+    res.json({ session: req.session });
 });
 
 // Handle the sign-up form submission
@@ -86,8 +109,15 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+
+
+
+const sessions = []; // Object to store active sessions
+
+
+
 app.post('/login', async (req, res) => {
-    const {email, password} = req.body;
+    const { email, password } = req.body;
 
     try {
         // Check if username exists
@@ -95,51 +125,73 @@ app.post('/login', async (req, res) => {
         db.query(checkQuery, [email], async (checkErr, checkResults) => {
             if (checkErr) {
                 console.error('Error checking existing username:', checkErr);
-                res.status(500).json({success: false, message: 'Serveripoolne viga!'});
+                res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
             } else {
                 if (checkResults.length === 0) {
                     // Username does not exist
-                    res.status(400).json({success: false, message: 'Emailiga pole registreeritud!'});
+                    res.status(400).json({ success: false, message: 'Emailiga pole registreeritud!' });
                 } else {
                     // Check if password is correct
                     const user = checkResults[0];
                     const passwordCorrect = await bcrypt.compare(password, user.parool);
 
                     if (passwordCorrect) {
+                        // Generate a random session token using uuid
+                        const sessionToken = uuid.v4();
+
+                        // Store user_id, email, and session token in the session
+                        req.session.user = {
+                            userId: user.kasutaja_id,
+                            email: user.email,
+                            sessionToken: sessionToken
+                        };
+
+                        // Store the session information in the sessions object
+                        sessions.push({
+                            userId: user.kasutaja_id,
+                            email: user.email,
+                            sessionToken: sessionToken
+                            // Add more user-related information if needed
+                        });
+
+
+
                         console.log('User logged in successfully');
-                        res.json({success: true, message: 'Kasutaja sisselogimine õnnestus!'});
+                        res.json({ success: true, message: 'Kasutaja sisselogimine õnnestus!' });
                     } else {
-                        res.status(400).json({success: false, message: 'Ebakorrektne parool!'});
+                        res.status(400).json({ success: false, message: 'Ebakorrektne parool!' });
                     }
                 }
             }
         });
     } catch (error) {
         console.error('Error comparing passwords:', error);
-        res.status(500).json({success: false, message: 'Serveripoolne viga!'});
+        res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
     }
 });
 
-// API configuration to accept RS256 signed access tokens
-// const { auth } = require('express-oauth2-jwt-bearer');
-//
-// const port = process.env.PORT || 8080;
-//
-//
-// const jwtCheck = auth({
-//     audience: 'http://localhost:3000',
-//     issuerBaseURL: 'https://dev-5pz881lrx6ra36wm.us.auth0.com/',
-//     tokenSigningAlg: 'RS256'
-// });
-//
-// // enforce on all endpoints
-// app.use(jwtCheck);
-//
-// app.get('/authorized', function (req, res) {
-//     res.send('Secured Resource');
-// });
 
-// Start the server
+
+app.get('/logout', (req, res) => {
+    // Destroy the user session
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error destroying session:', err);
+            res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+        } else {
+            console.log('User logged out successfully');
+            res.json({ success: true, message: 'Kasutaja välja logitud!' });
+        }
+    });
+});
+
+
+//admin view for active-sessions
+app.get('/active-sessions', (req, res) => {
+    res.json({ activeSessions: sessions });
+    console.log(sessions);
+});
+
 app.listen(port, () => {
     console.log(`Server is running on port http://localhost:${port}/`);
 });
