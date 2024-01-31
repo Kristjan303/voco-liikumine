@@ -173,6 +173,16 @@ app.post('/login', async (req, res) => {
 
 
 app.get('/logout', (req, res) => {
+    // Find the index of the user's session in the sessions array
+    const sessionIndex = sessions.findIndex(session =>
+        session.userId === req.session.user.userId && session.sessionToken === req.session.user.sessionToken
+    );
+
+    if (sessionIndex !== -1) {
+        // Remove the user's session from the sessions array
+        sessions.splice(sessionIndex, 1);
+    }
+
     // Destroy the user session
     req.session.destroy(err => {
         if (err) {
