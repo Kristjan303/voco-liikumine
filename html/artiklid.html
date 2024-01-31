@@ -26,7 +26,7 @@
     <button type="submit">
       <i class="fa-solid fa-search fa-lg" style="color: #000000;"></i>
     </button>
-    <a class="sisene" href="/sisene">Sisene</a>
+    <a id="siseneButton" class="sisene" href="/sisene">Sisene</a>
   </div>
 </header>
 <nav>
@@ -134,4 +134,47 @@
 </footer>
 
 </body>
+
+<script>
+  // checkLogin.js
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const siseneButton = document.getElementById('siseneButton');
+
+    // Check if the user is logged in by making a request to the server
+    fetch('/test')
+            .then(response => response.json())
+            .then(data => {
+              const isLoggedIn = data.session && data.session.user !== undefined && data.session.user !== null;
+
+              // Update the button text based on the user's login status
+              siseneButton.innerText = isLoggedIn ? 'Välju' : 'Sisene';
+
+              // Add a click event listener to the button
+              siseneButton.addEventListener('click', function () {
+                if (isLoggedIn) {
+                  // If logged in, make a request to the server to log out
+                  fetch('/logout')
+                          .then(response => response.json())
+                          .then(data => {
+                            if (data.success) {
+                              // If logout successful, reload the page to reflect the changes
+                              location.reload();
+                            } else {
+                              console.error('Error logging out:', data.message);
+                            }
+                          })
+                          .catch(error => console.error('Error logging out:', error));
+                } else {
+                  // Handle the logic for navigating to the login page or any other actions
+                  // Redirect to the login page, for example:
+                  window.location.href = '/sisene';
+                }
+              });
+            })
+            .catch(error => console.error('Error checking login status:', error));
+  });
+
+</script>
+
 </html>

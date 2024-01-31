@@ -33,6 +33,16 @@ app.get('/', async (req, res) => {
     res.sendFile(path.join(__dirname, 'html/index.html'));
 });
 
+//treeningud
+app.get('/treeningud', async (req, res) => {
+    res.sendFile(path.join(__dirname, 'html/treeningud.html'));
+});
+
+//foorum
+app.get('/foorum', async (req, res) => {
+    res.sendFile(path.join(__dirname, 'html/foorum.html'));
+});
+
 //artiklid
 app.get('/artiklid', async (req, res) => {
     res.sendFile(path.join(__dirname, 'html/artiklid.html'));
