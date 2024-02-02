@@ -29,7 +29,7 @@
       </div>
     </header>
     <nav>
-      <a href="/" class="nav-logo">
+      <a href="/public" class="nav-logo">
         <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
                    viewBox="0 0 412.74 334.7" style="enable-background:new 0 0 412.74 334.7;" xml:space="preserve">
           <style type="text/css">
@@ -166,6 +166,7 @@
                   } else {
                     // Handle the logic for navigating to the login page or any other actions
                     // Redirect to the login page, for example:
+                    localStorage.clear();
                     window.location.href = '/sisene';
                   }
                 });
@@ -174,4 +175,5 @@
     });
 
   </script>
+
 </html>

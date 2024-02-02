@@ -30,7 +30,7 @@
   </div>
 </header>
 <nav>
-  <a href="/" class="nav-logo">
+  <a href="/public" class="nav-logo">
     <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
          viewBox="0 0 412.74 334.7" style="enable-background:new 0 0 412.74 334.7;" xml:space="preserve">
           <style type="text/css">
@@ -55,13 +55,9 @@
 <section class="galerii">
   <div class="section-nav">
     <div class="path">
-      <p><a href="/">Avaleht</a> > <span>Galerii</span></p>
+      <p><a href="/public">Avaleht</a> > <span>Galerii</span></p>
     </div>
     <h1>Galerii</h1>
-  </div>
-  <div class="search-galerii">
-  </div>
-  <main class="gallery-content">
     <div class="upload">
       <div class="upload-buttons">
         <label for="fileInput" class="custom-button"><i class="fas fa-plus fa-xl"></i></label>
@@ -71,9 +67,11 @@
       <p id="fileCount" onclick="toggleFileList()">Ühtegi faili pole valitud</p>
       <ul id="fileList" onclick="removeFile(event)"></ul>
     </div>
-    <div class="newest">
-
-    </div>
+  </div>
+  <div class="search-galerii">
+  </div>
+  <main class="gallery-content">
+    <div class="newest"></div>
   </main>
 </section>
 
@@ -174,6 +172,7 @@
                 } else {
                   // Handle the logic for navigating to the login page or any other actions
                   // Redirect to the login page, for example:
+                  localStorage.clear();
                   window.location.href = '/sisene';
                 }
               });

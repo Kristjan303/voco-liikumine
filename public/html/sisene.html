@@ -43,8 +43,6 @@
         // Clear previous error message
         document.getElementById('error-message-container').innerHTML = '';
 
-        // Perform form validation if needed
-
         // Use fetch to submit the form data
         fetch('/login', {
             method: 'POST',
@@ -66,8 +64,13 @@
                     errorMessageElement.innerText = result.message;
                     errorMessageContainer.appendChild(errorMessageElement);
                 } else {
-                    // Redirect to the index page or perform any other action on successful login
-                    window.location.href = '/'; // Assuming your index page is at '/'
+                    // Save session information in local storage
+                    sessionStorage.setItem('sessionToken', result.sessionToken);
+                    sessionStorage.setItem('userId', result.userId);
+                    sessionStorage.setItem('email', result.email);
+
+                    // Redirect to the server-specified URL
+                    window.location.href = '/';
                 }
             })
             .catch(error => {
@@ -78,5 +81,9 @@
         // Return false to prevent the default form submission
         return false;
     }
+
 </script>
+
+
+
 </html>
