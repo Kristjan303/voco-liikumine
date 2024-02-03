@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/css/register.css">
+    <meta charset="UTF-8">
+    <title>Registreeri</title>
+</head>
+<body>
+
+<section class="register">
+    <p class="auth" style="font-weight: bold">Registreerimine</p>
+    <h1>VOCO Liikumine</h1>
+
+    <form action="/signup" method="post" class="signup" enctype="application/x-www-form-urlencoded" onsubmit="return validateForm()">
+        <div class="username">
+            <label for="username">Kasutajanimi <span style="color: red">*</span></label>
+            <input type="text" id="username" name="username" placeholder="Sisesta Kasutajanimi" required>
+        </div>
+        <div class="telefon">
+            <label for="phonenumber">Telefon</label>
+            <input type="text" id="phonenumber" name="phonenumber" placeholder="Sisesta telefon">
+        </div>
+        <div class="email">
+            <label for="email">Email <span style="color: red">*</span></label>
+            <input type="email" id="email" name="email" placeholder="Sisesta email" required>
+        </div>
+        <div class="password">
+            <label for="password">Parool <span style="color: red">*</span></label>
+            <input type="password" id="password" name="password" placeholder="Sisesta parool" required>
+        </div>
+        <div class="error" id="error-message-container">
+            <!-- Error message will be dynamically inserted here -->
+        </div>
+        <div class="buttons">
+            <a class="pole-liige" href="/sisene">Oled juba Liige!?</a>
+            <input type="submit" class="sisenen" value="Sisene">
+        </div>
+    </form>
+</section>
+
+
+
+
+<!-- JavaScript to display error message -->
+
+
+
+</body>
+<script>
+    function validateForm() {
+        // Clear previous error message
+        document.getElementById('error-message-container').innerHTML = '';
+
+        // Perform form validation if needed
+
+        // Use fetch to submit the form data
+        fetch('/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: document.getElementById('username').value,
+                phonenumber: document.getElementById('phonenumber').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            })
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (!result.success) {
+                    // Display the error message
+                    const errorMessageContainer = document.getElementById('error-message-container');
+                    const errorMessageElement = document.createElement('div');
+                    errorMessageElement.className = 'error-message';
+                    errorMessageElement.innerText = result.message;
+                    errorMessageContainer.appendChild(errorMessageElement);
+                } else {
+                    // Redirect to the login page or perform any other action on successful signup
+                    window.location.href = '/sisene';
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+                // Handle error if needed
+            });
+
+        // Return false to prevent the default form submission
+        return false;
+    }
+</script>
+
+</html>

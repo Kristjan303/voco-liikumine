@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/index.css">
-    <link rel="stylesheet" href="../css/galerii.css">
-    <title>Galerii 🖼 | VOCO Liikumine</title>
+    <link rel="stylesheet" href="../css/treeningud.css">
+    <title>Treeningud 🏃‍♀️ | VOCO Liikumine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
 </head>
 <body>
@@ -47,35 +47,24 @@
         <a href="artiklid">Artiklid</a>
         <a href="uudised">Uudised</a>
         <a href="foorum">Foorum</a>
-        <a href="treeningud">Treeningud</a>
-        <a style="color: #2980b9" href="galerii">Galerii</a>
+        <a style="color: #2980b9" href="treeningud">Treeningud</a>
+        <a href="galerii">Galerii</a>
     </div>
 </nav>
 
-<section class="galerii">
+<section class="treening">
     <div class="section-nav">
         <div class="path">
-            <p><a href="/public">Avaleht</a> > <span>Galerii</span></p>
+            <p><a href="/public">Avaleht</a> > <span>treeningud</span></p>
         </div>
-        <h1>Galerii</h1>
-        <% if (userRole === 2) { %>
-        <div class="upload">
-            <div class="upload-buttons">
-                <label for="fileInput" class="custom-button"><i class="fas fa-plus fa-xl"></i></label>
-                <input type="file" id="fileInput" multiple accept=".png, .jpg" onchange="countFiles()">
-                <button onclick="uploadFiles()"><i class="fa-solid fa-upload fa-xl"></i></button>
-            </div>
-            <p id="fileCount" onclick="toggleFileList()">Ühtegi faili pole valitud</p>
-            <ul id="fileList" onclick="removeFile(event)"></ul>
-        </div>
-        <% } %>
+        <h1>Treeningud</h1>
     </div>
-    <div class="search-galerii">
+    <div class="search-trenn">
     </div>
-    <main class="gallery-content">
-        <div class="newest"></div>
+    <main class="training-content">
     </main>
 </section>
+
 
 
 
@@ -181,70 +170,6 @@
             .catch(error => console.error('Error checking login status:', error));
     });
 
-</script>
-<script>
-    function countFiles() {
-        var fileInput = document.getElementById('fileInput');
-        var fileCountElement = document.getElementById('fileCount');
-        var fileListElement = document.getElementById('fileList');
-        var fileList = document.getElementById('fileList');
-
-        var fileCount = fileInput.files.length;
-        fileCountElement.textContent = fileCount > 0 ? fileCount + (fileCount === 1 ? ' fail valitud →' : ' faili valitud →') : 'Ühtegi faili pole valitud';
-
-        // Populate the file list
-        fileListElement.innerHTML = '';
-        for (var i = 0; i < fileCount; i++) {
-            var fileName = fileInput.files[i].name;
-            var listItem = document.createElement('li');
-            listItem.textContent = fileName;
-            fileListElement.appendChild(listItem);
-        }}
-
-    function toggleFileList() {
-        var fileListElement = document.getElementById('fileList');
-        fileListElement.style.display = fileListElement.style.display === 'none' ? 'block' : 'none';
-    }
-    function removeFile(event) {
-        var fileInput = document.getElementById('fileInput');
-        var fileListElement = document.getElementById('fileList');
-
-        // Check if the click occurred on an <li> element
-        if (event.target.tagName.toLowerCase() === 'li') {
-            var fileNameToRemove = event.target.textContent;
-            var newFiles = [];
-
-            for (var i = 0; i < fileInput.files.length; i++) {
-                if (fileInput.files[i].name !== fileNameToRemove) {
-                    newFiles.push(fileInput.files[i]);
-                }
-            }
-
-            // Create a new FileList with the remaining files
-            var newFileList = new DataTransfer();
-            for (var j = 0; j < newFiles.length; j++) {
-                newFileList.items.add(newFiles[j]);
-            }
-
-            // Set the new FileList to the input.files property
-            fileInput.files = newFileList.files;
-
-            // Re-render the file list
-            countFiles();
-        }
-    }
-
-
-    function uploadFiles() {
-        // Handle the file upload logic here
-        // Your implementation here
-        console.log('Files uploaded:', document.getElementById('fileInput').files);
-
-        // Clear the file input and update the file count display
-        var fileInput = document.getElementById('fileInput');
-        fileInput.value = ''; // Clear the file input
-        countFiles(); // Update the file count display
-    }
 </script>
 
 </html>

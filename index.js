@@ -35,11 +35,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
 
 
-const sendFile = (page) => async (req, res) => {
-    res.sendFile(path.join(__dirname, `public/html/${page}.html`));
-};
-app.get('/', sendFile('index'));
-app.get('/galerii', (req, res) => {
+const renderFile = (page) => async (req, res) => {
     let userRole;
 
     // Check if the user is logged in
@@ -55,23 +51,24 @@ app.get('/galerii', (req, res) => {
                 userRole = results[0].rolli_id;
 
                 // Render the page and pass the userRole to the EJS template
-                res.render('galerii', { userRole });
+                res.render(page, { userRole });
             }
         });
     } else {
         // Render the page with userRole set to undefined
-        res.render('galerii', { userRole });
+        res.render(page, { userRole });
     }
-});
-app.get('/treeningud', sendFile('treeningud'));
-app.get('/foorum', sendFile('foorum'));
-app.get('/artiklid', sendFile('artiklid'));
-app.get('/uudised', sendFile('uudised'));
-app.get('/sisene', sendFile('sisene'));
-app.get('/register', sendFile('register'));
-app.get('/home', sendFile('load'));
+};
 
-
+app.get('/', renderFile('index'));
+app.get('/galerii', renderFile('galerii'));
+app.get('/treeningud', renderFile('treeningud'));
+app.get('/foorum', renderFile('foorum'));
+app.get('/artiklid', renderFile('artiklid'));
+app.get('/uudised', renderFile('uudised'));
+app.get('/sisene', renderFile('sisene'));
+app.get('/register', renderFile('register'));
+app.get('/home', renderFile('load'));
 
 app.get('/test', (req, res) => {
     // Log the session information

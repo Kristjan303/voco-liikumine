@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/css/sisene.css">
+    <meta charset="UTF-8">
+    <title>sisene</title>
+</head>
+<body>
+<section class="login">
+    <p class="auth" style="font-weight: bold">Autoriseerimine</p>
+    <h1>VOCO Liikumine</h1>
+
+    <form action="/login"  method="post" class="signin" enctype="application/x-www-form-urlencoded" onsubmit="return validateForm()">
+        <div class="email">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Sisesta email">
+        </div>
+        <div class="password">
+            <label for="password">Parool</label>
+            <input type="password" id="password" name="password" placeholder="Sisesta parool" required>
+        </div>
+        <div class="error" id="error-message-container">
+            <!-- Error message will be dynamically inserted here -->
+        </div>
+        <div class="buttons">
+            <a class="pole-liige" href="/register">Pole veel liige?</a>
+            <input type="submit" class="sisenen" value="Sisene">
+        </div>
+    </form>
+
+
+</section>
+
+
+
+
+
+
+</body>
+
+<script>
+    function validateForm() {
+        // Clear previous error message
+        document.getElementById('error-message-container').innerHTML = '';
+
+        // Use fetch to submit the form data
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            })
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (!result.success) {
+                    // Display the error message
+                    const errorMessageContainer = document.getElementById('error-message-container');
+                    const errorMessageElement = document.createElement('div');
+                    errorMessageElement.className = 'error-message';
+                    errorMessageElement.innerText = result.message;
+                    errorMessageContainer.appendChild(errorMessageElement);
+                } else {
+                    // Save session information in local storage
+                    sessionStorage.setItem('sessionToken', result.sessionToken);
+                    sessionStorage.setItem('userId', result.userId);
+                    sessionStorage.setItem('email', result.email);
+
+                    // Redirect to the server-specified URL
+                    window.location.href = '/';
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+                // Handle error if needed
+            });
+
+        // Return false to prevent the default form submission
+        return false;
+    }
+
+</script>
+
+
+
+</html>
