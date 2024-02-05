@@ -63,21 +63,43 @@ input[type="file"] {
 }
 #fileList li {
     cursor: pointer;
+    border-bottom: 1px solid #d0d0d0;
+    padding-bottom: 5px;
+    list-style-type: disclosure-closed;
 }
 #fileList li:hover {
     color: red;
     text-decoration: line-through;
+    background-color: #d0d0d0;
 }
 
 #fileCount {
-    cursor: pointer;
+    cursor: default;
+
 }
+
+.upload {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    word-break: break-word;
+    align-items: center;
+    background-color: #dddddd;
+    padding-top: 20px;
+    border-radius: 10px;
+}
+
 .upload p {
     margin-top: 20px;
     color: #2980b9;
     user-select: none;
     padding: 2px;
     transition: 0.2s;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    text-align: center;
 }
 .upload p:hover {
     color: #000000;
@@ -86,6 +108,9 @@ input[type="file"] {
 
 .upload ul {
     margin: 0;
+    padding-left: 20px;
+    margin: 0 5px;
+    margin-bottom: 5px;
 }
 .upload .upload-buttons button {
     padding: 5px;
@@ -110,4 +135,29 @@ input[type="file"] {
     display: flex;
     flex-direction: row;
     justify-content: center;
+}
+
+.new-directory {
+    margin-bottom: 20px;
+    width: 200px;
+    display: grid;
+    grid-template-columns: 5fr 1fr;
+    grid-template-rows: 1fr;
+}
+.new-directory input {
+    min-width: 100px;
+    padding: 10px;
+    border-radius: 5px 0 0 5px;
+    border-style: none;
+    background-color: #dddddd;
+}
+.new-directory input:focus {
+    outline: none;
+}
+.new-directory button {
+    padding: 10px;
+    background-color: #dddddd;
+    border-radius: 0 5px 5px 0;
+    border-style: none;
+    cursor: pointer;
 }
