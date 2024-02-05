@@ -44,10 +44,10 @@
         </svg>
     </a>
     <div class="nav-links">
-        <a href="artiklid">Artiklid</a>
-        <a href="uudised">Uudised</a>
-        <a href="foorum">Foorum</a>
-        <a href="treeningud">Treeningud</a>
+        <a href="/artiklid">Artiklid</a>
+        <a href="/uudised">Uudised</a>
+        <a href="/foorum">Foorum</a>
+        <a href="/treeningud">Treeningud</a>
         <a style="color: #2980b9" href="galerii">Galerii</a>
     </div>
 </nav>
@@ -89,7 +89,10 @@
     <div class="search-galerii">
     </div>
     <main class="gallery-content">
-        <div class="newest"></div>
+        <div class="file-tree">
+            <ul id="folderTree"></ul>
+            <ul id="fileTree"></ul>
+        </div>
     </main>
 </section>
 <div class="mapBanner">
@@ -154,6 +157,74 @@
 </body>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetchFolderTree();
+    });
+
+    function fetchFolderTree() {
+        var folderTree = document.getElementById('folderTree');
+
+        // Fetch folders from the server and populate the file tree
+        fetch('/galerii/folders') // Replace with your server endpoint
+            .then(response => response.json())
+            .then(data => {
+                // Clear existing folder tree
+                folderTree.innerHTML = '';
+
+                // Populate the file tree with folders
+                data.forEach(function (folder) {
+                    var folderItem = document.createElement('li');
+                    folderItem.innerHTML = '<i class="fa-solid fa-folder"></i> <span class="folder">' + folder + '</span>';
+                    folderItem.className = 'folder';
+                    folderItem.addEventListener('click', function () {
+                        fetchImagesInFolder(folder);
+                    });
+                    folderTree.appendChild(folderItem);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching folders:', error);
+            });
+    }
+    function fetchImagesInFolder(folder) {
+        var folderList = document.getElementById('fileTree');
+
+        // Fetch images in the selected folder
+        fetch('/galerii/images?folder=' + folder) // Replace with your server endpoint
+            .then(response => response.json())
+            .then(data => {
+                // Clear existing image list
+                folderList.innerHTML = '';
+
+                // Populate the image list with images
+                data.forEach(function (image) {
+                    var imageItem = document.createElement('li');
+                    var imgElement = document.createElement('img');
+                    imgElement.src = '/galerii/' + folder + '/' + image; // Adjust the path based on your server structure
+                    imgElement.alt = image; // Set alt attribute to image name
+
+                    // Add an event listener to open the image in a new tab when clicked
+                    imgElement.addEventListener('click', function () {
+                        window.open('/galerii/' + folder + '/' + image, '_blank');
+                    });
+
+                    imageItem.appendChild(imgElement);
+                    folderList.appendChild(imageItem);
+                });
+
+                // Show the image list
+                folderList.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error fetching images in folder:', error);
+            });
+    }
+
+
+
+</script>
+
+<script>
     function fetchFolderNames() {
         var folderDropdown = document.getElementById('folderDropdown');
 
@@ -163,6 +234,8 @@
             .then(data => {
                 // Clear existing options
                 folderDropdown.innerHTML = '';
+
+                folderDropdown.innerHTML += '<option value="" disabled selected hidden>Vali kaust</option>';
 
                 // Add fetched folders to the dropdown, excluding "Vali kaust"
                 data.forEach(function (folder) {
@@ -175,7 +248,6 @@
                 console.error('Error fetching folders:', error);
             });
     }
-
 </script>
 
 <script>
@@ -198,9 +270,9 @@
             });
 
             if (response.ok) {
-                alert('Directory created successfully');
                 // Optionally, you can reset the form or perform any other action here.
                 newDirectoryNameInput.value = "";
+                alert('Kaust loodud edukalt')
             } else {
                 const errorMessage = await response.text();
                 errorMessageContainer.innerHTML = `Kausta loomine ebaõnnestus: ${errorMessage}`;
@@ -316,7 +388,7 @@
         var selectedFolder = folderDropdown.value;
 
         if (selectedFiles.length === 0 || !selectedFolder) {
-            alert('Please select files and a folder before uploading.');
+            alert('Palun vali kaust ja failid enne üleslaadimist!');
             return;
         }
 
@@ -336,6 +408,7 @@
             .then(response => response.json())
             .then(data => {
                 console.log('Server response:', data);
+                alert('Failid üles laetud edukalt!')
                 // Handle the response from the server as needed
             })
             .catch(error => {
@@ -344,6 +417,7 @@
 
         // Clear the file input and update the file count display
         fileInput.value = '';
+        folderDropdown.value = '';
         countFiles();
     }
 </script>

@@ -35,7 +35,7 @@ app.use(session({
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
-app.use(express.static(path.join(__dirname, 'Galerii')));
+app.use('/galerii', express.static(path.join(__dirname, 'Galerii')));
 
 
 const renderFile = (page) => async (req, res) => {
@@ -297,6 +297,31 @@ app.post('/galerii/upload', upload.array('files'), (req, res) => {
     console.log('Files uploaded to:', req.body.folder);
     res.json({ message: 'Files uploaded successfully!' });
 });
+
+app.get('/galerii/images', (req, res) => {
+    const folder = req.query.folder;
+
+    if (!folder) {
+        return res.status(400).json({ success: false, message: 'Folder not provided!' });
+    }
+
+    const folderPath = path.join(__dirname, 'Galerii', folder);
+
+    // Read the contents of the folder
+    fs.readdir(folderPath, (err, files) => {
+        if (err) {
+            console.error('Error reading folder:', err);
+            res.status(500).json({ error: 'Internal Server Error' });
+            return;
+        }
+
+        // Filter out only image files with jpg and png extensions
+        const imageFiles = files.filter(file => /\.(jpg|jpeg|png)$/i.test(file));
+
+        res.json(imageFiles);
+    });
+});
+
 
 
 app.listen(port, () => {

@@ -10,24 +10,6 @@
     width: 1000px;
 }
 
-.gallery-content {
-    display: grid;
-
-}
-
-.gallery-content div {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-    width: 300px;
-    height: 300px;
-    margin: 20px;
-    border-radius: 10px;
-    background-color: #dfdfdf;
-}
-
 input[type="file"] {
     display: none;
 }
@@ -106,6 +88,10 @@ input[type="file"] {
     text-decoration: underline;
 }
 
+#folderDropdown option[disabled] {
+    color: #888; /* Change the color to a muted gray or any other style you prefer */
+    font-style: italic; /* You can also use font-weight: normal; to make it less prominent */
+}
 
 
 /* ul */
@@ -181,4 +167,54 @@ input[type="file"] {
     width: 130px;
 }
 
-select
+/* show images*/
+
+.gallery-content {
+    display: grid;
+    margin-bottom: 50px;
+
+}
+
+.gallery-content div {
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #dfdfdf;
+}
+
+.file-tree #folderTree {
+    display: flex;
+    flex-direction: row;
+    max-width: 1600px;
+    min-width: 500px;
+    justify-content: space-evenly;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    margin-top: 5px;
+}
+#folderTree li {
+    margin: 0 10px;
+    padding: 5px 10px;
+    transition: 0.2s;
+    cursor: pointer;
+    border-radius: 10px;
+
+}
+#folderTree li:hover {
+    color: #ffffff;
+    background-color: #2980b9;
+}
+
+.file-tree #fileTree {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+.file-tree #fileTree li img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    margin: 10px;
+    transition: 0.2s;
+    cursor: pointer;
+}
