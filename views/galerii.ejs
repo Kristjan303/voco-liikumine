@@ -55,26 +55,35 @@
 <section class="galerii">
     <div class="section-nav">
         <div class="path">
-            <p><a href="/">Avaleht</a> > <span>Galerii</span></p>
+            <p><a href="/public">Avaleht</a> > <span>Galerii</span></p>
         </div>
         <h1>Galerii</h1>
         <% if (userRole === 2) { %>
-
-        <p>Lisa uus kaust:</p>
-        <div class="new-directory">
-            <input type="text" placeholder="Uus kaust">
-            <button><i class="fa-solid fa-plus fa-lg"></i></button>
-        </div>
-
-        <div class="upload">
-            <div class="upload-buttons">
-                <label for="fileInput" class="custom-button"><i class="fas fa-plus fa-xl"></i></label>
-                <input type="file" id="fileInput" multiple accept=".png, .jpg" onchange="countFiles()">
-                <button onclick="uploadFiles()"><i class="fa-solid fa-upload fa-xl"></i></button>
+            <p>Lisa uus kaust:</p>
+            <div class="new-directory">
+                <form id="createDirectoryForm">
+                    <input type="text" name="newDirectoryName" id="newDirectoryName" placeholder="Uue kausta nimi">
+                    <button type="button" onclick="createDirectory()" id="clearInput"><i class="fa-solid fa-plus fa-lg"></i></button>
+                </form>
+                <div class="error" id="error-message-container">
+                    <!-- Error message will be dynamically inserted here -->
+                </div>
             </div>
-            <p id="fileCount" onclick="toggleFileList()">Ühtegi faili pole valitud</p>
-            <ul id="fileList" onclick="removeFile(event)"></ul>
-        </div>
+
+            <div class="upload">
+                <div class="upload-buttons">
+                    <label for="fileInput" class="custom-button"><i class="fas fa-plus fa-xl"></i></label>
+                    <input type="file" id="fileInput" multiple accept=".png, .jpg" onchange="countFiles()">
+                    <!-- Add a dropdown menu for choosing existing folders -->
+                    <select id="folderDropdown" onfocus="fetchFolderNames()">
+                        <option value="">Vali kaust</option>
+                        <!-- Options will be dynamically added here -->
+                    </select>
+                    <button onclick="uploadFiles()"><i class="fa-solid fa-upload fa-xl"></i></button>
+                </div>
+                <p id="fileCount" onclick="toggleFileList()">Ühtegi faili pole valitud</p>
+                <ul id="fileList" onclick="removeFile(event)"></ul>
+            </div>
         <% } %>
     </div>
     <div class="search-galerii">
@@ -83,10 +92,6 @@
         <div class="newest"></div>
     </main>
 </section>
-
-
-
-
 <div class="mapBanner">
     <a href="https://www.google.com/maps?ll=58.349455,26.714113&amp;z=15&amp;t=m&amp;hl=en-US&amp;gl=EG&amp;mapclient=embed&amp;q=Kopli+1+50115+Tartu+Estonia" target="_blank" class="mapBanner_col" style="background-image: url('https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/map_1.jpg')">
         Kopli 1
@@ -147,6 +152,67 @@
 </footer>
 
 </body>
+
+<script>
+    function fetchFolderNames() {
+        var folderDropdown = document.getElementById('folderDropdown');
+
+        // Fetch folders from the server and populate the dropdown
+        fetch('/galerii/folders') // Replace with your server endpoint
+            .then(response => response.json())
+            .then(data => {
+                // Clear existing options
+                folderDropdown.innerHTML = '';
+
+                // Add fetched folders to the dropdown, excluding "Vali kaust"
+                data.forEach(function (folder) {
+                    if (folder !== 'Vali kaust') {
+                        folderDropdown.innerHTML += '<option value="' + folder + '">' + folder + '</option>';
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching folders:', error);
+            });
+    }
+
+</script>
+
+<script>
+    async function createDirectory() {
+        const newDirectoryName = document.getElementById('newDirectoryName').value;
+        const errorMessageContainer = document.getElementById('error-message-container');
+        var newDirectoryNameInput = document.getElementById('newDirectoryName');
+        if (!newDirectoryName) {
+            errorMessageContainer.innerHTML = 'Kausta nimi on kohustuslik';
+            return;
+        }
+
+        try {
+            const response = await fetch('/create-directory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ newDirectoryName }),
+            });
+
+            if (response.ok) {
+                alert('Directory created successfully');
+                // Optionally, you can reset the form or perform any other action here.
+                newDirectoryNameInput.value = "";
+            } else {
+                const errorMessage = await response.text();
+                errorMessageContainer.innerHTML = `Kausta loomine ebaõnnestus: ${errorMessage}`;
+            }
+        } catch (error) {
+            console.error('Error creating directory:', error);
+            errorMessageContainer.innerHTML = 'An error occurred while creating the directory';
+        }
+
+    }
+
+</script>
 <script>
     // checkLogin.js
 
@@ -243,14 +309,42 @@
 
 
     function uploadFiles() {
-        // Handle the file upload logic here
-        // Your implementation here
-        console.log('Files uploaded:', document.getElementById('fileInput').files);
+        var fileInput = document.getElementById('fileInput');
+        var folderDropdown = document.getElementById('folderDropdown');
+
+        var selectedFiles = fileInput.files;
+        var selectedFolder = folderDropdown.value;
+
+        if (selectedFiles.length === 0 || !selectedFolder) {
+            alert('Please select files and a folder before uploading.');
+            return;
+        }
+
+        // Create a FormData object to send files and folder information
+        var formData = new FormData();
+        formData.append('folder', selectedFolder);
+
+        for (var i = 0; i < selectedFiles.length; i++) {
+            formData.append('files', selectedFiles[i]);
+        }
+
+        // Perform the file upload using fetch
+        fetch('/galerii/upload', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Server response:', data);
+                // Handle the response from the server as needed
+            })
+            .catch(error => {
+                console.error('Error uploading files:', error);
+            });
 
         // Clear the file input and update the file count display
-        var fileInput = document.getElementById('fileInput');
-        fileInput.value = ''; // Clear the file input
-        countFiles(); // Update the file count display
+        fileInput.value = '';
+        countFiles();
     }
 </script>
 

@@ -7,6 +7,8 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const uuid = require('uuid');
 const cors = require('cors');
+const fs = require('fs');
+const multer = require('multer');
 
 
 const app = express();
@@ -33,6 +35,7 @@ app.use(session({
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
+app.use(express.static(path.join(__dirname, 'Galerii')));
 
 
 const renderFile = (page) => async (req, res) => {
@@ -203,10 +206,6 @@ app.post('/login', async (req, res) => {
 
 // Update the server-side code
 
-
-
-
-
 app.get('/logout', (req, res) => {
     // Find the index of the user's session in the sessions array
     const sessionIndex = sessions.findIndex(session =>
@@ -236,6 +235,69 @@ app.get('/active-sessions', (req, res) => {
     res.json({ activeSessions: sessions });
     console.log(sessions);
 });
+// get folder from folderform
+
+app.post('/create-directory', (req, res) => {
+    const newDirectoryName = req.body.newDirectoryName;
+
+    if (!newDirectoryName) {
+        return res.status(400).json({ success: false, message: 'sisesta kausta nimi!' });
+
+    }
+
+    const newDirectoryPath = path.join(__dirname, 'Galerii', newDirectoryName);
+
+    if (fs.existsSync(newDirectoryPath)) {
+        return res.status(400).send('kaust juba eksisteerbi!');
+    }
+
+    try {
+        fs.mkdirSync(newDirectoryPath);
+        res.status(200).send('Kaust loodud!');
+    } catch (error) {
+        console.error('Error creating directory:', error);
+        res.status(500).send('serveri viga!');
+    }
+});
+
+app.get('/galerii/folders', (req, res) => {
+    const galeriiPath = path.join(__dirname, 'galerii');
+
+    // Read the contents of the 'galerii' directory
+    fs.readdir(galeriiPath, (err, files) => {
+        if (err) {
+            console.error('Error reading directory:', err);
+            res.status(500).json({ error: 'Internal Server Error' });
+            return;
+        }
+
+        // Filter out only directories
+        const folders = files.filter(file => fs.statSync(path.join(galeriiPath, file)).isDirectory());
+
+        res.json(folders);
+    });
+});
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        // Use the 'folder' field from the form data to determine the upload directory
+        const uploadDir = path.join(__dirname, 'galerii', req.body.folder);
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    },
+});
+
+const upload = multer({ storage: storage });
+
+// Endpoint for uploading files
+app.post('/galerii/upload', upload.array('files'), (req, res) => {
+    // Handle the uploaded files as needed
+    console.log('Files uploaded to:', req.body.folder);
+    res.json({ message: 'Files uploaded successfully!' });
+});
+
 
 app.listen(port, () => {
     console.log(`Server is running on port http://localhost:${port}/`);

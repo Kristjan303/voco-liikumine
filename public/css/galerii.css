@@ -81,7 +81,7 @@ input[type="file"] {
 .upload {
     margin-top: 20px;
     margin-bottom: 20px;
-    width: 200px;
+    width: 250px;
     display: flex;
     flex-direction: column;
     word-break: break-word;
@@ -127,7 +127,6 @@ input[type="file"] {
     align-items: center;
     cursor: pointer;
     transition: 0.2s;
-    margin-right: 10px;
     border-style: none;
 }
 .upload .upload-buttons button:hover{
@@ -140,9 +139,9 @@ input[type="file"] {
     justify-content: center;
 }
 
-.new-directory {
+.new-directory form {
     margin-bottom: 20px;
-    width: 200px;
+    width: 250px;
     display: grid;
     grid-template-columns: 5fr 1fr;
     grid-template-rows: 1fr;
@@ -163,4 +162,23 @@ input[type="file"] {
     border-radius: 0 5px 5px 0;
     border-style: none;
     cursor: pointer;
+    transition: 0.2s;
 }
+
+.new-directory button:hover {
+    background-color: #2980b9;
+    color: #ffffff;
+}
+.new-directory .error {
+    width: 250px;
+}
+
+#folderDropdown {
+    padding: 5px;
+    margin-right: 10px;
+    border-style: none;
+    border-radius: 10px;
+    width: 130px;
+}
+
+select
