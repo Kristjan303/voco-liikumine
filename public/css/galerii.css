@@ -176,28 +176,32 @@ input[type="file"] {
 }
 
 .gallery-content div {
-    padding: 10px;
+    padding: 10px 20px;
     border-radius: 10px;
     background-color: #dfdfdf;
+    width: 100%;
+    display: grid;
+    margin-bottom: 50px;
 }
 
 .file-tree #folderTree {
     display: flex;
     flex-direction: row;
-    max-width: 1600px;
-    min-width: 500px;
-    justify-content: space-evenly;
+    width: 100%;
+    overflow: overlay;
     list-style-type: none;
-    margin: 0;
     padding: 0;
-    margin-top: 5px;
+    margin: 0 20px;
+    justify-content: flex-start;
+
 }
 #folderTree li {
-    margin: 0 10px;
-    padding: 5px 10px;
+    margin: 0 5px;
+    padding: 10px;
     transition: 0.2s;
     cursor: pointer;
     border-radius: 10px;
+    background-color: rgba(180, 180, 180, 0.75);
 
 }
 #folderTree li:hover {
@@ -205,10 +209,21 @@ input[type="file"] {
     background-color: #2980b9;
 }
 
+#folderTree .folder {
+    display: flex;
+    flex-direction: row;
+}
+#folderTree .folder i {
+    margin-right: 5px;
+
+}
+
 .file-tree #fileTree {
     list-style-type: none;
     margin: 0;
     padding: 0;
+    width: 100%;
+    overflow: overlay;
 }
 .file-tree #fileTree li img {
     width: 200px;
@@ -217,4 +232,35 @@ input[type="file"] {
     margin: 10px;
     transition: 0.2s;
     cursor: pointer;
+}
+.file-tree #fileTree li img:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(2px 4px 6px black) brightness(1.1);
+}
+
+.newest #newestTree {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow: overlay;
+}
+.newest #newestTree li img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    margin: 10px;
+    transition: 0.2s;
+    cursor: pointer;
+}
+.newest #newestTree li img:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(2px 4px 6px black) brightness(1.1);
+}
+
+.file-tree .hold {
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }

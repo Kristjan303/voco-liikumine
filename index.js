@@ -295,6 +295,31 @@ const upload = multer({ storage: storage });
 app.post('/galerii/upload', upload.array('files'), (req, res) => {
     // Handle the uploaded files as needed
     console.log('Files uploaded to:', req.body.folder);
+
+    // Retrieve user ID from the session
+    const userId = req.session.user.userId;
+
+    // Retrieve uploaded files and their paths
+    const files = req.files;
+    const folder = req.body.folder;
+
+    // Insert records into the database for each uploaded file
+    files.forEach(file => {
+        const filePath = path.join('/galerii', folder, file.filename); // Relative path from /galerii directory
+        const currentDate = new Date().toISOString().slice(0, 10); // Get current date in YYYY-MM-DD format
+
+        // Insert record into the database
+        const insertQuery = 'INSERT INTO vocoliikumine.galerii (kasutaja_id, media, lisamise_kuupäev) VALUES (?, ?, ?)';
+        db.query(insertQuery, [userId, filePath, currentDate], (err, results) => {
+            if (err) {
+                console.error('Error inserting record into database:', err);
+                // Handle error response
+            } else {
+                // Handle success response
+            }
+        });
+    });
+
     res.json({ message: 'Files uploaded successfully!' });
 });
 
@@ -319,6 +344,21 @@ app.get('/galerii/images', (req, res) => {
         const imageFiles = files.filter(file => /\.(jpg|jpeg|png)$/i.test(file));
 
         res.json(imageFiles);
+    });
+});
+
+// Backend route to fetch the latest uploaded images
+app.get('/galerii/latest-images', (req, res) => {
+    // Fetch the latest 10 uploaded images from the database
+    const query = 'SELECT media FROM vocoliikumine.galerii ORDER BY lisamise_kuupäev DESC LIMIT 10';
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching latest images:', err);
+            res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+        } else {
+            const latestImages = results.map(row => `${row.media}`);
+            res.json({ success: true, latestImages });
+        }
     });
 });
 
