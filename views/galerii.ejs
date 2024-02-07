@@ -96,7 +96,7 @@
                 <button class="scroll" onclick="scrollNewestLeft()"><i class="left fa-solid fa-chevron-left fa-xl"></i></button>
                 <button class="scroll" onclick="scrollNewestRight()"><i class="right fa-solid fa-chevron-right fa-xl" ></i></button>
             </div>
-            <ul style="display: flex" id="newestTree"></ul>
+            <ul style="display: flex;" id="newestTree"></ul>
         </div>
         <div class="file-tree">
             <div class="hold">
@@ -306,17 +306,20 @@
             const newestTree = document.getElementById('newestTree');
             newestTree.innerHTML = ''; // Clear the existing content
 
-            data.latestImages.slice(0, 10).forEach(image => {
+            // Reverse the array before iterating over it
+            data.latestImages.slice(0, 10).reverse().forEach(image => {
                 const listItem = document.createElement('li');
                 const imageElement = document.createElement('img');
                 imageElement.src = image;
                 listItem.appendChild(imageElement);
                 newestTree.appendChild(listItem);
             });
+
         } else {
             console.error('Failed to fetch latest images:', data.message);
         }
     });
+
 </script>
 
 

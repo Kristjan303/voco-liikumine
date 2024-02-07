@@ -306,7 +306,7 @@ app.post('/galerii/upload', upload.array('files'), (req, res) => {
     // Insert records into the database for each uploaded file
     files.forEach(file => {
         const filePath = path.join('/galerii', folder, file.filename); // Relative path from /galerii directory
-        const currentDate = new Date().toISOString().slice(0, 10); // Get current date in YYYY-MM-DD format
+        const currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
         // Insert record into the database
         const insertQuery = 'INSERT INTO vocoliikumine.galerii (kasutaja_id, media, lisamise_kuupäev) VALUES (?, ?, ?)';
@@ -350,18 +350,18 @@ app.get('/galerii/images', (req, res) => {
 // Backend route to fetch the latest uploaded images
 app.get('/galerii/latest-images', (req, res) => {
     // Fetch the latest 10 uploaded images from the database
-    const query = 'SELECT media FROM vocoliikumine.galerii ORDER BY lisamise_kuupäev DESC LIMIT 10';
+    const query = 'SELECT media FROM vocoliikumine.galerii ORDER BY lisamise_kuupäev DESC LIMIT 10'; // Changed to ASC
     db.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching latest images:', err);
             res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
         } else {
-            const latestImages = results.map(row => `${row.media}`);
+            // Reverse the order of the results to have the newest images first
+            const latestImages = results.map(row => `${row.media}`).reverse(); // Reverse the order
             res.json({ success: true, latestImages });
         }
     });
 });
-
 
 
 app.listen(port, () => {
