@@ -1,3 +1,24 @@
+::-webkit-scrollbar {
+    height: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
 .galerii {
     display: flex;
     margin: 0 auto;
@@ -188,26 +209,30 @@ input[type="file"] {
     display: flex;
     flex-direction: row;
     width: 100%;
-    overflow: overlay;
+    overflow: auto;
+    white-space: nowrap;
     list-style-type: none;
     padding: 0;
     margin: 0 20px;
     justify-content: flex-start;
 
 }
-#folderTree li {
+.file-tree #folderTree li {
     margin: 0 5px;
     padding: 10px;
     transition: 0.2s;
+    border: 2px solid transparent;
     cursor: pointer;
     border-radius: 10px;
     background-color: rgba(180, 180, 180, 0.75);
+    transition: 0.2s;
 
 }
-#folderTree li:hover {
-    color: #ffffff;
-    background-color: #2980b9;
+.file-tree #folderTree li:hover {
+    border: 2px solid #f0f0f0;
+
 }
+
 
 #folderTree .folder {
     display: flex;
@@ -223,7 +248,8 @@ input[type="file"] {
     margin: 0;
     padding: 0;
     width: 100%;
-    overflow: overlay;
+    overflow: auto;
+    white-space: nowrap;
 }
 .file-tree #fileTree li img {
     width: 200px;
@@ -243,7 +269,8 @@ input[type="file"] {
     margin: 0;
     padding: 0;
     width: 100%;
-    overflow: overlay;
+    overflow: auto;
+    white-space: nowrap;
 }
 .newest #newestTree li img {
     width: 200px;
@@ -263,4 +290,35 @@ input[type="file"] {
     display: flex;
     flex-direction: row;
     align-items: center;
+    padding: 0 20px;
+}
+.newest .hold {
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 20px;
+
+}
+.newest .hold .scroll {
+    padding: 10px;
+    border: none;
+    transition: 0.2s;
+    cursor: pointer;
+    background: none;
+    float: right;
+}
+.newest .hold .scroll:hover {
+    color: #2980b9;
+}
+
+.file-tree .hold .scroll {
+    padding: 10px;
+    border: none;
+    transition: 0.2s;
+    cursor: pointer;
+    background: none;
+}
+.file-tree .hold .scroll:hover {
+    color: #2980b9;
 }

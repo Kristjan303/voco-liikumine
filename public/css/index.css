@@ -1,5 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
 body {
     font-family: "Montserrat", sans-serif;
     margin: 0;
@@ -181,7 +200,6 @@ section {
     flex-direction: column;
     width: 100%;
     margin-bottom: 50px;
-    margin-left: 20px;
     align-content: flex-start;
     align-items: flex-start;
 }

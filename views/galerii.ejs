@@ -55,7 +55,7 @@
 <section class="galerii">
     <div class="section-nav">
         <div class="path">
-            <p><a href="/public">Avaleht</a> > <span>Galerii</span></p>
+            <p><a href="/">Avaleht</a> > <span>Galerii</span></p>
         </div>
         <h1>Galerii</h1>
         <% if (userRole === 2) { %>
@@ -90,13 +90,20 @@
     </div>
     <main class="gallery-content">
         <div class="newest">
-            <h4 style="margin-left: 10px">Uusimad pildid</h4>
-            <ul  style="display: flex" id="newestTree"></ul>
+            <div class="hold">
+                <h4>Uusimad pildid</h4>
+                <div style="    width: 648px; padding: 0; margin: 0 20px;     justify-content: flex-start;" class="place-holder"></div>
+                <button class="scroll" onclick="scrollNewestLeft()"><i class="left fa-solid fa-chevron-left fa-xl"></i></button>
+                <button class="scroll" onclick="scrollNewestRight()"><i class="right fa-solid fa-chevron-right fa-xl" ></i></button>
+            </div>
+            <ul style="display: flex" id="newestTree"></ul>
         </div>
         <div class="file-tree">
             <div class="hold">
                 <h4>Kaustad:</h4>
                 <ul id="folderTree"></ul>
+                <button class="scroll" onclick="scrollFileTreeLeft()"><i class="left fa-solid fa-chevron-left fa-xl"></i></button>
+                <button class="scroll" onclick="scrollFileTreeRight()"><i class="right fa-solid fa-chevron-right fa-xl" ></i></button>
             </div>
             <ul id="fileTree"></ul>
         </div>
@@ -162,14 +169,59 @@
 </footer>
 
 </body>
-
 <script>
+    // Function to scroll the fileTree to the left smoothly
+    function scrollNewestLeft() {
+        var fileTree = document.getElementById('newestTree');
+        fileTree.scrollBy({
+            left: -200, // You can adjust the scroll distance as needed
+            behavior: 'smooth'
+
+        });
+    }
+
+    // Function to scroll the fileTree to the right smoothly
+    function scrollNewestRight() {
+        var fileTree = document.getElementById('newestTree');
+        fileTree.scrollBy({
+            left: 200, // You can adjust the scroll distance as needed
+            behavior: 'smooth'
+
+        });
+    }
+
+    // Function to scroll the fileTree to the left smoothly
+    function scrollFileTreeLeft() {
+        var fileTree = document.getElementById('fileTree');
+        fileTree.scrollBy({
+            left: -200, // You can adjust the scroll distance as needed
+            behavior: 'smooth'
+
+        });
+    }
+
+    // Function to scroll the fileTree to the right smoothly
+    function scrollFileTreeRight() {
+        var fileTree = document.getElementById('fileTree');
+        fileTree.scrollBy({
+            left: 200, // You can adjust the scroll distance as needed
+            behavior: 'smooth'
+
+        });
+    }
+</script>
+
+
+
+
+    <script>
     document.addEventListener("DOMContentLoaded", function () {
         fetchFolderTree();
     });
 
     function fetchFolderTree() {
         var folderTree = document.getElementById('folderTree');
+        var lastClickedFolderItem = null; // Variable to store the last clicked folder item
 
         // Fetch folders from the server and populate the file tree
         fetch('/galerii/folders') // Replace with your server endpoint
@@ -179,14 +231,28 @@
                 folderTree.innerHTML = '';
 
                 // Populate the file tree with folders
-                data.forEach(function (folder) {
+                data.forEach(function (folder, index) {
                     var folderItem = document.createElement('li');
                     folderItem.innerHTML = '<i class="fa-solid fa-folder"></i> <span class="folder">' + folder + '</span>';
                     folderItem.className = 'folder';
                     folderItem.addEventListener('click', function () {
+                        // Remove background color from the previously clicked folder item
+                        if (lastClickedFolderItem) {
+                            lastClickedFolderItem.style.backgroundColor = '';
+                        }
+                        // Set background color for the currently clicked folder item
+                        folderItem.style.backgroundColor = '#f0f0f0';
+                        lastClickedFolderItem = folderItem; // Update last clicked folder item
                         fetchImagesInFolder(folder);
                     });
                     folderTree.appendChild(folderItem);
+
+                    // Show fileTree for the first folder by default
+                    if (index === 0) {
+                        fetchImagesInFolder(folder);
+                        folderItem.style.backgroundColor = '#f0f0f0';
+                        lastClickedFolderItem = folderItem; // Update last clicked folder item
+                    }
                 });
             })
             .catch(error => {
@@ -253,68 +319,170 @@
     });
 </script>
 
-<script>
-    function fetchFolderNames() {
-        var folderDropdown = document.getElementById('folderDropdown');
 
-        // Fetch folders from the server and populate the dropdown
-        fetch('/galerii/folders') // Replace with your server endpoint
-            .then(response => response.json())
-            .then(data => {
-                // Clear existing options
-                folderDropdown.innerHTML = '';
+<% if (userRole === 2) { %>
+    <script>
+        function fetchFolderNames() {
+            var folderDropdown = document.getElementById('folderDropdown');
 
-                folderDropdown.innerHTML += '<option value="" disabled selected hidden>Vali kaust</option>';
+            // Fetch folders from the server and populate the dropdown
+            fetch('/galerii/folders') // Replace with your server endpoint
+                .then(response => response.json())
+                .then(data => {
+                    // Clear existing options
+                    folderDropdown.innerHTML = '';
 
-                // Add fetched folders to the dropdown, excluding "Vali kaust"
-                data.forEach(function (folder) {
-                    if (folder !== 'Vali kaust') {
-                        folderDropdown.innerHTML += '<option value="' + folder + '">' + folder + '</option>';
-                    }
+                    folderDropdown.innerHTML += '<option value="" disabled selected hidden>Vali kaust</option>';
+
+                    // Add fetched folders to the dropdown, excluding "Vali kaust"
+                    data.forEach(function (folder) {
+                        if (folder !== 'Vali kaust') {
+                            folderDropdown.innerHTML += '<option value="' + folder + '">' + folder + '</option>';
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching folders:', error);
                 });
-            })
-            .catch(error => {
-                console.error('Error fetching folders:', error);
-            });
-    }
-</script>
-
-<script>
-    async function createDirectory() {
-        const newDirectoryName = document.getElementById('newDirectoryName').value;
-        const errorMessageContainer = document.getElementById('error-message-container');
-        var newDirectoryNameInput = document.getElementById('newDirectoryName');
-        if (!newDirectoryName) {
-            errorMessageContainer.innerHTML = 'Kausta nimi on kohustuslik';
-            return;
         }
-
-        try {
-            const response = await fetch('/create-directory', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ newDirectoryName }),
-            });
-
-            if (response.ok) {
-                // Optionally, you can reset the form or perform any other action here.
-                newDirectoryNameInput.value = "";
-                alert('Kaust loodud edukalt');
-                // Clear error message container if retry is successful
-                errorMessageContainer.innerHTML = "";
-            } else {
-                const errorMessage = await response.text();
-                errorMessageContainer.innerHTML = `Kausta loomine ebaõnnestus: ${errorMessage}`;
+    </script>
+    <script>
+        async function createDirectory() {
+            const newDirectoryName = document.getElementById('newDirectoryName').value;
+            const errorMessageContainer = document.getElementById('error-message-container');
+            var newDirectoryNameInput = document.getElementById('newDirectoryName');
+            if (!newDirectoryName) {
+                errorMessageContainer.innerHTML = 'Kausta nimi on kohustuslik';
+                return;
             }
-        } catch (error) {
-            console.error('Error creating directory:', error);
-            errorMessageContainer.innerHTML = 'An error occurred while creating the directory';
-        }
-    }
 
-</script>
+            try {
+                const response = await fetch('/create-directory', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ newDirectoryName }),
+                });
+
+                if (response.ok) {
+                    // Optionally, you can reset the form or perform any other action here.
+                    newDirectoryNameInput.value = "";
+                    alert('Kaust loodud edukalt');
+                    // Clear error message container if retry is successful
+                    errorMessageContainer.innerHTML = "";
+                } else {
+                    const errorMessage = await response.text();
+                    errorMessageContainer.innerHTML = `Kausta loomine ebaõnnestus: ${errorMessage}`;
+                }
+            } catch (error) {
+                console.error('Error creating directory:', error);
+                errorMessageContainer.innerHTML = 'An error occurred while creating the directory';
+            }
+        }
+
+    </script>
+    <script>
+        function countFiles() {
+            var fileInput = document.getElementById('fileInput');
+            var fileCountElement = document.getElementById('fileCount');
+            var fileListElement = document.getElementById('fileList');
+            var fileList = document.getElementById('fileList');
+
+            var fileCount = fileInput.files.length;
+            fileCountElement.textContent = fileCount > 0 ? fileCount + (fileCount === 1 ? ' fail valitud →' : ' faili valitud →') : 'Ühtegi faili pole valitud';
+
+            // Populate the file list
+            fileListElement.innerHTML = '';
+            for (var i = 0; i < fileCount; i++) {
+                var fileName = fileInput.files[i].name;
+                var listItem = document.createElement('li');
+                listItem.textContent = fileName;
+                fileListElement.appendChild(listItem);
+            }}
+
+        function toggleFileList() {
+            var fileListElement = document.getElementById('fileList');
+            fileListElement.style.display = fileListElement.style.display === 'none' ? 'block' : 'none';
+        }
+        function removeFile(event) {
+            var fileInput = document.getElementById('fileInput');
+            var fileListElement = document.getElementById('fileList');
+
+            // Check if the click occurred on an <li> element
+            if (event.target.tagName.toLowerCase() === 'li') {
+                var fileNameToRemove = event.target.textContent;
+                var newFiles = [];
+
+                for (var i = 0; i < fileInput.files.length; i++) {
+                    if (fileInput.files[i].name !== fileNameToRemove) {
+                        newFiles.push(fileInput.files[i]);
+                    }
+                }
+
+                // Create a new FileList with the remaining files
+                var newFileList = new DataTransfer();
+                for (var j = 0; j < newFiles.length; j++) {
+                    newFileList.items.add(newFiles[j]);
+                }
+
+                // Set the new FileList to the input.files property
+                fileInput.files = newFileList.files;
+
+                // Re-render the file list
+                countFiles();
+            }
+        }
+
+
+        async function uploadFiles() {
+            var fileInput = document.getElementById('fileInput');
+            var folderDropdown = document.getElementById('folderDropdown');
+            var userId = sessionStorage.getItem('userId'); // Retrieve user ID from local storage
+
+            var selectedFiles = fileInput.files;
+            var selectedFolder = folderDropdown.value;
+
+            if (selectedFiles.length === 0 || !selectedFolder || !userId) {
+                alert('Palun vali kaust ja failid enne üleslaadimist!');
+                return;
+            }
+
+            // Create a FormData object to send files, folder information, and user ID
+            var formData = new FormData();
+            formData.append('folder', selectedFolder);
+            formData.append('userId', userId); // Add user ID to the form data
+
+            for (var i = 0; i < selectedFiles.length; i++) {
+                formData.append('files', selectedFiles[i]);
+            }
+
+            // Perform the file upload using fetch
+            fetch('/galerii/upload', {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Server response:', data);
+                    alert('Failid üles laetud edukalt!');
+                    // Handle the response from the server as needed
+                })
+                .catch(error => {
+                    console.error('Error uploading files:', error);
+                });
+
+            // Clear the file input and update the file count display
+            fileInput.value = '';
+            folderDropdown.value = '';
+            countFiles();
+        }
+    </script>
+<% } %>
+
+
+
+
 <script>
     // checkLogin.js
 
@@ -355,103 +523,7 @@
             })
             .catch(error => console.error('Error checking login status:', error));
     });
-
 </script>
-<script>
-    function countFiles() {
-        var fileInput = document.getElementById('fileInput');
-        var fileCountElement = document.getElementById('fileCount');
-        var fileListElement = document.getElementById('fileList');
-        var fileList = document.getElementById('fileList');
 
-        var fileCount = fileInput.files.length;
-        fileCountElement.textContent = fileCount > 0 ? fileCount + (fileCount === 1 ? ' fail valitud →' : ' faili valitud →') : 'Ühtegi faili pole valitud';
-
-        // Populate the file list
-        fileListElement.innerHTML = '';
-        for (var i = 0; i < fileCount; i++) {
-            var fileName = fileInput.files[i].name;
-            var listItem = document.createElement('li');
-            listItem.textContent = fileName;
-            fileListElement.appendChild(listItem);
-        }}
-
-    function toggleFileList() {
-        var fileListElement = document.getElementById('fileList');
-        fileListElement.style.display = fileListElement.style.display === 'none' ? 'block' : 'none';
-    }
-    function removeFile(event) {
-        var fileInput = document.getElementById('fileInput');
-        var fileListElement = document.getElementById('fileList');
-
-        // Check if the click occurred on an <li> element
-        if (event.target.tagName.toLowerCase() === 'li') {
-            var fileNameToRemove = event.target.textContent;
-            var newFiles = [];
-
-            for (var i = 0; i < fileInput.files.length; i++) {
-                if (fileInput.files[i].name !== fileNameToRemove) {
-                    newFiles.push(fileInput.files[i]);
-                }
-            }
-
-            // Create a new FileList with the remaining files
-            var newFileList = new DataTransfer();
-            for (var j = 0; j < newFiles.length; j++) {
-                newFileList.items.add(newFiles[j]);
-            }
-
-            // Set the new FileList to the input.files property
-            fileInput.files = newFileList.files;
-
-            // Re-render the file list
-            countFiles();
-        }
-    }
-
-
-    async function uploadFiles() {
-        var fileInput = document.getElementById('fileInput');
-        var folderDropdown = document.getElementById('folderDropdown');
-        var userId = sessionStorage.getItem('userId'); // Retrieve user ID from local storage
-
-        var selectedFiles = fileInput.files;
-        var selectedFolder = folderDropdown.value;
-
-        if (selectedFiles.length === 0 || !selectedFolder || !userId) {
-            alert('Palun vali kaust ja failid enne üleslaadimist!');
-            return;
-        }
-
-        // Create a FormData object to send files, folder information, and user ID
-        var formData = new FormData();
-        formData.append('folder', selectedFolder);
-        formData.append('userId', userId); // Add user ID to the form data
-
-        for (var i = 0; i < selectedFiles.length; i++) {
-            formData.append('files', selectedFiles[i]);
-        }
-
-        // Perform the file upload using fetch
-        fetch('/galerii/upload', {
-            method: 'POST',
-            body: formData,
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Server response:', data);
-                alert('Failid üles laetud edukalt!');
-                // Handle the response from the server as needed
-            })
-            .catch(error => {
-                console.error('Error uploading files:', error);
-            });
-
-        // Clear the file input and update the file count display
-        fileInput.value = '';
-        folderDropdown.value = '';
-        countFiles();
-    }
-</script>
 
 </html>
