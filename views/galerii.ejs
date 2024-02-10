@@ -58,12 +58,12 @@
             <p><a href="/">Avaleht</a> > <span>Galerii</span></p>
         </div>
         <h1>Galerii</h1>
-        <% if (userRole === 2) { %>
+        <% if (userRole === 2 || userRole === 3) { %>
             <p>Lisa uus kaust:</p>
             <div class="new-directory">
                 <form id="createDirectoryForm">
                     <input type="text" name="newDirectoryName" id="newDirectoryName" placeholder="Uue kausta nimi">
-                    <button type="button" onclick="createDirectory()" id="clearInput"><i class="fa-solid fa-plus fa-lg"></i></button>
+                    <button type="button" onclick="createDirectory()" id="clearInput"><i class="fa-solid fa-folder-plus fa-lg"></i></button>
                 </form>
                 <div class="error" id="error-message-container">
                     <!-- Error message will be dynamically inserted here -->
@@ -323,7 +323,7 @@
 </script>
 
 
-<% if (userRole === 2) { %>
+<% if (userRole === 2 || userRole === 3) { %>
     <script>
         function fetchFolderNames() {
             var folderDropdown = document.getElementById('folderDropdown');
@@ -353,9 +353,12 @@
         async function createDirectory() {
             const newDirectoryName = document.getElementById('newDirectoryName').value;
             const errorMessageContainer = document.getElementById('error-message-container');
-            var newDirectoryNameInput = document.getElementById('newDirectoryName');
-            if (!newDirectoryName) {
-                errorMessageContainer.innerHTML = 'Kausta nimi on kohustuslik';
+            const userId = sessionStorage.getItem('userId'); // Retrieve user ID from sessionStorage
+            const sessionToken = sessionStorage.getItem('sessionToken'); // Retrieve session token from sessionStorage
+            const email = sessionStorage.getItem('email'); // Retrieve email from sessionStorage
+
+            if (!newDirectoryName || !userId || !sessionToken || !email) {
+                errorMessageContainer.innerHTML = 'Directory name is mandatory and session data is missing';
                 return;
             }
 
@@ -365,18 +368,19 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ newDirectoryName }),
+                    body: JSON.stringify({ newDirectoryName, userId, sessionToken, email }), // Include session data in the request body
                 });
 
                 if (response.ok) {
                     // Optionally, you can reset the form or perform any other action here.
-                    newDirectoryNameInput.value = "";
-                    alert('Kaust loodud edukalt');
-                    // Clear error message container if retry is successful
-                    errorMessageContainer.innerHTML = "";
+                    document.getElementById('newDirectoryName').value = '';
+                    alert('Kaust loodud!');
+                    location.reload();
+                    // Clear error message container if directory creation is successful
+                    errorMessageContainer.innerHTML = '';
                 } else {
                     const errorMessage = await response.text();
-                    errorMessageContainer.innerHTML = `Kausta loomine ebaõnnestus: ${errorMessage}`;
+                    errorMessageContainer.innerHTML = `Failed to create directory: ${errorMessage}`;
                 }
             } catch (error) {
                 console.error('Error creating directory:', error);
@@ -441,20 +445,24 @@
         async function uploadFiles() {
             var fileInput = document.getElementById('fileInput');
             var folderDropdown = document.getElementById('folderDropdown');
-            var userId = sessionStorage.getItem('userId'); // Retrieve user ID from local storage
+            var userId = sessionStorage.getItem('userId'); // Retrieve user ID from sessionStorage
+            var sessionToken = sessionStorage.getItem('sessionToken'); // Retrieve session token from sessionStorage
+            var email = sessionStorage.getItem('email'); // Retrieve email from sessionStorage
 
             var selectedFiles = fileInput.files;
             var selectedFolder = folderDropdown.value;
 
-            if (selectedFiles.length === 0 || !selectedFolder || !userId) {
+            if (selectedFiles.length === 0 || !selectedFolder || !userId || !sessionToken || !email) {
                 alert('Palun vali kaust ja failid enne üleslaadimist!');
                 return;
             }
 
-            // Create a FormData object to send files, folder information, and user ID
+            // Create a FormData object to send files, folder information, user ID, session token, and email
             var formData = new FormData();
             formData.append('folder', selectedFolder);
-            formData.append('userId', userId); // Add user ID to the form data
+            formData.append('userId', userId);
+            formData.append('sessionToken', sessionToken); // Add session token to the form data
+            formData.append('email', email); // Add email to the form data
 
             for (var i = 0; i < selectedFiles.length; i++) {
                 formData.append('files', selectedFiles[i]);
@@ -468,7 +476,8 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log('Server response:', data);
-                    alert('Failid üles laetud edukalt!');
+                    alert('Files uploaded successfully!');
+                    location.reload();
                     // Handle the response from the server as needed
                 })
                 .catch(error => {
@@ -480,6 +489,7 @@
             folderDropdown.value = '';
             countFiles();
         }
+
     </script>
 <% } %>
 

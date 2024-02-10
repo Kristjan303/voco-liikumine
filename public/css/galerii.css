@@ -35,15 +35,6 @@ input[type="file"] {
     display: none;
 }
 
-#notification {
-    display: none;
-    background-color: #4CAF50;
-    color: white;
-    text-align: center;
-    padding: 10px;
-    margin-top: 10px;
-}
-
 .custom-button {
     padding: 5px;
     background-color: #ffffff;
@@ -147,7 +138,6 @@ input[type="file"] {
 }
 
 .new-directory form {
-    margin-bottom: 20px;
     width: 250px;
     display: grid;
     grid-template-columns: 5fr 1fr;

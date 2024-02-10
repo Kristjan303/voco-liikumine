@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="../css/artiklid.css">
     <title>Artiklid 📑 | VOCO Liikumine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
 </head>
 <body>
 <header>
@@ -51,22 +55,55 @@
         <a href="galerii">Galerii</a>
     </div>
 </nav>
-
 <section class="artiklid">
     <div class="section-nav">
         <div class="path">
             <p><a href="/">Avaleht</a> > <span>Artiklid</span></p>
         </div>
         <h1>Artiklid</h1>
+
+
+        <% if (userRole === 2 || userRole === 3) { %>
+
+        <h2>Lisa uus artikkel</h2>
+
+        <div class="new-article">
+            <form id="createArticle" onsubmit="submitForm(event)">
+                <input type="text" name="newArticleHeader" id="newArticleHeader" placeholder="Uue artikli pealkiri">
+                <input type="hidden" id="summernoteContent" name="summernoteContent">
+                <button type="submit"><i class="fa-solid fa-plus fa-lg"></i></button>
+                <div class="error" id="error-message-container">
+                    <!-- Error message will be dynamically inserted here -->
+                </div>
+            </form>
+        </div>
+
+
+
+        <div id="summernote"></div>
+        <script>
+            $('#summernote').summernote({
+                placeholder: 'Artikli sisu...',
+                tabsize: 2,
+                height: 120,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['help']]
+                ]
+            });
+        </script>
+
+        <% } %>
+
     </div>
     <div class="search-article">
     </div>
-    <main class="articles-content">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
+    <main id="articles" class="articles-content">
     </main>
 </section>
 
@@ -132,8 +169,117 @@
         © Tartu rakenduslik kolledž 2024
     </div>
 </footer>
-
 </body>
+
+<% if (userRole === 2 || userRole === 3) { %>
+    <script>
+        function submitForm(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get Summernote content
+            var summernoteContent = $('#summernote').summernote('code');
+            // Set Summernote content to the hidden input field
+            document.getElementById('summernoteContent').value = summernoteContent;
+
+            // Get session data from sessionStorage
+            var sessionToken = sessionStorage.getItem('sessionToken');
+            var userId = sessionStorage.getItem('userId');
+            var email = sessionStorage.getItem('email');
+
+            // Create an object to hold form data
+            var formData = {
+                newArticleHeader: document.getElementById('newArticleHeader').value,
+                summernoteContent: summernoteContent,
+                sessionToken: sessionToken,
+                userId: userId,
+                email: email
+            };
+
+            // Check if newArticleHeader or summernoteContent is empty
+            if (!formData.newArticleHeader || !formData.summernoteContent) {
+                console.error('New article header or summernote content is empty');
+                document.getElementById('error-message-container').innerText = 'New article header or summernote content is empty';
+                return;
+            }
+
+            // Send form data to server
+            fetch('/submit-article', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        console.log('Data submitted successfully:', data);
+                        alert('Uus artikkel lisatud!');
+                        location.reload();
+                        // Optionally, you can redirect the user or perform any other action upon successful submission
+                    } else {
+                        // Display error message if submission failed
+                        console.error('Error submitting data:', data.message);
+                        document.getElementById('error-message-container').innerText = data.message;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting data:', error);
+                    // Handle errors here
+                });
+        }
+
+</script>
+
+<% } %>
+
+<script>
+    // Function to fetch articles from the server
+    function fetchArticles() {
+        fetch('/get-articles')
+            .then(response => response.json())
+            .then(data => {
+                // Clear existing articles
+                document.getElementById('articles').innerHTML = '';
+
+                // Loop through fetched articles and append them to the main element
+                data.forEach(article => {
+                    const articleDiv = document.createElement('div');
+                    articleDiv.innerHTML = `
+                <h2>${article.articleHeader}</h2>
+                <div>${article.summernoteContent}</div>
+            `;
+
+                    // Find potential image inside the div
+                    const imgElement = articleDiv.querySelector('div > p > img');
+
+                    // If an image is found, apply the style
+                    if (imgElement) {
+                        imgElement.style.width = '100px';
+                        imgElement.style.height = '100px';
+                        imgElement.style.margin = '10px';
+                        imgElement.style.borderRadius = '10px';
+                    }
+
+                    document.getElementById('articles').appendChild(articleDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching articles:', error);
+                // Handle errors here
+            });
+    }
+
+    // Call fetchArticles function when the page loads
+    window.onload = fetchArticles;
+
+
+</script>
 
 <script>
     // checkLogin.js
