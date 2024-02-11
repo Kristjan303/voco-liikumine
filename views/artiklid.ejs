@@ -251,12 +251,14 @@
                 data.forEach(article => {
                     const articleDiv = document.createElement('div');
                     articleDiv.innerHTML = `
+                <p class="article-author">Autor: ${article.articleAuthor}</p>
                 <h2>${article.articleHeader}</h2>
                 <div>${article.summernoteContent}</div>
+                <a href="artiklid/${article.articleHeader}">Loe rohkem →</a>
             `;
 
                     // Find potential image inside the div
-                    const imgElement = articleDiv.querySelector('div > p > img');
+                    const imgElement = articleDiv.querySelector('img');
 
                     // If an image is found, apply the style
                     if (imgElement) {

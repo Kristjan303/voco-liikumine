@@ -45,12 +45,28 @@
     align-items: center;
     width: 300px;
     height: 300px;
-    margin: 20px;
+    margin: 15px;
     border-radius: 10px;
     background-color: #dfdfdf;
     padding: 10px;
     overflow-y: auto;
     overflow-x: hidden;
+
+
+}
+.articles-content div a {
+    color: #2980b9;
+    margin-left: auto;
+    cursor: pointer;
+    margin-right: 10px;
+    padding: 5px;
+}
+.articles-content div .article-author {
+    margin-top: 10px;
+    margin-bottom: 0;
+    font-size: 12px;
+    color: #666;
+    margin-right: auto;
 }
 
 
@@ -123,3 +139,4 @@
 .note-editor {
     width: 100%;
 }
+

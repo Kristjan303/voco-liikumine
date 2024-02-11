@@ -1,21 +1,21 @@
-::-webkit-scrollbar {
+ul::-webkit-scrollbar {
     height: 5px;
 }
 
 /* Track */
-::-webkit-scrollbar-track {
+ul::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
 }
 
 /* Handle */
-::-webkit-scrollbar-thumb {
+ul::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 10px;
 }
 
 /* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
+ul::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
 
@@ -183,7 +183,6 @@ input[type="file"] {
 .gallery-content {
     display: grid;
     margin-bottom: 50px;
-
 }
 
 .gallery-content div {
