@@ -31,10 +31,13 @@
 </header>
 <nav>
     <a href="/" class="nav-logo">
-        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+             x="0px" y="0px"
              viewBox="0 0 412.74 334.7" style="enable-background:new 0 0 412.74 334.7;" xml:space="preserve">
           <style type="text/css">
-              .st0{fill:#FFFFFF;}
+              .st0 {
+                  fill: #FFFFFF;
+              }
           </style>
             <path class="st0" d="M259.98,112.52c0,27.49-22.29,49.78-49.78,49.78c-27.49,0-49.78-22.29-49.78-49.78
               c0-27.49,22.29-49.78,49.78-49.78C237.69,62.74,259.98,85.02,259.98,112.52 M350.92,223.78c0-27.49-22.29-49.78-49.78-49.78
@@ -61,19 +64,261 @@
     </div>
     <div class="search-trenn">
     </div>
-    <main class="training-content">
-    </main>
+</section>
+
+<section class="kalender">
+
+    <% if (userRole === 2 || userRole === 3) { %>
+        <form id="insert-form" onsubmit="submitForm(event)">
+
+            <label for="training_name">Training name</label>
+            <input type="text" id="training_name" name="training_name" required>
+
+            <label for="training_description">Training description</label>
+            <input type="text" id="training_description" name="training_description" required>
+
+            <label for="training_day">Training day</label>
+            <select id="training_day">
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+            </select>
+
+            <label for="training_start-date">From:</label>
+            <input type="time" id="training_start-date" name="training_start-date" step="60">
+
+            <label for="training_end-date">To:</label>
+            <input type="time" id="training_end-date" name="training_end-date" step="60">
+
+            <label for="training_location">Location</label>
+            <select id="training_location">
+                <option value="Kopli">Kopli</option>
+                <option value="Põllu">Põllu</option>
+            </select>
+
+            <button type="submit">Insert Record</button>
+
+        </form>
+
+        <script>
+            function submitForm(event) {
+                event.preventDefault();
+
+                //get session data
+                var sessionToken = sessionStorage.getItem('sessionToken');
+                var userId = sessionStorage.getItem('userId');
+                var email = sessionStorage.getItem('email');
+
+                // Get the form data
+
+                const trainingName = document.getElementById("training_name").value;
+                const trainingDescription = document.getElementById("training_description").value;
+                const trainingDay = document.getElementById("training_day").value;
+                const trainingStartDate = document.getElementById("training_start-date").value;
+                const trainingEndDate = document.getElementById("training_end-date").value;
+                const trainingLocation = document.getElementById("training_location").value;
+
+                //convert training day to number
+                var trainingDayNumber = 0;
+                if (trainingDay === "Monday") {
+                    trainingDayNumber = 1;
+                } else if (trainingDay === "Tuesday") {
+                    trainingDayNumber = 2;
+                } else if (trainingDay === "Wednesday") {
+                    trainingDayNumber = 3;
+                } else if (trainingDay === "Thursday") {
+                    trainingDayNumber = 4;
+                } else if (trainingDay === "Friday") {
+                    trainingDayNumber = 5;
+                }
+
+                // Validate the form data
+                if (!trainingName || !trainingDescription || !trainingStartDate || !trainingEndDate || !trainingLocation) {
+                    alert("Please fill in all fields");
+                    document.getElementById('error-message-container').innerText = 'New article header or summernote content is empty';
+                    return;
+                }
+
+                // Send the form data to the server
+                fetch('/submit-training', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        trainingName,
+                        trainingDescription,
+                        trainingDayNumber,
+                        trainingStartDate,
+                        trainingEndDate,
+                        trainingLocation,
+                        sessionToken,
+                        userId,
+                        email
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert("Record inserted successfully");
+                        } else {
+                            alert("Error inserting record");
+                        }
+                    })
+                    .catch(error => console.error('Error inserting record:', error));
+            }
+        </script>
+    <% } %>
+
+    <!-- Navigation buttons -->
+    <div class="calender-nav">
+        <button id="prev-week">Previous Week</button>
+        <button id="next-week">Next Week</button>
+    </div>
+
+    <div class="calendar">
+        <table>
+            <tbody id="calendar-body">
+            <!-- Calendar rows will be dynamically generated here -->
+            </tbody>
+        </table>
+    </div>
+
+
+    <script>
+        // Define the navigation buttons
+        const prevWeekBtn = document.getElementById("prev-week");
+        const nextWeekBtn = document.getElementById("next-week");
+
+
+        // Define the current week
+        let currentWeek = 0;
+
+        // Get the table body element
+        const calendarBody = document.getElementById("calendar-body");
+
+        // Define the working hours
+        const workingHours = [
+            "08:00", "09:00", "10:00", "11:00", "12:00",
+            "13:00", "14:00", "15:00", "16:00", "17:00",
+            "18:00", "19:00", "20:00", "21:00"
+        ];
+
+        // Function to create calendar rows
+        function createCalendarRows(weekOffset) {
+            // Clear existing rows
+            calendarBody.innerHTML = "";
+
+            const currentDate = new Date();
+            currentDate.setDate(currentDate.getDate() + (weekOffset * 7)); // Adjusting the date based on week offset
+
+            // Find the Monday of the current week
+            const monday = new Date(currentDate);
+            monday.setDate(monday.getDate() - monday.getDay() + 1); // 0: Sunday, 1: Monday, ..., 6: Saturday
+
+            // Create header row for dates
+            const dateRow = document.createElement("tr");
+            dateRow.innerHTML = "<td></td>"; // Empty cell for time
+            for (let i = 0; i < 5; i++) {
+                const dateCell = document.createElement("td");
+                const date = new Date(monday);
+                date.setDate(date.getDate() + i);
+                const options = {weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'};
+                dateCell.textContent = date.toLocaleDateString('EST', options);
+                dateRow.appendChild(dateCell);
+            }
+            calendarBody.appendChild(dateRow);
+
+            // Create rows for each hour
+            workingHours.forEach(hour => {
+                const row = document.createElement("tr");
+                const timeCell = document.createElement("td");
+                timeCell.textContent = hour;
+                row.appendChild(timeCell);
+                for (let i = 0; i < 5; i++) {
+                    const dayCell = document.createElement("td");
+                    // You can add event listeners or content to these cells
+                    row.appendChild(dayCell);
+                }
+                calendarBody.appendChild(row);
+            });
+        }
+
+        // Function to update the calendar for the current week
+        function updateCalendar() {
+            createCalendarRows(currentWeek);
+        }
+
+        // Function to move to the previous week
+        function goToPreviousWeek() {
+            currentWeek--;
+            updateCalendar();
+        }
+
+        // Function to move to the next week
+        function goToNextWeek() {
+            currentWeek++;
+            updateCalendar();
+        }
+
+        // Event listeners for navigation buttons
+        prevWeekBtn.addEventListener("click", goToPreviousWeek);
+        nextWeekBtn.addEventListener("click", goToNextWeek);
+        document.addEventListener('DOMContentLoaded', function () {
+            const insertForm = document.getElementById("insert-form");
+            // Add event listener and other code for the form here
+        });
+        // Call the function to create the calendar rows
+        createCalendarRows(currentWeek);
+
+        // Form functionality to insert text into the calendar
+        const insertForm = document.getElementById("insert-form");
+
+        insertForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const day = document.getElementById("day").value;
+            const time = document.getElementById("time").value;
+            const text = document.getElementById("text").value;
+
+            // Find the index of the day and time in the calendar
+            const dayIndex = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].indexOf(day);
+            const timeIndex = workingHours.indexOf(time);
+
+            console.log(dayIndex);
+            console.log(timeIndex);
+
+            if (dayIndex === -1 || timeIndex === -1) {
+                alert("Invalid day or time.");
+                return;
+            }
+
+            // Get the cell corresponding to the specified day and time
+            const cell = calendarBody.rows[timeIndex + 1].cells[dayIndex + 1];
+
+            // Insert text into the cell
+            cell.textContent = text;
+
+
+        });
+
+
+    </script>
+
 </section>
 
 
-
-
-
 <div class="mapBanner">
-    <a href="https://www.google.com/maps?ll=58.349455,26.714113&amp;z=15&amp;t=m&amp;hl=en-US&amp;gl=EG&amp;mapclient=embed&amp;q=Kopli+1+50115+Tartu+Estonia" target="_blank" class="mapBanner_col" style="background-image: url('https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/map_1.jpg')">
+    <a href="https://www.google.com/maps?ll=58.349455,26.714113&amp;z=15&amp;t=m&amp;hl=en-US&amp;gl=EG&amp;mapclient=embed&amp;q=Kopli+1+50115+Tartu+Estonia"
+       target="_blank" class="mapBanner_col"
+       style="background-image: url('https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/map_1.jpg')">
         Kopli 1
     </a>
-    <a href="https://www.google.com/maps/place/P%C3%B5llu+11,+50303+Tartu,+Estonia/@58.3994611,26.7119631,17.25z/data=!4m13!1m7!3m6!1s0x46eb36f49f59f7b1:0xc60a936ef314737f!2sP%C3%B5llu+11,+50303+Tartu,+Estonia" target="_blank" class="mapBanner_col" style="background-image: url('https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/map_2.jpg')">
+    <a href="https://www.google.com/maps/place/P%C3%B5llu+11,+50303+Tartu,+Estonia/@58.3994611,26.7119631,17.25z/data=!4m13!1m7!3m6!1s0x46eb36f49f59f7b1:0xc60a936ef314737f!2sP%C3%B5llu+11,+50303+Tartu,+Estonia"
+       target="_blank" class="mapBanner_col"
+       style="background-image: url('https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/map_2.jpg')">
         Põllu 11
     </a>
 </div>
@@ -129,6 +374,7 @@
 </footer>
 
 </body>
+
 <script>
     // checkLogin.js
 

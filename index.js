@@ -9,14 +9,15 @@ const uuid = require('uuid');
 const cors = require('cors');
 const fs = require('fs');
 const multer = require('multer');
+const nodemon = require('nodemon');
 
 
 const app = express();
 const port = 3000;
 
 // Increase payload size limit
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb', extended: true}));
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -32,7 +33,6 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }));
-
 
 
 // Serve static files
@@ -52,17 +52,17 @@ const renderFile = (page) => async (req, res) => {
         db.query(userRoleQuery, [userId], (err, results) => {
             if (err) {
                 console.error('Error fetching user role:', err);
-                res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                res.status(500).json({success: false, message: 'Serveripoolne viga!'});
             } else {
                 userRole = results[0].rolli_id;
 
                 // Render the page and pass the userRole to the EJS template
-                res.render(page, { userRole });
+                res.render(page, {userRole});
             }
         });
     } else {
         // Render the page with userRole set to undefined
-        res.render(page, { userRole });
+        res.render(page, {userRole});
     }
 };
 
@@ -81,7 +81,7 @@ app.get('/test', (req, res) => {
     console.log('User session in test route:', req.session.user);
 
     // Send the session information in the response
-    res.json({ session: req.session });
+    res.json({session: req.session});
 });
 
 // Handle the sign-up form submission
@@ -135,12 +135,9 @@ app.post('/signup', async (req, res) => {
 });
 
 
-
-
 const sessions = []; // Object to store active sessions
-
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
     try {
         // Check if username exists
@@ -148,12 +145,12 @@ app.post('/login', async (req, res) => {
         db.query(checkQuery, [email], async (checkErr, checkResults) => {
             if (checkErr) {
                 console.error('Error checking existing username:', checkErr);
-                return res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                return res.status(500).json({success: false, message: 'Serveripoolne viga!'});
             }
 
             if (checkResults.length === 0) {
                 // Username does not exist
-                return res.status(400).json({ success: false, message: 'Emailiga pole registreeritud!' });
+                return res.status(400).json({success: false, message: 'Emailiga pole registreeritud!'});
             }
 
             // Check if password is correct
@@ -166,7 +163,7 @@ app.post('/login', async (req, res) => {
                 db.query(rolliQuery, [user.kasutaja_id], async (rolliErr, rolliResults) => {
                     if (rolliErr) {
                         console.error('Error fetching rolli_id:', rolliErr);
-                        return res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                        return res.status(500).json({success: false, message: 'Serveripoolne viga!'});
                     }
 
                     // Generate a random session token using uuid
@@ -197,12 +194,12 @@ app.post('/login', async (req, res) => {
                     });
                 });
             } else {
-                res.status(400).json({ success: false, message: 'Ebakorrektne parool!' });
+                res.status(400).json({success: false, message: 'Ebakorrektne parool!'});
             }
         });
     } catch (error) {
         console.error('Error comparing passwords:', error);
-        res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+        res.status(500).json({success: false, message: 'Serveripoolne viga!'});
     }
 });
 
@@ -224,10 +221,10 @@ app.get('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
             console.error('Error destroying session:', err);
-            res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+            res.status(500).json({success: false, message: 'Serveripoolne viga!'});
         } else {
             console.log('User logged out successfully');
-            res.json({ success: true, message: 'Kasutaja välja logitud!' });
+            res.json({success: true, message: 'Kasutaja välja logitud!'});
         }
     });
 });
@@ -235,20 +232,20 @@ app.get('/logout', (req, res) => {
 
 //admin view for active-sessions
 app.get('/active-sessions', (req, res) => {
-    res.json({ activeSessions: sessions });
+    res.json({activeSessions: sessions});
     console.log(sessions);
 });
 // get folder from folderform
 
 app.post('/create-directory', (req, res) => {
-    const { newDirectoryName, userId, sessionToken, email } = req.body;
+    const {newDirectoryName, userId, sessionToken, email} = req.body;
 
     // Check if the session exists in the sessions array
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Query to retrieve user's role_id from the database
@@ -256,12 +253,12 @@ app.post('/create-directory', (req, res) => {
     db.query(roleSql, [userId], (roleErr, roleResult) => {
         if (roleErr) {
             console.error('Error fetching user role:', roleErr);
-            return res.status(500).json({ success: false, message: 'Error fetching user role' });
+            return res.status(500).json({success: false, message: 'Error fetching user role'});
         }
 
         if (roleResult.length === 0) {
             console.log('User not found');
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({success: false, message: 'User not found'});
         }
 
         const roleId = roleResult[0].rolli_id;
@@ -269,11 +266,11 @@ app.post('/create-directory', (req, res) => {
         // Check if the user's role_id is not 2 or 3
         if (roleId !== 2 && roleId !== 3) {
             console.log('User does not have appropriate role');
-            return res.status(403).json({ success: false, message: 'User does not have appropriate role' });
+            return res.status(403).json({success: false, message: 'User does not have appropriate role'});
         }
 
         if (!newDirectoryName) {
-            return res.status(400).json({ success: false, message: 'Sisesta kausta nimi!' });
+            return res.status(400).json({success: false, message: 'Sisesta kausta nimi!'});
         }
 
         const newDirectoryPath = path.join(__dirname, 'Galerii', newDirectoryName);
@@ -300,7 +297,7 @@ app.get('/galerii/folders', (req, res) => {
     fs.readdir(galeriiPath, (err, files) => {
         if (err) {
             console.error('Error reading directory:', err);
-            res.status(500).json({ error: 'Internal Server Error' });
+            res.status(500).json({error: 'Internal Server Error'});
             return;
         }
 
@@ -322,18 +319,18 @@ const storage = multer.diskStorage({
     },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({storage: storage});
 
 // Endpoint for uploading files
 app.post('/galerii/upload', upload.array('files'), (req, res) => {
-    const { sessionToken, userId, email } = req.body;
+    const {sessionToken, userId, email} = req.body;
 
     // Check if the session exists in the sessions array
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Query to retrieve user's role_id from the database
@@ -341,12 +338,12 @@ app.post('/galerii/upload', upload.array('files'), (req, res) => {
     db.query(roleSql, [userId], (roleErr, roleResult) => {
         if (roleErr) {
             console.error('Error fetching user role:', roleErr);
-            return res.status(500).json({ success: false, message: 'Error fetching user role' });
+            return res.status(500).json({success: false, message: 'Error fetching user role'});
         }
 
         if (roleResult.length === 0) {
             console.log('User not found');
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({success: false, message: 'User not found'});
         }
 
         const roleId = roleResult[0].rolli_id;
@@ -354,7 +351,7 @@ app.post('/galerii/upload', upload.array('files'), (req, res) => {
         // Check if the user's role_id is not 2 or 3
         if (roleId !== 2 && roleId !== 3) {
             console.log('User does not have appropriate role');
-            return res.status(403).json({ success: false, message: 'User does not have appropriate role' });
+            return res.status(403).json({success: false, message: 'User does not have appropriate role'});
         }
 
         // Retrieve uploaded files and their paths
@@ -378,7 +375,7 @@ app.post('/galerii/upload', upload.array('files'), (req, res) => {
             });
         });
 
-        res.json({ message: 'Files uploaded successfully!' });
+        res.json({message: 'Files uploaded successfully!'});
     });
 });
 
@@ -386,7 +383,7 @@ app.get('/galerii/images', (req, res) => {
     const folder = req.query.folder;
 
     if (!folder) {
-        return res.status(400).json({ success: false, message: 'Kaust pole valitud!' });
+        return res.status(400).json({success: false, message: 'Kaust pole valitud!'});
     }
 
     const folderPath = path.join(__dirname, 'Galerii', folder);
@@ -395,7 +392,7 @@ app.get('/galerii/images', (req, res) => {
     fs.readdir(folderPath, (err, files) => {
         if (err) {
             console.error('Error reading folder:', err);
-            res.status(500).json({ error: 'Internal Server Error' });
+            res.status(500).json({error: 'Internal Server Error'});
             return;
         }
 
@@ -413,24 +410,24 @@ app.get('/galerii/latest-images', (req, res) => {
     db.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching latest images:', err);
-            res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+            res.status(500).json({success: false, message: 'Serveripoolne viga!'});
         } else {
             // Reverse the order of the results to have the newest images first
             const latestImages = results.map(row => `${row.media}`).reverse(); // Reverse the order
-            res.json({ success: true, latestImages });
+            res.json({success: true, latestImages});
         }
     });
 });
 
 app.post('/submit-article', (req, res) => {
-    const { newArticleHeader, summernoteContent, sessionToken, userId, email } = req.body;
+    const {newArticleHeader, summernoteContent, sessionToken, userId, email} = req.body;
 
     // Check if the session exists in the sessions array
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Query to retrieve user's role_id from the database
@@ -438,12 +435,12 @@ app.post('/submit-article', (req, res) => {
     db.query(roleSql, [userId], (roleErr, roleResult) => {
         if (roleErr) {
             console.error('Error fetching user role:', roleErr);
-            return res.status(500).json({ success: false, message: 'Error fetching user role' });
+            return res.status(500).json({success: false, message: 'Error fetching user role'});
         }
 
         if (roleResult.length === 0) {
             console.log('User not found');
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({success: false, message: 'User not found'});
         }
 
         const roleId = roleResult[0].rolli_id;
@@ -451,13 +448,13 @@ app.post('/submit-article', (req, res) => {
         // Check if the user's role_id is not 2 or 3
         if (roleId !== 2 && roleId !== 3) {
             console.log('User does not have appropriate role');
-            return res.status(403).json({ success: false, message: 'User does not have appropriate role' });
+            return res.status(403).json({success: false, message: 'User does not have appropriate role'});
         }
 
         // Check if newArticleHeader or summernoteContent is empty
         if (!newArticleHeader || !summernoteContent) {
             console.log('New article header or summernote content is empty');
-            return res.status(400).json({ success: false, message: 'Uue artikli pealkiri või sisu ei tohi olla tühi!' });
+            return res.status(400).json({success: false, message: 'Uue artikli pealkiri või sisu ei tohi olla tühi!'});
         }
 
         // Insert data into MySQL table
@@ -465,10 +462,10 @@ app.post('/submit-article', (req, res) => {
         db.query(sql, [userId, newArticleHeader, summernoteContent], (err, result) => {
             if (err) {
                 console.error('Error inserting data:', err);
-                res.status(500).json({ success: false, message: 'Error inserting data' });
+                res.status(500).json({success: false, message: 'Error inserting data'});
             } else {
                 console.log('Data inserted successfully');
-                res.status(200).json({ success: true, message: 'Data inserted successfully' });
+                res.status(200).json({success: true, message: 'Data inserted successfully'});
             }
         });
     });
@@ -481,7 +478,7 @@ app.get('/get-articles', (req, res) => {
     db.query(sql, (err, result) => {
         if (err) {
             console.error('Error fetching articles:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching articles' });
+            return res.status(500).json({success: false, message: 'Error fetching articles'});
         }
 
         // Transform the result to include the URLs
@@ -489,7 +486,7 @@ app.get('/get-articles', (req, res) => {
             const articleHeader = article.articleHeader;
             // Create the URL for each article
             const url = `/artiklid/${articleHeader}`;
-            return { ...article, url };
+            return {...article, url};
         });
 
         res.status(200).json(articlesWithUrls);
@@ -505,11 +502,11 @@ app.get('/artiklid/:articleHeader', (req, res) => {
     db.query(sql, [articleHeader], (err, result) => {
         if (err) {
             console.error('Error fetching article content:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching article content' });
+            return res.status(500).json({success: false, message: 'Error fetching article content'});
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ success: false, message: 'Article not found' });
+            return res.status(404).json({success: false, message: 'Article not found'});
         }
 
         const articleContent = result[0].summernoteContent;
@@ -647,6 +644,63 @@ app.get('/artiklid/:articleHeader', (req, res) => {
     });
 });
 
+app.post('/submit-training', (req, res) => {
+    const {trainingName, trainingDescription, trainingDayNumber, trainingStartDate, trainingEndDate, trainingLocation, sessionToken, userId, email} = req.body;
+
+    // Check valid session
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+    console.log(trainingName, trainingDescription ,userId, email, sessionToken)
+
+    console.log(validSession)
+
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({success: false, message: 'Invalid session'});
+    }
+
+    // Query to retrieve user's role_id from the database
+    const roleSql = "SELECT rolli_id FROM vocoliikumine.kasutajad WHERE kasutaja_id = ?";
+    db.query(roleSql, [userId], (roleErr, roleResult) => {
+        if (roleErr) {
+            console.error('Error fetching user role:', roleErr);
+            return res.status(500).json({success: false, message: 'Error fetching user role'});
+        }
+
+        if (roleResult.length === 0) {
+            console.log('User not found');
+            return res.status(404).json({success: false, message: 'User not found'});
+        }
+
+        const roleId = roleResult[0].rolli_id;
+
+        // Check if the user's role_id is not 2 or 3
+        if (roleId !== 2 && roleId !== 3) {
+            console.log('User does not have appropriate role');
+            return res.status(403).json({success: false, message: 'User does not have appropriate role'});
+        }
+
+
+        // Check if all required fields are present in the request body
+        if (!trainingName || !trainingDescription || !trainingStartDate || !trainingEndDate || !trainingLocation) {
+            console.log('Missing required fields');
+            return res.status(400).json({success: false, message: 'Kõik väljad peavad olema täidetud!'});
+        }
+
+
+        // Insert data into MySQL database
+        const query = 'INSERT INTO vocoliikumine.trennid (kasutaja_id, trenni_nimi, trenni_selgitus, trenni_toimumise_päev, trenni_toimumise_algusaeg, trenni_toimumise_lõppaeg, asukoht, trenni_lisamise_kuupäev) VALUES (?, ?, ?, ?, ?, ?,?, NOW())';
+        db.query(query, [userId, trainingName, trainingDescription, trainingDayNumber , trainingStartDate, trainingEndDate, trainingLocation], (err, result) => {
+            if (err) {
+                console.error('Error inserting data:', err);
+                return res.status(500).json({success: false, message: 'Error inserting data'});
+            }
+
+            console.log('Data inserted successfully');
+            res.status(200).json({success: true, message: 'Data inserted successfully'});
+        });
+    });
+});
 
 app.listen(port, () => {
     console.log(`Server is running on port http://localhost:${port}/`);
