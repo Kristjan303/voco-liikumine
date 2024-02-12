@@ -649,9 +649,6 @@ app.post('/submit-training', (req, res) => {
 
     // Check valid session
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
-    console.log(trainingName, trainingDescription ,userId, email, sessionToken)
-
-    console.log(validSession)
 
 
     if (!validSession) {
@@ -699,6 +696,20 @@ app.post('/submit-training', (req, res) => {
             console.log('Data inserted successfully');
             res.status(200).json({success: true, message: 'Data inserted successfully'});
         });
+    });
+});
+
+// Fetch data from the database and send it to the client
+app.get('/getTrainingData', (req, res) => {
+    const query = 'SELECT trenni_nimi AS trainingName, trenni_selgitus AS trainingDescription, trenni_toimumise_päev AS trainingDayNumber, trenni_toimumise_algusaeg AS trainingStartDate, trenni_toimumise_lõppaeg AS trainingEndDate, asukoht AS trainingLocation FROM vocoliikumine.trennid';
+
+    db.query(query, (error, results) => {
+        if (error) {
+            console.error('Error executing query:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        } else {
+            res.json(results);
+        }
     });
 });
 

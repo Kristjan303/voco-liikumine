@@ -102,74 +102,6 @@
 
         </form>
 
-        <script>
-            function submitForm(event) {
-                event.preventDefault();
-
-                //get session data
-                var sessionToken = sessionStorage.getItem('sessionToken');
-                var userId = sessionStorage.getItem('userId');
-                var email = sessionStorage.getItem('email');
-
-                // Get the form data
-
-                const trainingName = document.getElementById("training_name").value;
-                const trainingDescription = document.getElementById("training_description").value;
-                const trainingDay = document.getElementById("training_day").value;
-                const trainingStartDate = document.getElementById("training_start-date").value;
-                const trainingEndDate = document.getElementById("training_end-date").value;
-                const trainingLocation = document.getElementById("training_location").value;
-
-                //convert training day to number
-                var trainingDayNumber = 0;
-                if (trainingDay === "Monday") {
-                    trainingDayNumber = 1;
-                } else if (trainingDay === "Tuesday") {
-                    trainingDayNumber = 2;
-                } else if (trainingDay === "Wednesday") {
-                    trainingDayNumber = 3;
-                } else if (trainingDay === "Thursday") {
-                    trainingDayNumber = 4;
-                } else if (trainingDay === "Friday") {
-                    trainingDayNumber = 5;
-                }
-
-                // Validate the form data
-                if (!trainingName || !trainingDescription || !trainingStartDate || !trainingEndDate || !trainingLocation) {
-                    alert("Please fill in all fields");
-                    document.getElementById('error-message-container').innerText = 'New article header or summernote content is empty';
-                    return;
-                }
-
-                // Send the form data to the server
-                fetch('/submit-training', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        trainingName,
-                        trainingDescription,
-                        trainingDayNumber,
-                        trainingStartDate,
-                        trainingEndDate,
-                        trainingLocation,
-                        sessionToken,
-                        userId,
-                        email
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert("Record inserted successfully");
-                        } else {
-                            alert("Error inserting record");
-                        }
-                    })
-                    .catch(error => console.error('Error inserting record:', error));
-            }
-        </script>
     <% } %>
 
     <!-- Navigation buttons -->
@@ -185,13 +117,10 @@
             </tbody>
         </table>
     </div>
-
-
-    <script>
+        <script>
         // Define the navigation buttons
         const prevWeekBtn = document.getElementById("prev-week");
         const nextWeekBtn = document.getElementById("next-week");
-
 
         // Define the current week
         let currentWeek = 0;
@@ -201,111 +130,104 @@
 
         // Define the working hours
         const workingHours = [
-            "08:00", "09:00", "10:00", "11:00", "12:00",
-            "13:00", "14:00", "15:00", "16:00", "17:00",
-            "18:00", "19:00", "20:00", "21:00"
+        "08:00", "09:00", "10:00", "11:00", "12:00",
+        "13:00", "14:00", "15:00", "16:00", "17:00",
+        "18:00", "19:00", "20:00", "21:00"
         ];
 
-        // Function to create calendar rows
-        function createCalendarRows(weekOffset) {
-            // Clear existing rows
-            calendarBody.innerHTML = "";
+        // Function to create calendar rows and populate with training data
+        function createCalendarRowsAndPopulate(weekOffset, trainingData) {
+        // Clear existing rows
+        calendarBody.innerHTML = "";
 
-            const currentDate = new Date();
-            currentDate.setDate(currentDate.getDate() + (weekOffset * 7)); // Adjusting the date based on week offset
+        const currentDate = new Date();
+        currentDate.setDate(currentDate.getDate() + (weekOffset * 7));
 
-            // Find the Monday of the current week
-            const monday = new Date(currentDate);
-            monday.setDate(monday.getDate() - monday.getDay() + 1); // 0: Sunday, 1: Monday, ..., 6: Saturday
+        const monday = new Date(currentDate);
+        monday.setDate(monday.getDate() - monday.getDay() + 1);
 
-            // Create header row for dates
-            const dateRow = document.createElement("tr");
-            dateRow.innerHTML = "<td></td>"; // Empty cell for time
-            for (let i = 0; i < 5; i++) {
-                const dateCell = document.createElement("td");
-                const date = new Date(monday);
-                date.setDate(date.getDate() + i);
-                const options = {weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'};
-                dateCell.textContent = date.toLocaleDateString('EST', options);
-                dateRow.appendChild(dateCell);
-            }
-            calendarBody.appendChild(dateRow);
+        // Create header row for dates
+        const dateRow = document.createElement("tr");
+        dateRow.innerHTML = "<td></td>";
+        for (let i = 0; i < 5; i++) {
+        const dateCell = document.createElement("td");
+        const date = new Date(monday);
+        date.setDate(date.getDate() + i);
+        const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        dateCell.textContent = date.toLocaleDateString('EST', options);
+        dateRow.appendChild(dateCell);
+        }
+        calendarBody.appendChild(dateRow);
 
-            // Create rows for each hour
-            workingHours.forEach(hour => {
-                const row = document.createElement("tr");
-                const timeCell = document.createElement("td");
-                timeCell.textContent = hour;
-                row.appendChild(timeCell);
-                for (let i = 0; i < 5; i++) {
-                    const dayCell = document.createElement("td");
-                    // You can add event listeners or content to these cells
-                    row.appendChild(dayCell);
-                }
-                calendarBody.appendChild(row);
-            });
+        // Create rows for each hour
+        workingHours.forEach(hour => {
+        const row = document.createElement("tr");
+        const timeCell = document.createElement("td");
+        timeCell.textContent = hour;
+        row.appendChild(timeCell);
+        for (let i = 0; i < 5; i++) {
+        const dayCell = document.createElement("td");
+        row.appendChild(dayCell);
+        }
+        calendarBody.appendChild(row);
+        });
+
+        // Populate the calendar with training data
+        trainingData.forEach(training => {
+        const dayIndex = training.trainingDayNumber - 1;
+        const startTime = training.trainingStartDate.slice(0, 5);
+        const endTime = training.trainingEndDate.slice(0, 5);
+        const startIndex = workingHours.indexOf(startTime);
+        const endIndex = workingHours.indexOf(endTime);
+
+        if (dayIndex >= 0 && dayIndex < 5 && startIndex !== -1 && endIndex !== -1) {
+        for (let i = Math.max(0, startIndex); i <= Math.min(endIndex, workingHours.length - 1); i++) {
+        const row = calendarBody.rows[i + 1];
+        if (row) {
+        const cell = row.cells[dayIndex + 1];
+        if (cell) {
+        cell.textContent += (cell.textContent ? '\n' : '') + training.trainingName + '\n' + training.trainingDescription;
+        } else {
+        console.error(`Cell at dayIndex ${dayIndex + 1} is undefined in row ${i + 1}`);
+        }
+        } else {
+        console.error(`Row at index ${i + 1} is undefined`);
+        }
+        }
+        }
+        });
         }
 
         // Function to update the calendar for the current week
         function updateCalendar() {
-            createCalendarRows(currentWeek);
+        createCalendarRowsAndPopulate(currentWeek, []); // Pass an empty array initially
         }
 
         // Function to move to the previous week
         function goToPreviousWeek() {
-            currentWeek--;
-            updateCalendar();
+        currentWeek--;
+        updateCalendar();
         }
 
         // Function to move to the next week
         function goToNextWeek() {
-            currentWeek++;
-            updateCalendar();
+        currentWeek++;
+        updateCalendar();
         }
 
         // Event listeners for navigation buttons
         prevWeekBtn.addEventListener("click", goToPreviousWeek);
         nextWeekBtn.addEventListener("click", goToNextWeek);
-        document.addEventListener('DOMContentLoaded', function () {
-            const insertForm = document.getElementById("insert-form");
-            // Add event listener and other code for the form here
-        });
-        // Call the function to create the calendar rows
-        createCalendarRows(currentWeek);
 
-        // Form functionality to insert text into the calendar
-        const insertForm = document.getElementById("insert-form");
-
-        insertForm.addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            const day = document.getElementById("day").value;
-            const time = document.getElementById("time").value;
-            const text = document.getElementById("text").value;
-
-            // Find the index of the day and time in the calendar
-            const dayIndex = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].indexOf(day);
-            const timeIndex = workingHours.indexOf(time);
-
-            console.log(dayIndex);
-            console.log(timeIndex);
-
-            if (dayIndex === -1 || timeIndex === -1) {
-                alert("Invalid day or time.");
-                return;
-            }
-
-            // Get the cell corresponding to the specified day and time
-            const cell = calendarBody.rows[timeIndex + 1].cells[dayIndex + 1];
-
-            // Insert text into the cell
-            cell.textContent = text;
-
-
-        });
-
-
-    </script>
+        // Fetch data from the server and populate the calendar on page load
+        fetch('/getTrainingData')
+        .then(response => response.json())
+        .then(data => {
+        createCalendarRowsAndPopulate(currentWeek, data); // Populate with training data
+        // updateCalendar(); // Update the calendar structure after data is available (not needed initially)
+        })
+        .catch(error => console.error('Error fetching data:', error));
+        </script>
 
 </section>
 
@@ -374,6 +296,76 @@
 </footer>
 
 </body>
+
+<script>
+    // submitForm.js
+    function submitForm(event) {
+        event.preventDefault();
+
+        //get session data
+        var sessionToken = sessionStorage.getItem('sessionToken');
+        var userId = sessionStorage.getItem('userId');
+        var email = sessionStorage.getItem('email');
+
+        // Get the form data
+
+        const trainingName = document.getElementById("training_name").value;
+        const trainingDescription = document.getElementById("training_description").value;
+        const trainingDay = document.getElementById("training_day").value;
+        const trainingStartDate = document.getElementById("training_start-date").value;
+        const trainingEndDate = document.getElementById("training_end-date").value;
+        const trainingLocation = document.getElementById("training_location").value;
+
+        //convert training day to number
+        var trainingDayNumber = 0;
+        if (trainingDay === "Monday") {
+            trainingDayNumber = 1;
+        } else if (trainingDay === "Tuesday") {
+            trainingDayNumber = 2;
+        } else if (trainingDay === "Wednesday") {
+            trainingDayNumber = 3;
+        } else if (trainingDay === "Thursday") {
+            trainingDayNumber = 4;
+        } else if (trainingDay === "Friday") {
+            trainingDayNumber = 5;
+        }
+
+        // Validate the form data
+        if (!trainingName || !trainingDescription || !trainingStartDate || !trainingEndDate || !trainingLocation) {
+            alert("Please fill in all fields");
+            document.getElementById('error-message-container').innerText = 'New article header or summernote content is empty';
+            return;
+        }
+
+        // Send the form data to the server
+        fetch('/submit-training', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                trainingName,
+                trainingDescription,
+                trainingDayNumber,
+                trainingStartDate,
+                trainingEndDate,
+                trainingLocation,
+                sessionToken,
+                userId,
+                email
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Record inserted successfully");
+                } else {
+                    alert("Error inserting record");
+                }
+            })
+            .catch(error => console.error('Error inserting record:', error));
+    }
+</script>
 
 <script>
     // checkLogin.js
