@@ -459,18 +459,33 @@ app.post('/submit-article', (req, res) => {
             return res.status(400).json({ success: false, message: 'Uue artikli pealkiri või sisu ei tohi olla tühi!' });
         }
 
+        const headerSql = "SELECT artikli_pealkiri FROM vocoliikumine.artiklid WHERE artikli_pealkiri = ?";
+        db.query(headerSql, [newArticleHeader], (err, headerResult) => {
 
-
-        // Insert data into MySQL table
-        const sql = "INSERT INTO vocoliikumine.artiklid (kasutaja_id, artikli_pealkiri, artikli_sisu, postitamise_kuupäev) VALUES (?, ?, ?, NOW())";
-        db.query(sql, [userId, newArticleHeader, summernoteContent], (err, result) => {
-            if (err) {
-                console.error('Error inserting data:', err);
-                res.status(500).json({ success: false, message: 'Error inserting data' });
+            if (headerResult.length > 0 && newArticleHeader === headerResult[0].artikli_pealkiri) {
+                console.log('Artikkel on juba olemas');
+                return res.status(400).json({ success: false, message: 'Artikkel on juba olemas!' });
             } else {
-                console.log('Data inserted successfully');
-                res.status(200).json({ success: true, message: 'Data inserted successfully' });
+                if (headerResult.length === 0) {
+                    // No matching articles found, proceed with insertion
+                    const sql = "INSERT INTO vocoliikumine.artiklid (kasutaja_id, artikli_pealkiri, artikli_sisu, postitamise_kuupäev) VALUES (?, ?, ?, NOW())";
+                    db.query(sql, [userId, newArticleHeader, summernoteContent], (err, result) => {
+                        if (err) {
+                            console.error('Error inserting data:', err);
+                            res.status(500).json({ success: false, message: 'Error inserting data' });
+                        } else {
+                            console.log('Data inserted successfully');
+                            res.status(200).json({ success: true, message: 'Data inserted successfully' });
+                        }
+                    });
+                } else {
+                    // Article with the same header already exists, return appropriate error message
+                    console.log('Article with the same header already exists');
+                    return res.status(400).json({ success: false, message: 'Artikli pealkiri on juba olemas!' });
+                }
             }
+
+
         });
     });
 });
@@ -555,7 +570,7 @@ userRole: 0            });
 // Endpoint to handle updating Summernote content
 app.post('/update-articles', (req, res) => {
     // Extract content from the request body
-    const { articleHeader, articleContent } = req.body;
+    const { articleHeader, articleContent, editArticleHeader } = req.body;
 
     // SQL query to retrieve the existing content from the database
     const sqlRetrieve = 'SELECT artikli_sisu FROM artiklid WHERE artikli_pealkiri = ?';
@@ -571,15 +586,15 @@ app.post('/update-articles', (req, res) => {
             if (results.length > 0) {
                 const existingContent = results[0].artikli_sisu;
                 // Check if the new content is the same as the existing content
-                if (existingContent === articleContent) {
+                if (existingContent === articleContent && articleHeader === editArticleHeader) {
                     // If content is the same, inform frontend that no changes were made
                     res.json({ success: false, message: 'No changes were made to the article content.' });
                 } else {
                     // SQL query to update the content in the database
-                    const sqlUpdate = 'UPDATE artiklid SET artikli_sisu = ? WHERE artikli_pealkiri = ?';
+                    const sqlUpdate = 'UPDATE artiklid SET artikli_sisu = ?, artikli_pealkiri = ? WHERE artikli_pealkiri = ?';
 
                     // Execute the SQL query to update the content
-                    db.query(sqlUpdate, [articleContent, articleHeader], (error, results, fields) => {
+                    db.query(sqlUpdate, [articleContent, editArticleHeader, articleHeader], (error, results, fields) => {
                         if (error) {
                             // If an error occurs, send an error response
                             console.error('Error updating content:', error);

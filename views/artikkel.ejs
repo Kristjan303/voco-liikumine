@@ -78,6 +78,10 @@
                 </div>
             </div>
 
+            <div id="holdEditHeader" style="display: none">
+                <p>Artikli pealkiri: </p>
+                <input type="text" name="editArticleHeader" id="editArticleHeader"  value="<%= articleHeader %>">
+            </div>
             <div id="summernote" style="display: none;"></div>
 
             <script>
@@ -85,11 +89,15 @@
                     var isSummernoteVisible = false;
                     var summernoteDiv = document.getElementById("summernote");
                     var submitEditButton = document.getElementById("submitEdit");
+                    var editArticleHeader = document.getElementById("editArticleHeader");
+                    var holdEditHeader = document.getElementById("holdEditHeader");
 
                     document.getElementById("edit-article-trigger").addEventListener("click", function() {
                         if (!isSummernoteVisible) {
                             summernoteDiv.style.display = "block";
                             submitEditButton.style.display = ""; // Show the submit button
+                            editArticleHeader.value = "<%= articleHeader %>";
+                            holdEditHeader.style.display = "";
                             $('#summernote').summernote({
                                 tabsize: 2,
                                 height: 200,
@@ -109,6 +117,8 @@
                             summernoteDiv.style.display = "none";
                             submitEditButton.style.display = "none"; // Hide the submit button
                             // Destroy Summernote instance
+                            holdEditHeader.style.display = "none";
+                            editArticleHeader.value = "";
                             $('#summernote').summernote('destroy');
                         }
 
@@ -121,7 +131,8 @@
                         var articleContent = $('#summernote').summernote('code');
                         var data = {
                             articleHeader: articleHeader,
-                            articleContent: articleContent
+                            articleContent: articleContent,
+                            editArticleHeader: editArticleHeader.value
                         };
 
                         // Send a POST request to the backend endpoint to update the article content
@@ -137,7 +148,7 @@
                                 if (data.success) {
                                     // Alert the user upon successful update
                                     alert('Artikli sisu edukalt uuendatud!');
-                                    // Optionally, you can provide additional feedback to the user or perform other actions
+                                    window.location.href = '/artiklid/' + editArticleHeader.value;
                                 } else {
                                     if (data.message === 'No changes were made to the article content.') {
                                         // Alert the user that no changes were made

@@ -32,6 +32,9 @@ body {
     align-items: center;     border: 1px solid #cbcbcb;
 
 }
+.wrappedContent img {
+    max-width: 750px;
+}
 
 .articleHeader {
     font-size: xxx-large; font-weight: bold; margin-bottom: 20px;
@@ -66,6 +69,7 @@ body {
     user-select: none;
     min-width: 70px;
     transition: 0.2s;
+    padding: 5px;
 }
 
 
@@ -91,5 +95,29 @@ body {
     margin-left: 10px
 }
 
-.submit-edit-article {
+.submit-edit-article:hover {
+    color: #000000;
+    text-decoration: underline;
+}
+#editArticleHeader {
+    min-width: 500px;
+    padding: 10px 2px;
+    border-radius: 5px;
+    border-style: none;
+    background-color: #dddddd;
+}
+#editArticleHeader:focus {
+    outline: none;
+}
+#holdEditHeader {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 10px;
+    align-items: center;
+}
+#holdEditHeader p {
+    margin-right: 10px;
+    margin-bottom: 0;
+    margin-top: 0;
+    font-weight: bold;
 }
