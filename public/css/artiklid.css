@@ -69,6 +69,12 @@
     margin-right: auto;
 }
 
+.articles-content div .article-date {
+    font-size: 10px;
+    color: #666;
+    margin-right: auto;
+}
+
 
 .editor-container {
     width: 500px;

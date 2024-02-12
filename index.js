@@ -41,9 +41,7 @@ app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
 app.use('/galerii', express.static(path.join(__dirname, 'Galerii')));
 
 
-const renderFile = (page) => async (req, res) => {
-    let userRole;
-
+const renderFile = (page, userRole) => async (req, res) => {
     // Check if the user is logged in
     if (req.session.user) {
         const userId = req.session.user.userId;
@@ -54,7 +52,7 @@ const renderFile = (page) => async (req, res) => {
                 console.error('Error fetching user role:', err);
                 res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
             } else {
-                userRole = results[0].rolli_id;
+                const userRole = results[0].rolli_id;
 
                 // Render the page and pass the userRole to the EJS template
                 res.render(page, { userRole });
@@ -65,6 +63,7 @@ const renderFile = (page) => async (req, res) => {
         res.render(page, { userRole });
     }
 };
+
 
 app.get('/', renderFile('index'));
 app.get('/galerii', renderFile('galerii'));
@@ -460,6 +459,8 @@ app.post('/submit-article', (req, res) => {
             return res.status(400).json({ success: false, message: 'Uue artikli pealkiri või sisu ei tohi olla tühi!' });
         }
 
+
+
         // Insert data into MySQL table
         const sql = "INSERT INTO vocoliikumine.artiklid (kasutaja_id, artikli_pealkiri, artikli_sisu, postitamise_kuupäev) VALUES (?, ?, ?, NOW())";
         db.query(sql, [userId, newArticleHeader, summernoteContent], (err, result) => {
@@ -475,9 +476,9 @@ app.post('/submit-article', (req, res) => {
 });
 
 // Add an endpoint to fetch articles
-app.get('/get-articles', (req, res) => {
+app.get('/get-articles',  (req, res) => {
     // Query to retrieve articles from the database
-    const sql = "SELECT a.artikli_pealkiri AS articleHeader, a.artikli_sisu AS summernoteContent, k.kasutajanimi AS articleAuthor FROM vocoliikumine.artiklid a JOIN vocoliikumine.kasutajad k ON a.kasutaja_id = k.kasutaja_id";
+    const sql = "SELECT a.artikli_pealkiri AS articleHeader, a.artikli_sisu AS summernoteContent, k.kasutajanimi AS articleAuthor, DATE_FORMAT(a.postitamise_kuupäev, '%d-%m-%Y') as articleDate FROM vocoliikumine.artiklid a JOIN vocoliikumine.kasutajad k ON a.kasutaja_id = k.kasutaja_id";
     db.query(sql, (err, result) => {
         if (err) {
             console.error('Error fetching articles:', err);
@@ -501,7 +502,7 @@ app.get('/artiklid/:articleHeader', (req, res) => {
     const articleHeader = req.params.articleHeader;
 
     // Query to retrieve a specific article content based on the header
-    const sql = "SELECT a.artikli_sisu AS summernoteContent, k.kasutajanimi AS articleAuthor FROM vocoliikumine.artiklid a JOIN vocoliikumine.kasutajad k ON a.kasutaja_id = k.kasutaja_id WHERE a.artikli_pealkiri = ?";
+    const sql = "SELECT a.artikli_sisu AS summernoteContent, k.kasutajanimi AS articleAuthor, DATE_FORMAT(a.postitamise_kuupäev, '%d-%m-%Y') AS articleDate FROM vocoliikumine.artiklid a JOIN vocoliikumine.kasutajad k ON a.kasutaja_id = k.kasutaja_id WHERE a.artikli_pealkiri = ?";
     db.query(sql, [articleHeader], (err, result) => {
         if (err) {
             console.error('Error fetching article content:', err);
@@ -514,138 +515,90 @@ app.get('/artiklid/:articleHeader', (req, res) => {
 
         const articleContent = result[0].summernoteContent;
         const articleAuthor = result[0].articleAuthor;
+        const articleDate = result[0].articleDate;
+
         const wrappedContent = `<div class="wrappedContent"><p class="articleHeader">${articleHeader}</p> <div class="hold-article">${articleContent}</div></p>`;
-        res.status(200).send(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Artiklid 📑 | ${articleHeader}</title>
-                <link rel="stylesheet" href="../css/artiklid_html.css">
-                <link rel="stylesheet" href="../css/index.css">
-                <link rel="stylesheet" href="../css/artiklid.css">
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
-            </head>
-            <body>
-                <header>
-                    <div class="header-links">
-                        <a href="https://www.facebook.com/tartuvoco/">
-                            <i class="fa-brands fa-square-facebook fa-xl" style="color: #000000;"></i>
-                        </a>
-                        <a href="https://www.tiktok.com/@tartuvoco?lang=en">
-                            <i class="fa-brands fa-tiktok fa-xl" style="color: #000000;"></i>
-                        </a>
-                        <a href="https://www.instagram.com/tartuvoco/?hl=en">
-                            <i class="fa-brands fa-instagram fa-xl" style="color: #000000;"></i>
-                        </a>
-                    </div>
-                    <div class="header-search">
-                        <input type="text" placeholder="Otsi...">
-                        <button type="submit">
-                            <i class="fa-solid fa-search fa-lg" style="color: #000000;"></i>
-                        </button>
-                        <a id="siseneButton" class="sisene" href="/sisene">Sisene</a>
-                    </div>
-                </header>
-                <nav>
-                    <a href="/" class="nav-logo">
-                        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-                             viewBox="0 0 412.74 334.7" style="enable-background:new 0 0 412.74 334.7;" xml:space="preserve">
-                          <style type="text/css">
-                              .st0{fill:#FFFFFF;}
-                          </style>
-                            <path class="st0" d="M259.98,112.52c0,27.49-22.29,49.78-49.78,49.78c-27.49,0-49.78-22.29-49.78-49.78
-                              c0-27.49,22.29-49.78,49.78-49.78C237.69,62.74,259.98,85.02,259.98,112.52 M350.92,223.78c0-27.49-22.29-49.78-49.78-49.78
-                              s-49.78,22.29-49.78,49.78c0,27.49,22.29,49.78,49.78,49.78S350.92,251.27,350.92,223.78 M214.48,223.92l35.27-35.27
-                              c-9.01-9.05-21.49-14.65-35.27-14.65c-27.49,0-49.78,22.29-49.78,49.78s22.29,49.78,49.78,49.78c13.71,0,26.13-5.54,35.13-14.51
-                              L214.48,223.92z M60.31,67.73l52.2,90.51l52.2-90.51H60.31z"/>
-                        </svg>
-                    </a>
-                    <div class="nav-links">
-                        <a style="color: #2980b9" href="artiklid">Artiklid</a>
-                        <a href="../uudised">Uudised</a>
-                        <a href="../foorum">Foorum</a>
-                        <a href="../treeningud">Treeningud</a>
-                        <a href="../galerii">Galerii</a>
-                    </div>
-                </nav>
-                <section class="artiklid">
-                    <div class="section-nav">
-                        <div class="path">
-                            <p><a href="/">Avaleht</a> > <a href="/artiklid">Artiklid</a> > <span>"${articleHeader}"</span></p>
-                        </div>
-                        <h1>Artiklid - <span style="font-weight: lighter">"${articleHeader}"</span></h1>
-                    </div>
-                                   <main class="article">
-                                   <p class="articleAuthor">Autor: ${articleAuthor}</p>
-                   ${wrappedContent}
-               </main>
-                </section>
-            
-            <div class="mapBanner">
-            <a href="https://www.google.com/maps?ll=58.349455,26.714113&amp;z=15&amp;t=m&amp;hl=en-US&amp;gl=EG&amp;mapclient=embed&amp;q=Kopli+1+50115+Tartu+Estonia" target="_blank" class="mapBanner_col" style="background-image: url('https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/map_1.jpg')">
-            Kopli 1
-            </a>
-            <a href="https://www.google.com/maps/place/P%C3%B5llu+11,+50303+Tartu,+Estonia/@58.3994611,26.7119631,17.25z/data=!4m13!1m7!3m6!1s0x46eb36f49f59f7b1:0xc60a936ef314737f!2sP%C3%B5llu+11,+50303+Tartu,+Estonia" target="_blank" class="mapBanner_col" style="background-image: url('https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/map_2.jpg')">
-            Põllu 11
-            </a>
-            </div>
-            
-            <footer class="footer">
-            <div class="container container-footer">
-            <div class="footer_content">
-                <div class="footer_logoCol">
-                    <a href="https://liikumine.voco.ee/" class="footer_logo">
-                        <img src="https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/VOCO.svg"
-                             alt="VOCO Liikumine" class="footer_logoImg">
-                    </a>
-                </div>
-                <div class="footer_mainCol">
-                    <div class="footer_grid">
-                        <div class="footer_col">
-                            <h3 class="footer_title">
-                                Kontakt
-                            </h3>
-                            <div class="footer_text">
-                                <p><a href="mailto:info@voco.ee">info@voco.ee</a></p>
-                                <p>7 361 810</p>
-            
-                            </div>
-                        </div>
-                        <div class="footer_col">
-                            <h3 class="footer_title">
-                                VOCO
-                            </h3>
-                            <div class="footer_text">
-                                <p>Kopli 1</p>
-                                <p>Tartu 50115 Eesti</p>
-            
-                            </div>
-                        </div>
-                        <div class="footer_col">
-                            <h3 class="footer_title">
-                                Privaatsustingimused
-                            </h3>
-                            <div class="footer_text">
-                                <p><a href="#">Andmekaitse</a></p>
-                                <p><a href="#">Küpsised</a></p>
-            
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            </div>
-            <div class="footer_bottom">
-            © Tartu rakenduslik kolledž 2024
-            </div>
-            </footer>
-            </body>
-            </html>
-        `);
+
+        // Check if the user is logged in
+        if (req.session.user) {
+            const userId = req.session.user.userId;
+            const userRoleQuery = 'SELECT rolli_id FROM kasutajad WHERE kasutaja_id = ?';
+
+            db.query(userRoleQuery, [userId], (err, results) => {
+                if (err) {
+                    console.error('Error fetching user role:', err);
+                    res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                } else {
+                    const userRole = results[0].rolli_id;
+                    res.render('artikkel', {
+                        articleHeader: articleHeader,
+                        articleAuthor: articleAuthor,
+                        articleDate: articleDate,
+                        wrappedContent: wrappedContent,
+                        articleContent: articleContent,
+                        userRole: userRole
+                    });
+                }
+            });
+        } else {
+            // User not logged in; render without userRole
+            res.render('artikkel', {
+                articleHeader: articleHeader,
+                articleAuthor: articleAuthor,
+                articleDate: articleDate,
+                wrappedContent: wrappedContent,
+userRole: 0            });
+        }
     });
 });
+
+// Endpoint to handle updating Summernote content
+app.post('/update-articles', (req, res) => {
+    // Extract content from the request body
+    const { articleHeader, articleContent } = req.body;
+
+    // SQL query to retrieve the existing content from the database
+    const sqlRetrieve = 'SELECT artikli_sisu FROM artiklid WHERE artikli_pealkiri = ?';
+
+    // Execute the SQL query to retrieve existing content
+    db.query(sqlRetrieve, [articleHeader], (error, results, fields) => {
+        if (error) {
+            // If an error occurs, send an error response
+            console.error('Error retrieving existing content:', error);
+            res.status(500).json({ error: 'An error occurred while retrieving existing content.' });
+        } else {
+            // If retrieval was successful
+            if (results.length > 0) {
+                const existingContent = results[0].artikli_sisu;
+                // Check if the new content is the same as the existing content
+                if (existingContent === articleContent) {
+                    // If content is the same, inform frontend that no changes were made
+                    res.json({ success: false, message: 'No changes were made to the article content.' });
+                } else {
+                    // SQL query to update the content in the database
+                    const sqlUpdate = 'UPDATE artiklid SET artikli_sisu = ? WHERE artikli_pealkiri = ?';
+
+                    // Execute the SQL query to update the content
+                    db.query(sqlUpdate, [articleContent, articleHeader], (error, results, fields) => {
+                        if (error) {
+                            // If an error occurs, send an error response
+                            console.error('Error updating content:', error);
+                            res.status(500).json({ error: 'An error occurred while updating content.' });
+                        } else {
+                            // If the update was successful, send a success response
+                            console.log('Content updated successfully.');
+                            res.json({ success: true });
+                        }
+                    });
+                }
+            } else {
+                // If no existing content found, send an error response
+                res.status(404).json({ error: 'No existing content found for the provided article header.' });
+            }
+        }
+    });
+});
+
 
 
 app.listen(port, () => {

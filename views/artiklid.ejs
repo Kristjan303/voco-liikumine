@@ -85,7 +85,7 @@
             $('#summernote').summernote({
                 placeholder: 'Artikli sisu...',
                 tabsize: 2,
-                height: 120,
+                height: 200,
                 toolbar: [
                     ['style', ['style']],
                     ['font', ['bold', 'underline', 'clear']],
@@ -252,6 +252,7 @@
                     const articleDiv = document.createElement('div');
                     articleDiv.innerHTML = `
                 <p class="article-author">Autor: ${article.articleAuthor}</p>
+                <p class="article-date">${article.articleDate}</p>
                 <h2>${article.articleHeader}</h2>
                 <div>${article.summernoteContent}</div>
                 <a href="artiklid/${article.articleHeader}">Loe rohkem →</a>

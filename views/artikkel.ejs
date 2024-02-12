@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artiklid 📑 | <%= articleHeader %></title>
+    <link rel="stylesheet" href="../css/artiklid_html.css">
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/artiklid.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+</head>
+<body>
+<header>
+    <div class="header-links">
+        <a href="https://www.facebook.com/tartuvoco/">
+            <i class="fa-brands fa-square-facebook fa-xl" style="color: #000000;"></i>
+        </a>
+        <a href="https://www.tiktok.com/@tartuvoco?lang=en">
+            <i class="fa-brands fa-tiktok fa-xl" style="color: #000000;"></i>
+        </a>
+        <a href="https://www.instagram.com/tartuvoco/?hl=en">
+            <i class="fa-brands fa-instagram fa-xl" style="color: #000000;"></i>
+        </a>
+    </div>
+    <div class="header-search">
+        <input type="text" placeholder="Otsi...">
+        <button type="submit">
+            <i class="fa-solid fa-search fa-lg" style="color: #000000;"></i>
+        </button>
+        <a id="siseneButton" class="sisene" href="/sisene">Sisene</a>
+    </div>
+</header>
+<nav>
+    <a href="/" class="nav-logo">
+        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+             viewBox="0 0 412.74 334.7" style="enable-background:new 0 0 412.74 334.7;" xml:space="preserve">
+                          <style type="text/css">
+                              .st0{fill:#FFFFFF;}
+                          </style>
+            <path class="st0" d="M259.98,112.52c0,27.49-22.29,49.78-49.78,49.78c-27.49,0-49.78-22.29-49.78-49.78
+                              c0-27.49,22.29-49.78,49.78-49.78C237.69,62.74,259.98,85.02,259.98,112.52 M350.92,223.78c0-27.49-22.29-49.78-49.78-49.78
+                              s-49.78,22.29-49.78,49.78c0,27.49,22.29,49.78,49.78,49.78S350.92,251.27,350.92,223.78 M214.48,223.92l35.27-35.27
+                              c-9.01-9.05-21.49-14.65-35.27-14.65c-27.49,0-49.78,22.29-49.78,49.78s22.29,49.78,49.78,49.78c13.71,0,26.13-5.54,35.13-14.51
+                              L214.48,223.92z M60.31,67.73l52.2,90.51l52.2-90.51H60.31z"/>
+                        </svg>
+    </a>
+    <div class="nav-links">
+        <a style="color: #2980b9" href="../artiklid">Artiklid</a>
+        <a href="../uudised">Uudised</a>
+        <a href="../foorum">Foorum</a>
+        <a href="../treeningud">Treeningud</a>
+        <a href="../galerii">Galerii</a>
+    </div>
+</nav>
+<section class="artiklid">
+    <div class="section-nav">
+        <div class="path">
+            <p><a href="/">Avaleht</a> > <a href="/artiklid">Artiklid</a> > <span>"<%= articleHeader %>"</span></p>
+        </div>
+        <h1>Artiklid - <span style="font-weight: lighter"><%= articleHeader %></span></h1>
+    </div>
+    <main class="article">
+        <p class="articleAuthor">Autor: <%= articleAuthor %></p>
+        <p class="articleDate"><%= articleDate %></p>
+
+
+        <% if (userRole === 2 || userRole === 3) { %>
+
+            <div class="hold-edit">
+                <div class="edit-article" id="edit-article-trigger">
+                    <i class="fa-solid fa-file-pen fa-lg"></i> <p> Muuda</p>
+                </div>
+                <div class="submit-edit-article" id="submitEdit" style="display: none;">
+                    <i class="fa-solid fa-file-import fa-lg"></i> <p> Salvesta muudatused</p>
+                </div>
+            </div>
+
+            <div id="summernote" style="display: none;"></div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var isSummernoteVisible = false;
+                    var summernoteDiv = document.getElementById("summernote");
+                    var submitEditButton = document.getElementById("submitEdit");
+
+                    document.getElementById("edit-article-trigger").addEventListener("click", function() {
+                        if (!isSummernoteVisible) {
+                            summernoteDiv.style.display = "block";
+                            submitEditButton.style.display = ""; // Show the submit button
+                            $('#summernote').summernote({
+                                tabsize: 2,
+                                height: 200,
+                                toolbar: [
+                                    ['style', ['style']],
+                                    ['font', ['bold', 'underline', 'clear']],
+                                    ['color', ['color']],
+                                    ['para', ['ul', 'ol', 'paragraph']],
+                                    ['table', ['table']],
+                                    ['insert', ['link', 'picture']],
+                                    ['view', ['help']]
+                                ]
+                            });
+                            $('#summernote').summernote('code', `<%- articleContent %>`);
+                        } else {
+                            $('#summernote').summernote('code', ''); // Clear Summernote content
+                            summernoteDiv.style.display = "none";
+                            submitEditButton.style.display = "none"; // Hide the submit button
+                            // Destroy Summernote instance
+                            $('#summernote').summernote('destroy');
+                        }
+
+                        isSummernoteVisible = !isSummernoteVisible;
+                    });
+
+                    // Add event listener for submit button
+                    submitEditButton.addEventListener("click", function() {
+                        var articleHeader = "<%= articleHeader %>";
+                        var articleContent = $('#summernote').summernote('code');
+                        var data = {
+                            articleHeader: articleHeader,
+                            articleContent: articleContent
+                        };
+
+                        // Send a POST request to the backend endpoint to update the article content
+                        fetch('/update-articles', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Alert the user upon successful update
+                                    alert('Artikli sisu edukalt uuendatud!');
+                                    // Optionally, you can provide additional feedback to the user or perform other actions
+                                } else {
+                                    if (data.message === 'No changes were made to the article content.') {
+                                        // Alert the user that no changes were made
+                                        alert('Muudatusi pole tehtud!');
+                                    } else {
+                                        console.error('Error updating article content:', data.error);
+                                        // Handle other error scenarios appropriately
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error updating article content:', error);
+                                // Handle the error scenario appropriately
+                            });
+                    });
+                });
+            </script>
+
+
+        <% } %>
+
+
+        <%- wrappedContent %>
+    </main>
+</section>
+
+<div class="mapBanner">
+    <a href="https://www.google.com/maps?ll=58.349455,26.714113&amp;z=15&amp;t=m&amp;hl=en-US&amp;gl=EG&amp;mapclient=embed&amp;q=Kopli+1+50115+Tartu+Estonia" target="_blank" class="mapBanner_col" style="background-image: url('https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/map_1.jpg')">
+        Kopli 1
+    </a>
+    <a href="https://www.google.com/maps/place/P%C3%B5llu+11,+50303+Tartu,+Estonia/@58.3994611,26.7119631,17.25z/data=!4m13!1m7!3m6!1s0x46eb36f49f59f7b1:0xc60a936ef314737f!2sP%C3%B5llu+11,+50303+Tartu,+Estonia" target="_blank" class="mapBanner_col" style="background-image: url('https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/map_2.jpg')">
+        Põllu 11
+    </a>
+</div>
+
+<footer class="footer">
+    <div class="container container-footer">
+        <div class="footer_content">
+            <div class="footer_logoCol">
+                <a href="https://liikumine.voco.ee/" class="footer_logo">
+                    <img src="https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/VOCO.svg"
+                         alt="VOCO Liikumine" class="footer_logoImg">
+                </a>
+            </div>
+            <div class="footer_mainCol">
+                <div class="footer_grid">
+                    <div class="footer_col">
+                        <h3 class="footer_title">
+                            Kontakt
+                        </h3>
+                        <div class="footer_text">
+                            <p><a href="mailto:info@voco.ee">info@voco.ee</a></p>
+                            <p>7 361 810</p>
+
+                        </div>
+                    </div>
+                    <div class="footer_col">
+                        <h3 class="footer_title">
+                            VOCO
+                        </h3>
+                        <div class="footer_text">
+                            <p>Kopli 1</p>
+                            <p>Tartu 50115 Eesti</p>
+
+                        </div>
+                    </div>
+                    <div class="footer_col">
+                        <h3 class="footer_title">
+                            Privaatsustingimused
+                        </h3>
+                        <div class="footer_text">
+                            <p><a href="#">Andmekaitse</a></p>
+                            <p><a href="#">Küpsised</a></p>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer_bottom">
+        © Tartu rakenduslik kolledž 2024
+    </div>
+</footer>
+</body>
+
+
+<script>
+    // checkLogin.js
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const siseneButton = document.getElementById('siseneButton');
+
+        // Check if the user is logged in by making a request to the server
+        fetch('/test')
+            .then(response => response.json())
+            .then(data => {
+                const isLoggedIn = data.session && data.session.user !== undefined && data.session.user !== null;
+
+                // Update the button text based on the user's login status
+                siseneButton.innerText = isLoggedIn ? 'Välju' : 'Sisene';
+
+                // Add a click event listener to the button
+                siseneButton.addEventListener('click', function () {
+                    if (isLoggedIn) {
+                        // If logged in, make a request to the server to log out
+                        fetch('/logout')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // If logout successful, reload the page to reflect the changes
+                                    location.reload();
+                                } else {
+                                    console.error('Error logging out:', data.message);
+                                }
+                            })
+                            .catch(error => console.error('Error logging out:', error));
+                    } else {
+                        // Handle the logic for navigating to the login page or any other actions
+                        // Redirect to the login page, for example:
+                        localStorage.clear();
+                        window.location.href = '/sisene';
+                    }
+                });
+            })
+            .catch(error => console.error('Error checking login status:', error));
+    });
+
+</script>
+
+
+</html>
