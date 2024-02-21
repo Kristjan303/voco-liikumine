@@ -493,7 +493,7 @@ app.post('/submit-article', (req, res) => {
 // Add an endpoint to fetch articles
 app.get('/get-articles',  (req, res) => {
     // Query to retrieve articles from the database
-    const sql = "SELECT a.artikli_pealkiri AS articleHeader, a.artikli_sisu AS summernoteContent, k.kasutajanimi AS articleAuthor, DATE_FORMAT(a.postitamise_kuupäev, '%d-%m-%Y') as articleDate FROM vocoliikumine.artiklid a JOIN vocoliikumine.kasutajad k ON a.kasutaja_id = k.kasutaja_id";
+    const sql = "SELECT a.artikli_pealkiri AS articleHeader, a.artikli_sisu AS summernoteContent, k.kasutajanimi AS articleAuthor, DATE_FORMAT(a.postitamise_kuupäev, '%d-%m-%Y') as articleDate FROM vocoliikumine.artiklid a JOIN vocoliikumine.kasutajad k ON a.kasutaja_id = k.kasutaja_id ORDER BY a.postitamise_kuupäev DESC";
     db.query(sql, (err, result) => {
         if (err) {
             console.error('Error fetching articles:', err);

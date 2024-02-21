@@ -26,8 +26,8 @@
         </a>
     </div>
     <div class="header-search">
-        <input type="text" placeholder="Otsi...">
-        <button type="submit">
+        <input type="text" id="searchInput" placeholder="Otsi...">
+        <button type="button" onclick="searchArticles()">
             <i class="fa-solid fa-search fa-lg" style="color: #000000;"></i>
         </button>
         <a id="siseneButton" class="sisene" href="/sisene">Sisene</a>
@@ -61,11 +61,12 @@
             <p><a href="/">Avaleht</a> > <span>Artiklid</span></p>
         </div>
         <h1>Artiklid</h1>
+            <button class="order-btn" id="orderButton" onclick="toggleOrder()">Vanimad <i class="fa-solid fa-arrow-down fa-sm"></i> </button>
 
 
         <% if (userRole === 2 || userRole === 3) { %>
 
-        <h2>Lisa uus artikkel</h2>
+        →<h2>Lisa uus artikkel</h2>
 
         <div class="new-article">
             <form id="createArticle" onsubmit="submitForm(event)">
@@ -80,23 +81,36 @@
 
 
 
-        <div id="summernote"></div>
-        <script>
-            $('#summernote').summernote({
-                placeholder: 'Artikli sisu...',
-                tabsize: 2,
-                height: 200,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'clear']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture']],
-                    ['view', ['help']]
-                ]
-            });
-        </script>
+            <div id="summernote"></div>
+            <script>
+                $('#summernote').summernote({
+                    placeholder: 'Artikli sisu...',
+                    tabsize: 2,
+                    height: 200,
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'underline', 'clear']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['insert', ['link', 'picture']],
+                        ['view', ['help']]
+                    ],
+                    callbacks: {
+                        onPaste: function (e) {
+                            // Prevent the default paste behavior
+                            e.preventDefault();
+
+                            // Get the pasted content
+                            var pastedContent = (e.originalEvent.clipboardData || window.clipboardData).getData('text/plain');
+
+                            // Insert the plain text into the editor
+                            document.execCommand('insertText', false, pastedContent);
+                        }
+                    }
+                });
+            </script>
+
 
         <% } %>
 
@@ -241,6 +255,83 @@
 <% } %>
 
 <script>
+    function searchArticles() {
+        const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
+        const articlePreviews = document.querySelectorAll('.article-preview');
+
+        articlePreviews.forEach(articlePreview => {
+            const articleText = articlePreview.textContent.toLowerCase().trim();
+            const h2Element = articlePreview.querySelector('h2');
+            const summernoteContentElement = articlePreview.querySelector('.summernote-content');
+            const authorElement = articlePreview.querySelector('.article-author');
+            const articleDateElement = articlePreview.querySelector('.article-date');
+
+            if (articleText.includes(searchInput) ||
+                (h2Element && h2Element.textContent.toLowerCase().includes(searchInput)) ||
+                (authorElement && authorElement.textContent.toLowerCase().includes(searchInput)) ||
+                (articleDateElement && articleDateElement.textContent.toLowerCase().includes(searchInput)) ||
+                (summernoteContentElement && summernoteContentElement.textContent.toLowerCase().includes(searchInput))) {
+                articlePreview.style.display = '';
+            } else {
+                articlePreview.style.display = 'none';
+            }
+        });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', searchArticles);
+
+
+</script>
+
+<script>
+
+    let isOldest = true;
+
+    function toggleOrder() {
+        if (isOldest) {
+            orderArticlesByLatest();
+            document.getElementById('orderButton').innerHTML = 'Uusimad <i class="fa-solid fa-arrow-up fa-sm"></i>';
+        } else {
+            orderArticlesByOldest();
+            document.getElementById('orderButton').innerHTML = 'Vanimad <i class="fa-solid fa-arrow-down fa-sm"></i>';
+        }
+        isOldest = !isOldest;
+    }
+
+    function orderArticlesByLatest() {
+        const articles = Array.from(document.querySelectorAll('.article-preview'));
+        const articlesContainer = document.getElementById('articles');
+
+        articles.reverse(); // Reverse the order of articles
+
+        articles.forEach(article => articlesContainer.appendChild(article));
+
+        if (document.getElementById('orderButton').innerText = 'Vanimad') {
+            document.getElementById('orderButton').innerText = 'Uusimad';
+        } else {
+            document.getElementById('orderButton').innerText = 'Vanimad';
+        }
+    }
+
+    function orderArticlesByOldest() {
+        const articles = Array.from(document.querySelectorAll('.article-preview'));
+        const articlesContainer = document.getElementById('articles');
+
+        articles.reverse(); // Reverse the order of articles
+
+        articles.forEach(article => articlesContainer.appendChild(article));
+
+        if (document.getElementById('orderButton').innerText = 'Uusimad') {
+            document.getElementById('orderButton').innerText = 'Vanimad';
+        } else {
+            document.getElementById('orderButton').innerText = 'Uusimad';
+        }
+    }
+
+</script>
+
+
+<script>
     // Function to fetch articles from the server
     function fetchArticles() {
         fetch('/get-articles')
@@ -252,6 +343,7 @@
                 // Loop through fetched articles and append them to the main element
                 data.forEach(article => {
                     const articleDiv = document.createElement('div');
+                    articleDiv.classList.add('article-preview');
                     articleDiv.innerHTML = `
                 <p class="article-author">Autor: ${article.articleAuthor}</p>
                 <p class="article-date">${article.articleDate}</p>
@@ -282,6 +374,7 @@
 
     // Call fetchArticles function when the page loads
     window.onload = fetchArticles;
+
 
 
 </script>
