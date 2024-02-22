@@ -26,7 +26,7 @@
         </a>
     </div>
     <div class="header-search">
-        <input type="text" id="searchInput" placeholder="Otsi...">
+        <input type="text" id="searchInput" placeholder="Otsi artiklite seast...">
         <button type="button" onclick="searchArticles()">
             <i class="fa-solid fa-search fa-lg" style="color: #000000;"></i>
         </button>
@@ -61,12 +61,17 @@
             <p><a href="/">Avaleht</a> > <span>Artiklid</span></p>
         </div>
         <h1>Artiklid</h1>
+        <section class="hold-filter">
             <button class="order-btn" id="orderButton" onclick="toggleOrder()">Vanimad <i class="fa-solid fa-arrow-down fa-sm"></i> </button>
+            <select id="yearDropdown">
+                <option value="" selected>Vali aasta</option>
+            </select>
+        </section>
 
 
         <% if (userRole === 2 || userRole === 3) { %>
 
-        →<h2>Lisa uus artikkel</h2>
+        <h2>Lisa uus artikkel</h2>
 
         <div class="new-article">
             <form id="createArticle" onsubmit="submitForm(event)">
@@ -253,6 +258,27 @@
 </script>
 
 <% } %>
+<script>
+    function filterArticlesByYear() {
+        const selectedYear = document.getElementById('yearDropdown').value;
+
+        const articlePreviews = document.querySelectorAll('.article-preview');
+
+        articlePreviews.forEach(articlePreview => {
+            const articleDateElement = articlePreview.querySelector('.article-date');
+            if (selectedYear === "" || (articleDateElement && articleDateElement.textContent.includes(selectedYear))) {
+                articlePreview.style.display = '';
+            } else {
+                articlePreview.style.display = 'none';
+            }
+        });
+    }
+    document.getElementById('yearDropdown').addEventListener('change', filterArticlesByYear);
+
+</script>
+
+
+
 
 <script>
     function searchArticles() {
@@ -340,17 +366,23 @@
                 // Clear existing articles
                 document.getElementById('articles').innerHTML = '';
 
+                // Get the dropdown element
+                const yearDropdown = document.getElementById('yearDropdown');
+
+                // Array to hold unique years
+                const uniqueYears = [];
+
                 // Loop through fetched articles and append them to the main element
                 data.forEach(article => {
                     const articleDiv = document.createElement('div');
                     articleDiv.classList.add('article-preview');
                     articleDiv.innerHTML = `
-                <p class="article-author">Autor: ${article.articleAuthor}</p>
-                <p class="article-date">${article.articleDate}</p>
-                <h2>${article.articleHeader}</h2>
-                <div>${article.summernoteContent}</div>
-                <a href="artiklid/${article.articleHeader}">Loe rohkem →</a>
-            `;
+                        <p class="article-author">Autor: ${article.articleAuthor}</p>
+                        <p class="article-date">${article.articleDate}</p>
+                        <h2>${article.articleHeader}</h2>
+                        <div>${article.summernoteContent}</div>
+                        <a href="artiklid/${article.articleHeader}">Loe rohkem →</a>
+                    `;
 
                     // Find potential image inside the div
                     const imgElement = articleDiv.querySelector('img');
@@ -364,6 +396,22 @@
                     }
 
                     document.getElementById('articles').appendChild(articleDiv);
+
+                    // Extract year from article date (assuming articleDate format is 'DD-MM-YYYY')
+                    const year = article.articleDate.split('-')[2];
+
+                    // Add year to uniqueYears if it's not already there
+                    if (!uniqueYears.includes(year)) {
+                        uniqueYears.push(year);
+                    }
+                });
+
+                // Populate the dropdown with unique years
+                uniqueYears.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearDropdown.appendChild(option);
                 });
             })
             .catch(error => {
@@ -374,11 +422,7 @@
 
     // Call fetchArticles function when the page loads
     window.onload = fetchArticles;
-
-
-
 </script>
-
 <script>
     // checkLogin.js
 

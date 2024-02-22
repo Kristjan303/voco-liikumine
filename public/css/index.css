@@ -67,12 +67,13 @@ header .header-search {
     align-items: center;
 }
 header .header-search input {
-    background-color: #ddd;
+    background-color: #dddddd85;
     border: none;
     width: 35em;
-    height: 2.5em;
+    height: 2.8em;
     border-radius: 7px;
     padding-left: 10px;
+    border: 1px solid #dddddd;
 }
 header .header-search button {
     border: none;

@@ -43,7 +43,7 @@
     flex-direction: column;
     align-content: center;
     align-items: center;
-    width: 300px;
+    /*width: 300px;*/
      height: 300px;
     margin: 15px;
     /* border-radius: 10px; */
@@ -59,14 +59,14 @@
     align-content: center;
     align-items: center;
     width: 300px;
-    height: 300px;
+    height: 450px;
     margin: 15px;
     border-radius: 10px;
-    background-color: #dfdfdf;
     padding: 10px;
     overflow-y: auto;
     overflow-x: hidden;
-    background: linear-gradient(0deg, rgba(255,255,255,1) 0%, rgba(227,227,227,1) 100%);
+    background: ghostwhite;
+    border: 1px solid #f3f3f3;
 
 }
 
@@ -167,16 +167,39 @@
     width: 100%;
 }
 
-.order-btn {
+.order-btn, #yearDropdown {
     padding: 10px;
-    background-color: #dddddd;
+    background-color: #dddddd85;
     border-radius: 5px;
     cursor: pointer;
     transition: 0.2s;
     border-style: none;
+    border: 1px solid #ddd;
+
+
     font-family: "Montserrat", sans-serif;
 }
-.order-btn:hover {
+#yearDropdown option {
+    padding: 10px;
+    background-color: ghostwhite;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: 0.2s;
+    border-style: none;
+}
+
+.order-btn:hover, #yearDropdown:hover {
     background-color: #2980b9;
     color: #ffffff;
+    option {
+        color: #000000;
+        background-color: ghostwhite;
+    }
+}
+
+.hold-filter {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    gap: 10px;
 }

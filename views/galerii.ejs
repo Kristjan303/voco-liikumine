@@ -92,7 +92,7 @@
         <div class="newest">
             <div class="hold">
                 <h4>Uusimad pildid</h4>
-                <div style="    width: 648px; padding: 0; margin: 0 20px;     justify-content: flex-start;" class="place-holder"></div>
+                <div style="    width: 646px; padding: 0; margin: 0 20px;     justify-content: flex-start;" class="place-holder"></div>
                 <button class="scroll" onclick="scrollNewestLeft()"><i class="left fa-solid fa-chevron-left fa-xl"></i></button>
                 <button class="scroll" onclick="scrollNewestRight()"><i class="right fa-solid fa-chevron-right fa-xl" ></i></button>
             </div>
@@ -239,9 +239,11 @@
                         // Remove background color from the previously clicked folder item
                         if (lastClickedFolderItem) {
                             lastClickedFolderItem.style.backgroundColor = '';
+                            lastClickedFolderItem.style.color = '';
                         }
                         // Set background color for the currently clicked folder item
-                        folderItem.style.backgroundColor = '#f0f0f0';
+                        folderItem.style.backgroundColor = 'white';
+                        folderItem.style.color = 'black';
                         lastClickedFolderItem = folderItem; // Update last clicked folder item
                         fetchImagesInFolder(folder);
                     });
@@ -250,7 +252,9 @@
                     // Show fileTree for the first folder by default
                     if (index === 0) {
                         fetchImagesInFolder(folder);
-                        folderItem.style.backgroundColor = '#f0f0f0';
+                        folderItem.style.backgroundColor = 'white';
+                        folderItem.style.color = 'black';
+
                         lastClickedFolderItem = folderItem; // Update last clicked folder item
                     }
                 });
@@ -311,6 +315,12 @@
                 const listItem = document.createElement('li');
                 const imageElement = document.createElement('img');
                 imageElement.src = image;
+
+                // Add an event listener to open the image in a new tab when clicked
+                imageElement.addEventListener('click', function () {
+                    window.open(image, '_blank');
+                });
+
                 listItem.appendChild(imageElement);
                 newestTree.appendChild(listItem);
             });
@@ -319,6 +329,7 @@
             console.error('Failed to fetch latest images:', data.message);
         }
     });
+
 
 </script>
 

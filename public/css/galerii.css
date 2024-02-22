@@ -185,15 +185,20 @@ input[type="file"] {
     margin-bottom: 50px;
 }
 
-.gallery-content div {
+.gallery-content div  {
     padding: 10px 20px;
     border-radius: 10px;
-    background-color: #dfdfdf;
     width: 100%;
     display: grid;
     margin-bottom: 50px;
     overflow: auto;
 }
+.gallery-content .file-tree, .newest  {
+    background-color: ghostwhite;
+    border: 1px solid #f3f3f3;
+
+}
+
 
 .file-tree #folderTree {
     display: flex;
@@ -205,22 +210,23 @@ input[type="file"] {
     padding: 0;
     margin: 0 20px;
     justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
 
 }
 .file-tree #folderTree li {
-    margin: 0 5px;
     padding: 10px;
     transition: 0.2s;
-    border: 2px solid transparent;
+    border: 1px solid #ddd;
     cursor: pointer;
     border-radius: 10px;
-    background-color: rgba(180, 180, 180, 0.75);
+    background-color: #dddddd85;
     transition: 0.2s;
 
 }
 .file-tree #folderTree li:hover {
-    border: 2px solid #f0f0f0;
-
+    background-color: #2980b9;
+    color: #ffffff;
 }
 
 
