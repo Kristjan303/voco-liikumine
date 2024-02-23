@@ -614,7 +614,275 @@ app.post('/update-articles', (req, res) => {
     });
 });
 
+app.post('/submit-post', (req, res) => {
+    const { postTitle, postContent, sessionToken, userId, email } = req.body;
 
+    // Check if the session exists based on the userId and sessionToken
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Check if postTitle or postContent is empty
+    if (!postTitle.trim() || !postContent.trim()) {
+        console.log('Post title or content is empty');
+        return res.status(400).json({ success: false, message: 'Postituse pealkiri ega sisu ei tohi olla tühi!' });
+    }
+
+    // Check if the post title already exists
+    const titleCheckQuery = "SELECT * FROM foorum WHERE postituse_pealkiri = ?";
+    db.query(titleCheckQuery, [postTitle], (titleCheckErr, titleCheckResults) => {
+        if (titleCheckErr) {
+            console.error('Error checking post title:', titleCheckErr);
+            return res.status(500).json({ success: false, message: 'Error checking post title' });
+        }
+
+        if (titleCheckResults.length > 0) {
+            console.log('Post title already exists');
+            return res.status(400).json({ success: false, message: 'Postituse pealkiri juba eksisteerib!' });
+        }
+
+        // Construct MySQL query to insert the post data
+        const sql = "INSERT INTO foorum (kasutaja_id, postituse_pealkiri, foorumi_sisu, postitamise_kuupäev) VALUES (?, ?, ?, NOW())";
+
+        // Execute the query to insert the post
+        db.query(sql, [userId, postTitle, postContent], (insertErr, insertResult) => {
+            if (insertErr) {
+                console.error('Error inserting data:', insertErr);
+                return res.status(500).json({ success: false, message: 'Error inserting data' });
+            }
+
+            console.log('Post inserted successfully');
+            return res.status(200).json({ success: true, message: 'Post inserted successfully' });
+        });
+    });
+});
+
+// Add an endpoint to fetch posts
+app.get('/get-posts', (req, res) => {
+    // Query to retrieve posts from the database joined with user's name and count of comments
+    const sql = `
+        SELECT 
+            f.postituse_pealkiri AS postTitle, 
+            f.foorumi_sisu AS postContent, 
+            k.kasutajanimi AS userName, 
+            f.postitamise_kuupäev as postDate,
+            COUNT(c.kommentaari_id) AS commentCount
+        FROM 
+            foorum f 
+        JOIN 
+            kasutajad k ON f.kasutaja_id = k.kasutaja_id
+        LEFT JOIN 
+            foorumi_kommentaariumid c ON f.postituse_id = c.postituse_id
+        GROUP BY 
+            f.postituse_id
+        ORDER BY 
+            f.postitamise_kuupäev DESC`;
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error('Error fetching posts:', err);
+            return res.status(500).json({ success: false, message: 'Error fetching posts' });
+        }
+
+        // Transform the result to include the URLs for each post
+        const postsWithUrls = result.map(post => {
+            const postTitle = encodeURIComponent(post.postTitle);
+            // Create the URL for each post
+            const url = `/${postTitle}`;
+            return { ...post, url };
+        });
+        res.status(200).json(postsWithUrls);
+    });
+});
+
+
+
+app.get('/foorum/:postTitle', (req, res) => {
+    const postTitle = req.params.postTitle;
+
+    // Query to retrieve a specific post content based on the title
+    const sql = "SELECT f.foorumi_sisu AS postContent, k.kasutajanimi AS userName, f.postitamise_kuupäev as postDate FROM foorum f JOIN kasutajad k ON f.kasutaja_id = k.kasutaja_id WHERE f.postituse_pealkiri = ?";
+    db.query(sql, [postTitle], (err, result) => {
+        if (err) {
+            console.error('Error fetching post content:', err);
+            return res.status(500).json({ success: false, message: 'Error fetching post content' });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ success: false, message: 'Post not found' });
+        }
+
+        const postContent = result[0].postContent;
+        const userName = result[0].userName;
+        const postDateTime = result[0].postDate.toLocaleString('et-EE', { dateStyle: 'medium', timeStyle: 'medium' }); // Formatting date and time according to Estonian standards
+
+        res.render('postitus', {
+            postTitle: postTitle,
+            postContent: postContent,
+            userName: userName,
+            postDate: postDateTime
+        });
+    });
+});
+
+
+app.post('/submit-comment', (req, res) => {
+    const { postComment, postTitle, email, userId, sessionToken } = req.body;
+
+    // Check if the session exists based on the userId and sessionToken
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Fetch the postituse_id based on postTitle
+    const postIdQuery = "SELECT postituse_id FROM foorum WHERE postituse_pealkiri = ?";
+    db.query(postIdQuery, [postTitle], (postIdErr, postIdResult) => {
+        if (postIdErr) {
+            console.error('Error fetching post ID:', postIdErr);
+            return res.status(500).json({ success: false, message: 'Error fetching post ID' });
+        }
+
+        const postituse_id = postIdResult[0].postituse_id;
+
+        // Construct MySQL query to insert the comment data
+        const sql = "INSERT INTO foorumi_kommentaariumid (kasutaja_id, kommentaari_sisu, kommentaari_lisamise_kuupäev, postituse_id) VALUES (?, ?, NOW(), ?)";
+
+        // Execute the query to insert the comment
+        db.query(sql, [userId, postComment, postituse_id], (insertErr, insertResult) => {
+            if (insertErr) {
+                console.error('Error inserting comment:', insertErr);
+                return res.status(500).json({ success: false, message: 'Error inserting comment' });
+            }
+
+            console.log('Comment inserted successfully');
+            return res.status(200).json({ success: true, message: 'Comment inserted successfully' });
+        });
+    });
+});
+
+app.get('/get-comments', (req, res) => {
+    const postTitle = req.query.postTitle;
+
+    // Query to retrieve the post ID based on the post title
+    const postQuery = "SELECT postituse_id FROM foorum WHERE postituse_pealkiri = ?";
+    db.query(postQuery, [postTitle], (err, result) => {
+        if (err) {
+            console.error('Error fetching post ID:', err);
+            return res.status(500).json({ success: false, message: 'Error fetching post ID' });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ success: false, message: 'Post not found' });
+        }
+
+        const postId = result[0].postituse_id;
+
+        // Query to retrieve comments based on the post ID
+        const commentsQuery = "SELECT k.kasutajanimi AS commenterName, fk.kommentaari_sisu AS commentContent, fk.kommentaari_lisamise_kuupäev AS commentDate FROM foorumi_kommentaariumid fk JOIN kasutajad k ON fk.kasutaja_id = k.kasutaja_id WHERE fk.postituse_id = ?";
+        db.query(commentsQuery, [postId], (err, result) => {
+            if (err) {
+                console.error('Error fetching comments:', err);
+                return res.status(500).json({ success: false, message: 'Error fetching comments' });
+            }
+
+            res.status(200).json(result);
+        });
+    });
+});
+
+app.post('/get-user-posts', (req, res) => {
+    const { userId, email, sessionToken } = req.body;
+
+    // Check if userId, email, and sessionToken are provided
+    if (!userId || !email || !sessionToken) {
+        return res.status(400).json({ success: false, message: 'Invalid session data' });
+    }
+
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Query to retrieve posts titles and dates posted by the user
+    const sql = `
+        SELECT
+            postituse_pealkiri AS postTitle,
+            postitamise_kuupäev AS postDate
+        FROM
+            foorum
+        WHERE
+            kasutaja_id = ?`;
+
+    db.query(sql, [userId], (err, result) => {
+        if (err) {
+            console.error('Error fetching user posts:', err);
+            return res.status(500).json({ success: false, message: 'Error fetching user posts' });
+        }
+
+        // Transform the result to include the titles, dates, and URLs for each post
+        const userPosts = result.map(post => {
+            const postTitle = encodeURIComponent(post.postTitle);
+            const url = `/foorum/${postTitle}`;
+            return { title: post.postTitle, url, date: post.postDate };
+        });
+
+        res.status(200).json(userPosts);
+    });
+});
+app.post('/get-user-comments', (req, res) => {
+    const { userId, email, sessionToken } = req.body;
+
+    // Check if userId, email, and sessionToken are provided
+    if (!userId || !email || !sessionToken) {
+        return res.status(400).json({ success: false, message: 'Invalid session data' });
+    }
+
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Query to retrieve comments posted by the user
+    const commentsQuery = `
+        SELECT 
+            foorumi_kommentaariumid.kommentaari_id AS id,
+            foorumi_kommentaariumid.kommentaari_lisamise_kuupäev AS date,
+            foorum.postituse_pealkiri AS title
+        FROM 
+            foorumi_kommentaariumid
+        INNER JOIN 
+            foorum 
+        ON 
+            foorumi_kommentaariumid.postituse_id = foorum.postituse_id
+        WHERE 
+            foorumi_kommentaariumid.kasutaja_id = ?`;
+
+    db.query(commentsQuery, [userId], (err, results) => {
+        if (err) {
+            console.error('Error fetching user comments:', err);
+            return res.status(500).json({ success: false, message: 'Error fetching user comments' });
+        }
+
+        // Transform the result to include the titles, dates, and URLs for each comment
+        const userComments = results.map(comment => {
+            const postTitle = encodeURIComponent(comment.title);
+            const url = `/foorum/${postTitle}`;
+            return { title: comment.title, url, date: comment.date };
+        });
+
+        res.status(200).json(userComments);
+    });
+});
 
 app.listen(port, () => {
     console.log(`Server is running on port http://localhost:${port}/`);

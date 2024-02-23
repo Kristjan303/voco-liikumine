@@ -167,39 +167,5 @@
     width: 100%;
 }
 
-.order-btn, #yearDropdown {
-    padding: 10px;
-    background-color: #dddddd85;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.2s;
-    border-style: none;
-    border: 1px solid #ddd;
 
 
-    font-family: "Montserrat", sans-serif;
-}
-#yearDropdown option {
-    padding: 10px;
-    background-color: ghostwhite;
-    border-radius: 2px;
-    cursor: pointer;
-    transition: 0.2s;
-    border-style: none;
-}
-
-.order-btn:hover, #yearDropdown:hover {
-    background-color: #2980b9;
-    color: #ffffff;
-    option {
-        color: #000000;
-        background-color: ghostwhite;
-    }
-}
-
-.hold-filter {
-    display: flex;
-    flex-direction: row;
-    padding: 0;
-    gap: 10px;
-}

@@ -61,12 +61,7 @@
             <p><a href="/">Avaleht</a> > <span>Artiklid</span></p>
         </div>
         <h1>Artiklid</h1>
-        <section class="hold-filter">
-            <button class="order-btn" id="orderButton" onclick="toggleOrder()">Vanimad <i class="fa-solid fa-arrow-down fa-sm"></i> </button>
-            <select id="yearDropdown">
-                <option value="" selected>Vali aasta</option>
-            </select>
-        </section>
+
 
 
         <% if (userRole === 2 || userRole === 3) { %>
@@ -118,6 +113,12 @@
 
 
         <% } %>
+        <section class="hold-filter">
+            <button class="order-btn" id="orderButton" onclick="toggleOrder()">Vanimad <i class="fa-solid fa-arrow-down fa-sm"></i> </button>
+            <select id="yearDropdown">
+                <option value="" selected>Vali aasta</option>
+            </select>
+        </section>
 
     </div>
     <div class="search-article">

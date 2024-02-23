@@ -58,24 +58,71 @@
             <p><a href="/">Avaleht</a> > <span>Foorum</span></p>
         </div>
         <h1>Foorum</h1>
+
+        <section class="hold-filter">
+            <button class="order-btn" id="orderButton" onclick="toggleOrder()">Vähem populaarsed <i class="fa-solid fa-arrow-down fa-sm"></i> </button>
+            <select id="yearDropdown">
+                <option value="" selected>Vali aasta</option>
+            </select>
+        </section>
     </div>
+
+
+
     <div class="search-forum">
     </div>
+
+    <button id="toggle-button"><i class="fa-regular fa-eye fa-lg"></i></button>
+
     <main class="forum-content">
-        <div class="post-comments">
-            <div class="post">
+        <div id="createPost" >
+            <form id="createPostForm">
+                <h2>Loo postitus</h2>
+                <div class="form-group-title">
+                    <label for="postTitle">Pealkiri</label>
+                    <input type="text" id="postTitle" name="postTitle" required>
+                </div>
+                <div class="form-group-content">
+                    <label for="postContent">Sisu</label>
+                    <textarea id="postContent" name="postContent" required></textarea>
+                </div>
+
+                <div class="error-message" id="postTitleError"></div>
+
+                <button type="submit" id="createPostButton">Loo postitus</button>
+            </form>
+            <div class="your-posts">
+                <h2>Minu postitused</h2>
             </div>
-            <div class="comments">
+            <div class="your-comments">
+                <h2>Minu komentaarid</h2>
             </div>
         </div>
-        <div></div>
-        <div></div>
-        <div></div>
+        <div id="posts">
+
+        </div>
     </main>
 </section>
 
 
+<script>
+    const myToggleButton = document.querySelector('#toggle-button');
+    const myTargetElement = document.querySelector('#createPost');
 
+    let isHidden = false;
+
+    myToggleButton.onclick = function() {
+        myTargetElement.classList.toggle('hidden');
+        if (isHidden) {
+            myToggleButton.innerHTML = '<i class="fa-regular fa-eye fa-lg"></i>';
+        } else {
+            myToggleButton.innerHTML = '<i class="fa-regular fa-eye-slash fa-lg"></i>';
+        }
+        isHidden = !isHidden;
+    };
+
+
+</script>
 
 
 <div class="mapBanner">
@@ -180,5 +227,276 @@
     });
 
 </script>
+
+<script>
+    // Listen for form submission
+    document.getElementById('createPostForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // Get form data
+        const formData = {
+            postTitle: document.getElementById('postTitle').value,
+            postContent: document.getElementById('postContent').value,
+            email: sessionStorage.getItem('email'),
+            userId: sessionStorage.getItem('userId'),
+            sessionToken: sessionStorage.getItem('sessionToken')
+        };
+
+        // Send data to the server
+        fetch('/submit-post', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Handle response from server
+                if (data.success) {
+                    // Reload the page if submission was successful
+                    location.reload();
+                } else {
+                    // Display error message
+                    const errorMessage = data.message;
+                    document.getElementById('postTitleError').innerText = errorMessage;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch('/get-posts')
+            .then(response => response.json())
+            .then(posts => {
+                // Sort posts by comment count in descending order
+                posts.sort((a, b) => b.commentCount - a.commentCount);
+
+                const postsContainer = document.getElementById('posts');
+                posts.forEach(post => {
+                    const postTime = new Date(post.postDate);
+                    const currentTime = new Date();
+                    const timeDifference = Math.abs(currentTime - postTime);
+                    const postUrl = post.url;
+
+                    let timeAgo;
+                    if (timeDifference < 1000 * 60 * 60) {
+                        const minutesDifference = Math.ceil(timeDifference / (1000 * 60));
+                        timeAgo = minutesDifference > 1 ? `${minutesDifference} minutit tagasi` : '1 minut tagasi';
+                    } else if (timeDifference < 1000 * 60 * 60 * 24) {
+                        const hoursDifference = Math.ceil(timeDifference / (1000 * 60 * 60));
+                        timeAgo = hoursDifference > 1 ? `${hoursDifference} tundi tagasi` : '1 tund tagasi';
+                    } else if (timeDifference < 1000 * 60 * 60 * 24 * 30) {
+                        const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+                        timeAgo = daysDifference > 1 ? `${daysDifference} päeva tagasi` : '1 päev tagasi';
+                    } else if (timeDifference < 1000 * 60 * 60 * 24 * 30 * 12) {
+                        const monthsDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24 * 30));
+                        timeAgo = monthsDifference > 1 ? `${monthsDifference} kuud tagasi` : '1 kuu tagasi';
+                    } else {
+                        const yearsDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24 * 30 * 12));
+                        timeAgo = yearsDifference > 1 ? `${yearsDifference} aastat tagasi` : '1 aaasta tagasi';
+                    }
+
+                    const postElement = document.createElement('div');
+                    postElement.classList.add('post');
+                    postElement.innerHTML = `
+                    <h2>${post.postTitle}</h2>
+                    <div class="hold-data">
+                        <p>Author: ${post.userName}</p>
+                        <p>●</p>
+                        <p>${timeAgo}</p>
+                    </div>
+                    <p>${post.postContent}</p>
+                    <div class="hold-buttons">
+                        <p class="comment"><i class="fa-regular fa-message fa-xm"></i>${post.commentCount} kommentaari</p>
+                        <a href="foorum${postUrl}" class="open-comments"><i class="fa-solid fa-up-right-from-square fa-xm"></i></a>
+                    `;
+                    postsContainer.appendChild(postElement);
+                });
+            })
+            .catch(error => console.error('Error fetching posts:', error));
+    });
+
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const userId = sessionStorage.getItem('userId');
+        const email = sessionStorage.getItem('email');
+        const sessionToken = sessionStorage.getItem('sessionToken');
+
+        if (!userId || !email || !sessionToken) {
+            console.error('Invalid session data');
+            return;
+        }
+
+        const requestData = {
+            userId: userId,
+            email: email,
+            sessionToken: sessionToken
+        };
+
+        // Fetch user posts
+        fetch('/get-user-posts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => response.json())
+            .then(userPosts => {
+                const yourPostsContainer = document.querySelector('.your-posts');
+
+                // Create an Intl.DateTimeFormat object for Estonian locale
+                const dateFormatter = new Intl.DateTimeFormat('et-EE', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                userPosts.forEach(post => {
+                    const postLink = document.createElement('a');
+                    postLink.href = post.url;
+
+                    // Format the date to Estonian
+                    const formattedDate = dateFormatter.format(new Date(post.date));
+
+                    postLink.textContent = post.title + " ●" + " (" + formattedDate + ")"; // Displaying formatted date behind each link
+                    postLink.classList.add('post-link');
+                    yourPostsContainer.appendChild(postLink);
+                    yourPostsContainer.appendChild(document.createElement('br')); // Adding line break
+                });
+            })
+            .catch(error => console.error('Error fetching user posts:', error));
+
+        // Fetch user comments
+        fetch('/get-user-comments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => response.json())
+            .then(userComments => {
+                const yourCommentsContainer = document.querySelector('.your-comments');
+
+                // Create an Intl.DateTimeFormat object for Estonian locale
+                const dateFormatter = new Intl.DateTimeFormat('et-EE', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                userComments.forEach(comment => {
+                    const commentLink = document.createElement('a');
+                    commentLink.href = comment.url;
+
+                    // Format the date to Estonian
+                    const formattedDate = dateFormatter.format(new Date(comment.date));
+
+                    commentLink.textContent = comment.title + " ●" + " (" + formattedDate + ")"; // Displaying formatted date behind each link
+                    commentLink.classList.add('comment-link');
+                    yourCommentsContainer.appendChild(commentLink);
+                    yourCommentsContainer.appendChild(document.createElement('br')); // Adding line break
+                });
+            })
+            .catch(error => console.error('Error fetching user comments:', error));
+    });
+
+</script>
+
+<script>
+    let isOldest = true;
+
+    function toggleOrder() {
+        if (isOldest) {
+            orderPostsByPopularity();
+            document.getElementById('orderButton').innerHTML = 'Populaarseimad <i class="fa-solid fa-arrow-up fa-sm"></i>';
+        } else {
+            orderPostsByLeastPopularity();
+            document.getElementById('orderButton').innerHTML = 'Vähem populaarsed <i class="fa-solid fa-arrow-down fa-sm"></i>';
+        }
+        isOldest = !isOldest;
+    }
+
+    function orderPostsByPopularity() {
+        const posts = Array.from(document.querySelectorAll('.post'));
+        const postsContainer = document.getElementById('posts');
+
+        posts.sort((a, b) => a.querySelector('.comment').innerText.split(' ')[0] - b.querySelector('.comment').innerText.split(' ')[0]);
+
+        posts.forEach(post => postsContainer.appendChild(post));
+
+        if (document.getElementById('orderButton').innerText = 'Vähem populaarsed') {
+            document.getElementById('orderButton').innerText = 'Populaarseimad';
+        } else {
+            document.getElementById('orderButton').innerText = 'Vähem populaarsed';
+        }
+    }
+
+    function orderPostsByLeastPopularity() {
+        const posts = Array.from(document.querySelectorAll('.post'));
+        const postsContainer = document.getElementById('posts');
+
+        posts.sort((a, b) => b.querySelector('.comment').innerText.split(' ')[0] - a.querySelector('.comment').innerText.split(' ')[0]);
+
+        posts.forEach(post => postsContainer.appendChild(post));
+
+        if (document.getElementById('orderButton').innerText = 'Populaarseimad') {
+            document.getElementById('orderButton').innerText = 'Vähem populaarsed';
+        } else {
+            document.getElementById('orderButton').innerText = 'Populaarseimad';
+        }
+    }
+</script>
+<script>
+    function populateYearDropdown() {
+        const yearDropdown = document.getElementById('yearDropdown');
+        const postDates = Array.from(document.querySelectorAll('.post')).map(post => post.querySelector('.postDate').textContent);
+        const years = [...new Set(postDates.map(date => new Date(date).getFullYear()))]; // Extract unique years
+
+        yearDropdown.innerHTML = '<option value="" selected>Vali aasta</option>'; // Reset dropdown
+
+        years.forEach(year => {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            yearDropdown.appendChild(option);
+        });
+    }
+
+    function filterPostsByYear() {
+        const selectedYear = document.getElementById('yearDropdown').value;
+
+        const posts = document.querySelectorAll('.post');
+
+        posts.forEach(post => {
+            const postDateElement = post.querySelector('.postDate');
+            if (selectedYear === "" || (postDateElement && new Date(postDateElement.textContent).getFullYear().toString() === selectedYear)) {
+                post.style.display = '';
+            } else {
+                post.style.display = 'none';
+            }
+        });
+    }
+
+    document.getElementById('yearDropdown').addEventListener('change', filterPostsByYear);
+
+    document.addEventListener("DOMContentLoaded", function() {
+        populateYearDropdown();
+        filterPostsByYear(); // Filter initially based on default selection
+    });
+</script>
+
 
 </html>

@@ -67,13 +67,17 @@ header .header-search {
     align-items: center;
 }
 header .header-search input {
-    background-color: #dddddd85;
+    background-color: #f8f8f8;
     border: none;
     width: 35em;
     height: 2.8em;
     border-radius: 7px;
     padding-left: 10px;
-    border: 1px solid #dddddd;
+    border: 1px solid #cccccc;
+}
+header .header-search input:focus {
+    outline: none;
+    border: 1px solid #2980b9;
 }
 header .header-search button {
     border: none;
@@ -246,6 +250,51 @@ section {
     justify-content: flex-end;
     padding-right: 1em;
 }
+
+/* ------filter------ */
+
+.order-btn, #yearDropdown {
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.2s;
+    border-style: none;
+    border: 1px solid #cccccc;
+
+
+    font-family: "Montserrat", sans-serif;
+}
+#yearDropdown option {
+    padding: 10px;
+    background-color: ghostwhite;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: 0.2s;
+    border-style: none;
+}
+#yearDropdown:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+
+.order-btn:hover, #yearDropdown:hover {
+    background-color: #2980b9;
+    color: #ffffff;
+    option {
+        color: #000000;
+        background-color: ghostwhite;
+    }
+}
+
+.hold-filter {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    gap: 10px;
+    margin-top: 10px;
+}
+
 
 /* ------FOOTER------ */
 
