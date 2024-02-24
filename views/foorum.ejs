@@ -91,11 +91,12 @@
                     <h2>Loo postitus</h2>
                     <div class="form-group-title">
                         <label for="postTitle">Pealkiri</label>
-                        <input type="text" id="postTitle" name="postTitle" required>
+                        <input type="text" id="postTitle" name="postTitle" required maxlength="100"> <!-- Max length for TINYTEXT -->
                     </div>
                     <div class="form-group-content">
                         <label for="postContent">Sisu</label>
-                        <textarea id="postContent" name="postContent" required></textarea>
+                        <textarea id="postContent" name="postContent" required maxlength="10000"></textarea> <!-- Max length for TEXT -->
+                        <div class="char-count" id="contentCharCount" style="margin-top: 5px">Tähti kasutatud: 0</div> <!-- Counter for post content -->
                     </div>
 
                     <div class="error-message" id="postTitleError"></div>
@@ -109,6 +110,22 @@
                     <h2>Minu komentaarid</h2>
                 </div>
             </div>
+
+        <script>
+            // Function to update character count for post title
+            document.getElementById('postTitle').addEventListener('input', function() {
+                const currentLength = this.value.length;
+                document.getElementById('titleCharCount').textContent = `Tähti kasutatud: ${currentLength}`;
+            });
+
+            // Function to update character count for post content
+            document.getElementById('postContent').addEventListener('input', function() {
+                const currentLength = this.value.length;
+                document.getElementById('contentCharCount').textContent = `Tähti kasutatud: ${currentLength}`;
+            });
+
+
+        </script>
 
         <% } %>
 

@@ -150,6 +150,10 @@ form button:hover {
 }
 .high-comment {
     background-color: lightyellow; /* Change this to your desired background color */
+
+}
+.high-comment button i {
+color: red;
 }
 .pinComment {
     width: 25px;
