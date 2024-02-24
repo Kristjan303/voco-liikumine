@@ -261,6 +261,9 @@
         fetch(`/get-comments?postTitle=${encodeURIComponent(postTitle)}`)
             .then(response => response.json())
             .then(comments => {
+                // Reorder the comments array so that highComments are on top
+                comments.sort((a, b) => b.highComment - a.highComment);
+
                 // Assuming you have an element with id 'commentsContainer' to display comments
                 const commentsContainer = document.getElementById('commentsContainer');
 
@@ -271,10 +274,10 @@
                     commentLogicElement.classList.add('comment-logic');
 
                     // Create a black line element
-                    const blackLineElement1 = document.createElement('hr')
+                    const blackLineElement1 = document.createElement('hr');
                     blackLineElement1.classList.add('black-line');
                     commentLogicElement.appendChild(blackLineElement1);
-                    const blackLineElement2 = document.createElement('hr')
+                    const blackLineElement2 = document.createElement('hr');
                     blackLineElement2.classList.add('black-line2');
                     commentLogicElement.appendChild(blackLineElement2);
 
@@ -285,6 +288,11 @@
                     // Formatting date and time according to Estonian standards
                     const commentDateTime = new Date(comment.commentDate).toLocaleString('et-EE', { dateStyle: 'medium', timeStyle: 'medium' });
 
+                    // Check if the comment is a high comment and set background color accordingly
+                    if (comment.highComment === 1) {
+                        commentElement.classList.add('high-comment');
+                    }
+
                     commentElement.innerHTML = `
                     <div class="hold-data">
                         <p>${comment.commenterName}</p>
@@ -292,6 +300,9 @@
                         <p>${commentDateTime}</p>
                     </div>
                     <p>${comment.commentContent}</p>
+                    <% if (isAuthor) { %>
+                        <button data-comment-id="${comment.commentId}" class="pinComment" data-high-comment="${comment.highComment}"><i class="fa-solid fa-thumbtack fa-sm"></i></button>
+                    <% } %>
                 `;
 
                     // Append comment element to comment logic element
@@ -300,9 +311,53 @@
                     // Append comment logic element to comments container
                     commentsContainer.appendChild(commentLogicElement);
                 });
+
+                // Add event listener for dynamically added buttons
+                commentsContainer.addEventListener('click', function(event) {
+                    const pinCommentButton = event.target.closest('.pinComment');
+                    if (pinCommentButton) {
+                        // If the clicked element or its ancestor has the class 'pinComment'
+                        const commentId = pinCommentButton.getAttribute('data-comment-id');
+                        const commenterName = pinCommentButton.closest('.comment').querySelector('.hold-data p').textContent;
+                        const email = sessionStorage.getItem('email');
+                        const sessionToken = sessionStorage.getItem('sessionToken');
+                        const userId = sessionStorage.getItem('userId');
+
+                        // Create data object to send to server
+                        const data = {
+                            commentId: commentId,
+                            commenterName: commenterName,
+                            email: email,
+                            sessionToken: sessionToken,
+                            userId: userId
+                        };
+
+                        // Send data to server
+                        fetch('/pin-comment', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Failed to pin comment');
+                                }
+                                // Handle success response if needed
+                                location.reload();
+                                console.log('Comment pinned successfully');
+                            })
+                            .catch(error => console.error('Error pinning comment:', error));
+                    }
+                });
             })
             .catch(error => console.error('Error fetching comments:', error));
     });
+
+</script>
+<script>
+
 
 </script>
 

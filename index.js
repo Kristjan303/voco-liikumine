@@ -711,7 +711,7 @@ app.get('/foorum/:postTitle', (req, res) => {
     const postTitle = req.params.postTitle;
 
     // Query to retrieve a specific post content based on the title
-    const sql = "SELECT f.foorumi_sisu AS postContent, k.kasutajanimi AS userName, f.postitamise_kuupäev as postDate FROM foorum f JOIN kasutajad k ON f.kasutaja_id = k.kasutaja_id WHERE f.postituse_pealkiri = ?";
+    const sql = "SELECT f.foorumi_sisu AS postContent, k.kasutajanimi AS userName, f.postitamise_kuupäev as postDate, f.kasutaja_id as authorId FROM foorum f JOIN kasutajad k ON f.kasutaja_id = k.kasutaja_id WHERE f.postituse_pealkiri = ?";
     db.query(sql, [postTitle], (err, result) => {
         if (err) {
             console.error('Error fetching post content:', err);
@@ -725,6 +725,7 @@ app.get('/foorum/:postTitle', (req, res) => {
         const postContent = result[0].postContent;
         const userName = result[0].userName;
         const postDateTime = result[0].postDate.toLocaleString('et-EE', { dateStyle: 'medium', timeStyle: 'medium' }); // Formatting date and time according to Estonian standards
+        const authorId = result[0].authorId;
 
         // Check if the user is logged in
         if (req.session.user) {
@@ -737,23 +738,30 @@ app.get('/foorum/:postTitle', (req, res) => {
                     res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
                 } else {
                     const userRole = results[0].rolli_id;
+                    let isAuthor = false;
+                    if (userId === authorId) {
+                        isAuthor = true;
+                    }
                     res.render('postitus', {
                         postTitle: postTitle,
                         postContent: postContent,
                         userName: userName,
                         postDate: postDateTime,
-                        userRole: userRole
+                        userRole: userRole,
+                        isAuthor: isAuthor
                     });
                 }
             });
         } else {
-            // User not logged in; render without userRole
+            let isAuthor = false;
+            // User not logged in; render without userRole and isAuthor
             res.render('postitus', {
                 postTitle: postTitle,
                 postContent: postContent,
                 userName: userName,
                 postDate: postDateTime,
-                userRole: 0
+                userRole: 0,
+                isAuthor: isAuthor
             });
         }
     });
@@ -816,7 +824,7 @@ app.get('/get-comments', (req, res) => {
         const postId = result[0].postituse_id;
 
         // Query to retrieve comments based on the post ID
-        const commentsQuery = "SELECT k.kasutajanimi AS commenterName, fk.kommentaari_sisu AS commentContent, fk.kommentaari_lisamise_kuupäev AS commentDate FROM foorumi_kommentaariumid fk JOIN kasutajad k ON fk.kasutaja_id = k.kasutaja_id WHERE fk.postituse_id = ?";
+        const commentsQuery = "SELECT k.kasutajanimi AS commenterName, fk.kommentaari_sisu AS commentContent, fk.kommentaari_lisamise_kuupäev AS commentDate, fk.esiletõstetud as highComment, fk.kommentaari_id as commentId FROM foorumi_kommentaariumid fk JOIN kasutajad k ON fk.kasutaja_id = k.kasutaja_id WHERE fk.postituse_id = ?";
         db.query(commentsQuery, [postId], (err, result) => {
             if (err) {
                 console.error('Error fetching comments:', err);
@@ -827,6 +835,44 @@ app.get('/get-comments', (req, res) => {
         });
     });
 });
+
+app.post('/pin-comment', (req, res) => {
+    const { commentId, commenterName, email, sessionToken, userId } = req.body;
+
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Query to join tables and get kasutaja_id from kasutajad table based on commenterName
+    const userIdQuery = "SELECT kasutaja_id FROM kasutajad WHERE kasutajanimi = ?";
+    db.query(userIdQuery, [commenterName], (err, result) => {
+        if (err) {
+            console.error('Error fetching user ID:', err);
+            return res.status(500).json({ success: false, message: 'Error fetching user ID' });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const userId = result[0].kasutaja_id;
+
+        // Query to toggle the value of esiletõstetud column
+        const updateQuery = "UPDATE foorumi_kommentaariumid SET esiletõstetud = CASE WHEN esiletõstetud = 1 THEN 0 ELSE 1 END WHERE kommentaari_id = ? AND kasutaja_id = ?";
+        db.query(updateQuery, [commentId, userId], (err, result) => {
+            if (err) {
+                console.error('Error updating comment:', err);
+                return res.status(500).json({ success: false, message: 'Error updating comment' });
+            }
+
+            res.status(200).json({ success: true, message: 'Comment updated successfully' });
+        });
+    });
+});
+
 
 app.post('/get-user-posts', (req, res) => {
     const { userId, email, sessionToken } = req.body;
