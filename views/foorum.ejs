@@ -60,10 +60,20 @@
         <h1>Foorum</h1>
 
         <section class="hold-filter">
-            <button class="order-btn" id="orderButton" onclick="toggleOrder()">Vähem populaarsed <i class="fa-solid fa-arrow-down fa-sm"></i> </button>
-            <select id="yearDropdown">
-                <option value="" selected>Vali aasta</option>
+            <select id="sortingDropdown" onchange="handleSortingChange()">
+                <option value="popularity">Populaarseimad</option>
+                <option value="leastPopularity">Vähem populaarsed</option>
+                <option value="newest">Uusimad</option>
+                <option value="oldest">Vanimad</option>
             </select>
+
+            <% if (userRole === 1 || userRole === 2 || userRole === 3) { %>
+
+                <button id="toggle-button"><i class="fa-regular fa-eye fa-lg"></i></button>
+
+
+
+            <% } %>
         </section>
     </div>
 
@@ -72,57 +82,44 @@
     <div class="search-forum">
     </div>
 
-    <button id="toggle-button"><i class="fa-regular fa-eye fa-lg"></i></button>
 
     <main class="forum-content">
-        <div id="createPost" >
-            <form id="createPostForm">
-                <h2>Loo postitus</h2>
-                <div class="form-group-title">
-                    <label for="postTitle">Pealkiri</label>
-                    <input type="text" id="postTitle" name="postTitle" required>
-                </div>
-                <div class="form-group-content">
-                    <label for="postContent">Sisu</label>
-                    <textarea id="postContent" name="postContent" required></textarea>
-                </div>
+        <% if (userRole === 1 || userRole === 2 || userRole === 3) { %>
 
-                <div class="error-message" id="postTitleError"></div>
+            <div id="createPost" >
+                <form id="createPostForm">
+                    <h2>Loo postitus</h2>
+                    <div class="form-group-title">
+                        <label for="postTitle">Pealkiri</label>
+                        <input type="text" id="postTitle" name="postTitle" required>
+                    </div>
+                    <div class="form-group-content">
+                        <label for="postContent">Sisu</label>
+                        <textarea id="postContent" name="postContent" required></textarea>
+                    </div>
 
-                <button type="submit" id="createPostButton">Loo postitus</button>
-            </form>
-            <div class="your-posts">
-                <h2>Minu postitused</h2>
+                    <div class="error-message" id="postTitleError"></div>
+
+                    <button type="submit" id="createPostButton">Loo postitus</button>
+                </form>
+                <div class="your-posts">
+                    <h2>Minu postitused</h2>
+                </div>
+                <div class="your-comments">
+                    <h2>Minu komentaarid</h2>
+                </div>
             </div>
-            <div class="your-comments">
-                <h2>Minu komentaarid</h2>
-            </div>
-        </div>
-        <div id="posts">
+
+        <% } %>
+
+            <div id="posts">
 
         </div>
     </main>
 </section>
 
 
-<script>
-    const myToggleButton = document.querySelector('#toggle-button');
-    const myTargetElement = document.querySelector('#createPost');
 
-    let isHidden = false;
-
-    myToggleButton.onclick = function() {
-        myTargetElement.classList.toggle('hidden');
-        if (isHidden) {
-            myToggleButton.innerHTML = '<i class="fa-regular fa-eye fa-lg"></i>';
-        } else {
-            myToggleButton.innerHTML = '<i class="fa-regular fa-eye-slash fa-lg"></i>';
-        }
-        isHidden = !isHidden;
-    };
-
-
-</script>
 
 
 <div class="mapBanner">
@@ -228,50 +225,73 @@
 
 </script>
 
-<script>
-    // Listen for form submission
-    document.getElementById('createPostForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
+<% if (userRole === 1 || userRole === 2 || userRole === 3) { %>
 
-        // Get form data
-        const formData = {
-            postTitle: document.getElementById('postTitle').value,
-            postContent: document.getElementById('postContent').value,
-            email: sessionStorage.getItem('email'),
-            userId: sessionStorage.getItem('userId'),
-            sessionToken: sessionStorage.getItem('sessionToken')
+    <script>
+        const myToggleButton = document.querySelector('#toggle-button');
+        const myTargetElement = document.querySelector('#createPost');
+
+        let isHidden = false;
+
+        myToggleButton.onclick = function() {
+            myTargetElement.classList.toggle('hidden');
+            if (isHidden) {
+                myToggleButton.innerHTML = '<i class="fa-regular fa-eye fa-lg"></i>';
+            } else {
+                myToggleButton.innerHTML = '<i class="fa-regular fa-eye-slash fa-lg"></i>';
+            }
+            isHidden = !isHidden;
         };
 
-        // Send data to the server
-        fetch('/submit-post', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        })
-            .then(response => {
-                if (!response.ok) {
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Handle response from server
-                if (data.success) {
-                    // Reload the page if submission was successful
-                    location.reload();
-                } else {
-                    // Display error message
-                    const errorMessage = data.message;
-                    document.getElementById('postTitleError').innerText = errorMessage;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    });
-</script>
 
+    </script>
+
+    <script>
+        // Listen for form submission
+        document.getElementById('createPostForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get form data
+            const formData = {
+                postTitle: document.getElementById('postTitle').value,
+                postContent: document.getElementById('postContent').value,
+                email: sessionStorage.getItem('email'),
+                userId: sessionStorage.getItem('userId'),
+                sessionToken: sessionStorage.getItem('sessionToken')
+            };
+
+            // Send data to the server
+            fetch('/submit-post', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Handle response from server
+                    if (data.success) {
+                        alert('Postitus edukalt lisatud!')
+                        // Reload the page if submission was successful
+                        location.reload();
+                    } else {
+                        // Display error message
+                        const errorMessage = data.message;
+                        document.getElementById('postTitleError').innerText = errorMessage;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+
+<% } %>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -287,6 +307,8 @@
                     const currentTime = new Date();
                     const timeDifference = Math.abs(currentTime - postTime);
                     const postUrl = post.url;
+                    const postDate = new Date(post.postDate);
+
 
                     let timeAgo;
                     if (timeDifference < 1000 * 60 * 60) {
@@ -313,7 +335,7 @@
                     <div class="hold-data">
                         <p>Author: ${post.userName}</p>
                         <p>●</p>
-                        <p>${timeAgo}</p>
+    <p class="post-date" data-date="${postDate.toISOString()}">${timeAgo}</p>
                     </div>
                     <p>${post.postContent}</p>
                     <div class="hold-buttons">
@@ -327,176 +349,196 @@
     });
 
 </script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const userId = sessionStorage.getItem('userId');
-        const email = sessionStorage.getItem('email');
-        const sessionToken = sessionStorage.getItem('sessionToken');
 
-        if (!userId || !email || !sessionToken) {
-            console.error('Invalid session data');
-            return;
-        }
 
-        const requestData = {
-            userId: userId,
-            email: email,
-            sessionToken: sessionToken
-        };
+<% if (userRole === 1 || userRole === 2 || userRole === 3) { %>
 
-        // Fetch user posts
-        fetch('/get-user-posts', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestData)
-        })
-            .then(response => response.json())
-            .then(userPosts => {
-                const yourPostsContainer = document.querySelector('.your-posts');
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const userId = sessionStorage.getItem('userId');
+            const email = sessionStorage.getItem('email');
+            const sessionToken = sessionStorage.getItem('sessionToken');
 
-                // Create an Intl.DateTimeFormat object for Estonian locale
-                const dateFormatter = new Intl.DateTimeFormat('et-EE', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
+            if (!userId || !email || !sessionToken) {
+                console.error('Invalid session data');
+                return;
+            }
 
-                userPosts.forEach(post => {
-                    const postLink = document.createElement('a');
-                    postLink.href = post.url;
+            const requestData = {
+                userId: userId,
+                email: email,
+                sessionToken: sessionToken
+            };
 
-                    // Format the date to Estonian
-                    const formattedDate = dateFormatter.format(new Date(post.date));
-
-                    postLink.textContent = post.title + " ●" + " (" + formattedDate + ")"; // Displaying formatted date behind each link
-                    postLink.classList.add('post-link');
-                    yourPostsContainer.appendChild(postLink);
-                    yourPostsContainer.appendChild(document.createElement('br')); // Adding line break
-                });
+            // Fetch user posts
+            fetch('/get-user-posts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
             })
-            .catch(error => console.error('Error fetching user posts:', error));
+                .then(response => response.json())
+                .then(userPosts => {
+                    const yourPostsContainer = document.querySelector('.your-posts');
 
-        // Fetch user comments
-        fetch('/get-user-comments', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestData)
-        })
-            .then(response => response.json())
-            .then(userComments => {
-                const yourCommentsContainer = document.querySelector('.your-comments');
+                    // Create an Intl.DateTimeFormat object for Estonian locale
+                    const dateFormatter = new Intl.DateTimeFormat('et-EE', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
 
-                // Create an Intl.DateTimeFormat object for Estonian locale
-                const dateFormatter = new Intl.DateTimeFormat('et-EE', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
+                    userPosts.forEach(post => {
+                        const postLink = document.createElement('a');
+                        postLink.href = post.url;
 
-                userComments.forEach(comment => {
-                    const commentLink = document.createElement('a');
-                    commentLink.href = comment.url;
+                        // Format the date to Estonian
+                        const formattedDate = dateFormatter.format(new Date(post.date));
 
-                    // Format the date to Estonian
-                    const formattedDate = dateFormatter.format(new Date(comment.date));
+                        const dateSpan = document.createElement('span'); // Creating a span for the formatted date
+                        dateSpan.textContent = "  ● (" + formattedDate + ")";
 
-                    commentLink.textContent = comment.title + " ●" + " (" + formattedDate + ")"; // Displaying formatted date behind each link
-                    commentLink.classList.add('comment-link');
-                    yourCommentsContainer.appendChild(commentLink);
-                    yourCommentsContainer.appendChild(document.createElement('br')); // Adding line break
-                });
+                        postLink.textContent = post.title ;
+                        postLink.classList.add('post-link');
+                        postLink.appendChild(dateSpan);
+                        yourPostsContainer.appendChild(postLink);
+                    });
+
+                })
+                .catch(error => console.error('Error fetching user posts:', error));
+
+            // Fetch user comments
+            fetch('/get-user-comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
             })
-            .catch(error => console.error('Error fetching user comments:', error));
-    });
+                .then(response => response.json())
+                .then(userComments => {
+                    const yourCommentsContainer = document.querySelector('.your-comments');
 
-</script>
+                    // Create an Intl.DateTimeFormat object for Estonian locale
+                    const dateFormatter = new Intl.DateTimeFormat('et-EE', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+
+                    userComments.forEach(comment => {
+                        const commentLink = document.createElement('a');
+                        commentLink.href = comment.url;
+
+                        // Format the date to Estonian
+                        const formattedDate = dateFormatter.format(new Date(comment.date));
+
+                        const dateSpan = document.createElement('span'); // Creating a span for the formatted date
+                        dateSpan.textContent = "  ● (" + formattedDate + ")";
+
+                        commentLink.textContent = comment.title;
+                        commentLink.classList.add('comment-link');
+                        commentLink.appendChild(dateSpan);
+                        yourCommentsContainer.appendChild(commentLink);
+                    });
+                })
+                .catch(error => console.error('Error fetching user comments:', error));
+        });
+
+    </script>
+
+<% } %>
 
 <script>
-    let isOldest = true;
+    function handleSortingChange() {
+        const selectedValue = document.getElementById('sortingDropdown').value;
 
-    function toggleOrder() {
-        if (isOldest) {
-            orderPostsByPopularity();
-            document.getElementById('orderButton').innerHTML = 'Populaarseimad <i class="fa-solid fa-arrow-up fa-sm"></i>';
-        } else {
-            orderPostsByLeastPopularity();
-            document.getElementById('orderButton').innerHTML = 'Vähem populaarsed <i class="fa-solid fa-arrow-down fa-sm"></i>';
+        switch (selectedValue) {
+            case 'popularity':
+                orderPostsByPopularity();
+                break;
+            case 'leastPopularity':
+                orderPostsByLeastPopularity();
+                break;
+            case 'newest':
+                orderPostsByNewest();
+                break;
+            case 'oldest':
+                orderPostsByOldest();
+                break;
+            default:
+                console.error('Invalid sorting option selected.');
+                break;
         }
-        isOldest = !isOldest;
     }
 
     function orderPostsByPopularity() {
         const posts = Array.from(document.querySelectorAll('.post'));
         const postsContainer = document.getElementById('posts');
 
-        posts.sort((a, b) => a.querySelector('.comment').innerText.split(' ')[0] - b.querySelector('.comment').innerText.split(' ')[0]);
+        posts.sort((a, b) => {
+            const commentsA = parseInt(a.querySelector('.comment').innerText);
+            const commentsB = parseInt(b.querySelector('.comment').innerText);
+            return commentsB - commentsA;
+        });
 
         posts.forEach(post => postsContainer.appendChild(post));
 
-        if (document.getElementById('orderButton').innerText = 'Vähem populaarsed') {
-            document.getElementById('orderButton').innerText = 'Populaarseimad';
-        } else {
-            document.getElementById('orderButton').innerText = 'Vähem populaarsed';
-        }
+        // Update dropdown menu to reflect the current sorting
+        document.getElementById('sortingDropdown').value = 'popularity';
     }
 
     function orderPostsByLeastPopularity() {
         const posts = Array.from(document.querySelectorAll('.post'));
         const postsContainer = document.getElementById('posts');
 
-        posts.sort((a, b) => b.querySelector('.comment').innerText.split(' ')[0] - a.querySelector('.comment').innerText.split(' ')[0]);
+        posts.sort((a, b) => {
+            const commentsA = parseInt(a.querySelector('.comment').innerText);
+            const commentsB = parseInt(b.querySelector('.comment').innerText);
+            return commentsA - commentsB;
+        });
 
         posts.forEach(post => postsContainer.appendChild(post));
 
-        if (document.getElementById('orderButton').innerText = 'Populaarseimad') {
-            document.getElementById('orderButton').innerText = 'Vähem populaarsed';
-        } else {
-            document.getElementById('orderButton').innerText = 'Populaarseimad';
-        }
+        // Update dropdown menu to reflect the current sorting
+        document.getElementById('sortingDropdown').value = 'leastPopularity';
     }
-</script>
-<script>
-    function populateYearDropdown() {
-        const yearDropdown = document.getElementById('yearDropdown');
-        const postDates = Array.from(document.querySelectorAll('.post')).map(post => post.querySelector('.postDate').textContent);
-        const years = [...new Set(postDates.map(date => new Date(date).getFullYear()))]; // Extract unique years
+    function orderPostsByNewest() {
+        const posts = Array.from(document.querySelectorAll('.post'));
+        const postsContainer = document.getElementById('posts');
 
-        yearDropdown.innerHTML = '<option value="" selected>Vali aasta</option>'; // Reset dropdown
-
-        years.forEach(year => {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            yearDropdown.appendChild(option);
+        posts.sort((a, b) => {
+            const postDateA = a.querySelector('.post-date').getAttribute('data-date');
+            const postDateB = b.querySelector('.post-date').getAttribute('data-date');
+            return postDateB.localeCompare(postDateA); // Compare as strings
         });
+
+        posts.forEach(post => postsContainer.appendChild(post));
+
+        // Update dropdown menu to reflect the current sorting
+        document.getElementById('sortingDropdown').value = 'newest';
     }
 
-    function filterPostsByYear() {
-        const selectedYear = document.getElementById('yearDropdown').value;
+    function orderPostsByOldest() {
+        const posts = Array.from(document.querySelectorAll('.post'));
+        const postsContainer = document.getElementById('posts');
 
-        const posts = document.querySelectorAll('.post');
-
-        posts.forEach(post => {
-            const postDateElement = post.querySelector('.postDate');
-            if (selectedYear === "" || (postDateElement && new Date(postDateElement.textContent).getFullYear().toString() === selectedYear)) {
-                post.style.display = '';
-            } else {
-                post.style.display = 'none';
-            }
+        posts.sort((a, b) => {
+            const postDateA = a.querySelector('.post-date').getAttribute('data-date');
+            const postDateB = b.querySelector('.post-date').getAttribute('data-date');
+            return postDateA.localeCompare(postDateB); // Compare as strings
         });
+
+        posts.forEach(post => postsContainer.appendChild(post));
+
+        // Update dropdown menu to reflect the current sorting
+        document.getElementById('sortingDropdown').value = 'oldest';
     }
 
-    document.getElementById('yearDropdown').addEventListener('change', filterPostsByYear);
 
-    document.addEventListener("DOMContentLoaded", function() {
-        populateYearDropdown();
-        filterPostsByYear(); // Filter initially based on default selection
-    });
 </script>
+
 
 
 </html>

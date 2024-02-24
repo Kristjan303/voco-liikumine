@@ -69,25 +69,27 @@
         <p><%= postContent %></p>
     </main>
 
+    <% if (userRole === 1 || userRole === 2 || userRole === 3) { %>
 
-    <form id="commentForm">
-        <label for="postComment">Lisa kommentaar</label>
-        <textarea id="postComment" name="postComment" placeholder="Kirjuta midagi..." required></textarea>
-        <button type="submit">Postita</button>
-    </form>
+        <form id="commentForm">
+            <label for="postComment">Lisa kommentaar</label>
+            <textarea id="postComment" name="postComment" placeholder="Kirjuta midagi..." required></textarea>
+            <button type="submit">Postita</button>
+        </form>
 
-    <script>
-        // JavaScript code to automatically resize the textarea based on its content
-        const textarea = document.getElementById('postComment');
+        <script>
+            // JavaScript code to automatically resize the textarea based on its content
+            const textarea = document.getElementById('postComment');
 
-        textarea.addEventListener('input', () => {
-            // Reset textarea height to auto so that it grows as content increases
-            textarea.style.height = 'auto';
-            // Set the height of the textarea to its scroll height, which will adjust its size based on content
-            textarea.style.height = textarea.scrollHeight + 'px';
-        });
-    </script>
+            textarea.addEventListener('input', () => {
+                // Reset textarea height to auto so that it grows as content increases
+                textarea.style.height = 'auto';
+                // Set the height of the textarea to its scroll height, which will adjust its size based on content
+                textarea.style.height = textarea.scrollHeight + 'px';
+            });
+        </script>
 
+    <% } %>
 
     <div class="hold-comments">
         <div id="commentsContainer">
@@ -203,49 +205,52 @@
 
 </script>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const commentForm = document.getElementById('commentForm');
-        commentForm.addEventListener('submit', function(event) {
-            event.preventDefault();
+<% if (userRole === 1 || userRole === 2 || userRole === 3) { %>
 
-            const postComment = document.getElementById('postComment').value;
-            const postTitle = '<%= postTitle %>'; // Assuming postTitle is being populated from server-side
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const commentForm = document.getElementById('commentForm');
+            commentForm.addEventListener('submit', function(event) {
+                event.preventDefault();
 
-            const payload = {
-                postComment: postComment,
-                postTitle: postTitle,
-                email: sessionStorage.getItem('email'),
-                userId: sessionStorage.getItem('userId'),
-                sessionToken: sessionStorage.getItem('sessionToken')
-            };
+                const postComment = document.getElementById('postComment').value;
+                const postTitle = '<%= postTitle %>'; // Assuming postTitle is being populated from server-side
 
-            fetch('/submit-comment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to post comment');
-                    }
-                    return response.json();
+                const payload = {
+                    postComment: postComment,
+                    postTitle: postTitle,
+                    email: sessionStorage.getItem('email'),
+                    userId: sessionStorage.getItem('userId'),
+                    sessionToken: sessionStorage.getItem('sessionToken')
+                };
+
+                fetch('/submit-comment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
                 })
-                .then(data => {
-                    console.log('Comment posted successfully:', data);
-                    location.reload();
-                    // Handle success if needed
-                })
-                .catch(error => {
-                    console.error('Error posting comment:', error);
-                    // Handle error if needed
-                });
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to post comment');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert('Kommentaar edukalt postitatud!')
+                        location.reload();
+                        // Handle success if needed
+                    })
+                    .catch(error => {
+                        console.error('Error posting comment:', error);
+                        // Handle error if needed
+                    });
+            });
         });
-    });
-</script>
+    </script>
 
+<% } %>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {

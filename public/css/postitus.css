@@ -124,6 +124,7 @@ form button:hover {
     height: auto;
     background-color: #000;
     margin: 0;
+    margin-bottom: 10px;
 }
 .black-line2 {
     width: 20px;

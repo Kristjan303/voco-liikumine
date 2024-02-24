@@ -73,7 +73,6 @@ input[type="file"] {
 }
 
 .upload {
-    margin-top: 20px;
     margin-bottom: 20px;
     width: 250px;
     display: flex;
@@ -148,7 +147,8 @@ input[type="file"] {
     padding: 10px;
     border-radius: 5px 0 0 5px;
     border-style: none;
-    background-color: #dddddd;
+    border: 1px solid #cccccc;
+    background-color: #f8f8f8;
 }
 .new-directory input:focus {
     outline: none;
@@ -317,4 +317,15 @@ input[type="file"] {
 }
 .file-tree .hold .scroll:hover {
     color: #2980b9;
+}
+.hold-upload-galerii {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    padding: 20px;
+    background-color: ghostwhite;
+    border-radius: 10px;
+    border: 1px solid #f3f3f3;
+    justify-items: start;
+    justify-content: space-evenly;
 }

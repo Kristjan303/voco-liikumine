@@ -135,11 +135,13 @@
     padding: 10px;
     border-radius: 5px;
     border-style: none;
-    background-color: #dddddd;
+    border: 1px solid #cccccc;
+    background-color: #f8f8f8;
     margin-right: 10px;
 }
 .new-article input:focus {
     outline: none;
+    border: 1px solid #2980b9;
 }
 .new-article button {
     padding: 5px;
@@ -165,7 +167,15 @@
 
 .note-editor {
     width: 100%;
+    background-color: white;
 }
 
-
+.hold-create-article {
+    background: ghostwhite;
+    border: 1px solid #f3f3f3;
+    width: 100%;
+    border-radius: 10px;
+    padding: 1em;
+    margin-bottom: 20px;
+}
 

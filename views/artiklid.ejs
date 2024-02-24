@@ -65,53 +65,53 @@
 
 
         <% if (userRole === 2 || userRole === 3) { %>
+        <section class="hold-create-article">
+            <h2>Lisa uus artikkel</h2>
 
-        <h2>Lisa uus artikkel</h2>
-
-        <div class="new-article">
-            <form id="createArticle" onsubmit="submitForm(event)">
-                <input type="text" name="newArticleHeader" id="newArticleHeader" placeholder="Uue artikli pealkiri">
-                <input type="hidden" id="summernoteContent" name="summernoteContent">
-                <button type="submit"><i class="fa-solid fa-plus fa-lg"></i></button>
-                <div class="error" id="error-message-container">
-                    <!-- Error message will be dynamically inserted here -->
-                </div>
-            </form>
-        </div>
+            <div class="new-article">
+                <form id="createArticle" onsubmit="submitForm(event)">
+                    <input type="text" name="newArticleHeader" id="newArticleHeader" placeholder="Uue artikli pealkiri">
+                    <input type="hidden" id="summernoteContent" name="summernoteContent">
+                    <button type="submit"><i class="fa-solid fa-plus fa-lg"></i></button>
+                    <div class="error" id="error-message-container">
+                        <!-- Error message will be dynamically inserted here -->
+                    </div>
+                </form>
+            </div>
 
 
 
-            <div id="summernote"></div>
-            <script>
-                $('#summernote').summernote({
-                    placeholder: 'Artikli sisu...',
-                    tabsize: 2,
-                    height: 200,
-                    toolbar: [
-                        ['style', ['style']],
-                        ['font', ['bold', 'underline', 'clear']],
-                        ['color', ['color']],
-                        ['para', ['ul', 'ol', 'paragraph']],
-                        ['table', ['table']],
-                        ['insert', ['link', 'picture']],
-                        ['view', ['help']]
-                    ],
-                    callbacks: {
-                        onPaste: function (e) {
-                            // Prevent the default paste behavior
-                            e.preventDefault();
+                <div id="summernote"></div>
+                <script>
+                    $('#summernote').summernote({
+                        placeholder: 'Artikli sisu...',
+                        tabsize: 2,
+                        height: 200,
+                        toolbar: [
+                            ['style', ['style']],
+                            ['font', ['bold', 'underline', 'clear']],
+                            ['color', ['color']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['table', ['table']],
+                            ['insert', ['link', 'picture']],
+                            ['view', ['help']]
+                        ],
+                        callbacks: {
+                            onPaste: function (e) {
+                                // Prevent the default paste behavior
+                                e.preventDefault();
 
-                            // Get the pasted content
-                            var pastedContent = (e.originalEvent.clipboardData || window.clipboardData).getData('text/plain');
+                                // Get the pasted content
+                                var pastedContent = (e.originalEvent.clipboardData || window.clipboardData).getData('text/plain');
 
-                            // Insert the plain text into the editor
-                            document.execCommand('insertText', false, pastedContent);
+                                // Insert the plain text into the editor
+                                document.execCommand('insertText', false, pastedContent);
+                            }
                         }
-                    }
-                });
-            </script>
+                    });
+                </script>
 
-
+        </section>
         <% } %>
         <section class="hold-filter">
             <button class="order-btn" id="orderButton" onclick="toggleOrder()">Vanimad <i class="fa-solid fa-arrow-down fa-sm"></i> </button>
@@ -218,7 +218,7 @@
             // Check if newArticleHeader or summernoteContent is empty
             if (!formData.newArticleHeader || !formData.summernoteContent) {
                 console.error('New article header or summernote content is empty');
-                document.getElementById('error-message-container').innerText = 'New article header or summernote content is empty';
+                document.getElementById('error-message-container').innerText = 'Uue artikli pealkiri või sisu ei tohi olla tühi!';
                 return;
             }
 

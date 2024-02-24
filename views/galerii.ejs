@@ -59,6 +59,8 @@
         </div>
         <h1>Galerii</h1>
         <% if (userRole === 2 || userRole === 3) { %>
+        <section class="hold-upload-galerii">
+            <div>
             <p>Lisa uus kaust:</p>
             <div class="new-directory">
                 <form id="createDirectoryForm">
@@ -69,7 +71,9 @@
                     <!-- Error message will be dynamically inserted here -->
                 </div>
             </div>
-
+            </div>
+            <div>
+            <p>Lae pilte üles:</p>
             <div class="upload">
                 <div class="upload-buttons">
                     <label for="fileInput" class="custom-button"><i class="fas fa-plus fa-xl"></i></label>
@@ -84,6 +88,8 @@
                 <p id="fileCount" onclick="toggleFileList()">Ühtegi faili pole valitud</p>
                 <ul id="fileList" onclick="removeFile(event)"></ul>
             </div>
+            </div>
+        </section>
         <% } %>
     </div>
     <div class="search-galerii">
@@ -369,7 +375,7 @@
             const email = sessionStorage.getItem('email'); // Retrieve email from sessionStorage
 
             if (!newDirectoryName || !userId || !sessionToken || !email) {
-                errorMessageContainer.innerHTML = 'Directory name is mandatory and session data is missing';
+                errorMessageContainer.innerHTML = 'Nimi on koohustutslik kui soovite uut kasuta luua!';
                 return;
             }
 

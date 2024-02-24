@@ -459,6 +459,12 @@ app.post('/submit-article', (req, res) => {
             return res.status(400).json({ success: false, message: 'Uue artikli pealkiri või sisu ei tohi olla tühi!' });
         }
 
+        // Check if summernoteContent is '<p><br></p>'
+        if (summernoteContent.trim() === '<p><br></p>') {
+            console.log('Summernote content cannot be empty');
+            return res.status(400).json({ success: false, message: 'Artikkel ei tohi olla tühi!' });
+        }
+
         const headerSql = "SELECT artikli_pealkiri FROM vocoliikumine.artiklid WHERE artikli_pealkiri = ?";
         db.query(headerSql, [newArticleHeader], (err, headerResult) => {
 
@@ -489,6 +495,7 @@ app.post('/submit-article', (req, res) => {
         });
     });
 });
+
 
 // Add an endpoint to fetch articles
 app.get('/get-articles',  (req, res) => {
@@ -719,14 +726,39 @@ app.get('/foorum/:postTitle', (req, res) => {
         const userName = result[0].userName;
         const postDateTime = result[0].postDate.toLocaleString('et-EE', { dateStyle: 'medium', timeStyle: 'medium' }); // Formatting date and time according to Estonian standards
 
-        res.render('postitus', {
-            postTitle: postTitle,
-            postContent: postContent,
-            userName: userName,
-            postDate: postDateTime
-        });
+        // Check if the user is logged in
+        if (req.session.user) {
+            const userId = req.session.user.userId;
+            const userRoleQuery = 'SELECT rolli_id FROM kasutajad WHERE kasutaja_id = ?';
+
+            db.query(userRoleQuery, [userId], (err, results) => {
+                if (err) {
+                    console.error('Error fetching user role:', err);
+                    res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                } else {
+                    const userRole = results[0].rolli_id;
+                    res.render('postitus', {
+                        postTitle: postTitle,
+                        postContent: postContent,
+                        userName: userName,
+                        postDate: postDateTime,
+                        userRole: userRole
+                    });
+                }
+            });
+        } else {
+            // User not logged in; render without userRole
+            res.render('postitus', {
+                postTitle: postTitle,
+                postContent: postContent,
+                userName: userName,
+                postDate: postDateTime,
+                userRole: 0
+            });
+        }
     });
 });
+
 
 
 app.post('/submit-comment', (req, res) => {

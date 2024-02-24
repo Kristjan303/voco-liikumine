@@ -253,7 +253,7 @@ section {
 
 /* ------filter------ */
 
-.order-btn, #yearDropdown {
+.order-btn, #yearDropdown, #sortingDropdown{
     padding: 10px;
     background-color: #f8f8f8;
     border-radius: 5px;
@@ -265,7 +265,7 @@ section {
 
     font-family: "Montserrat", sans-serif;
 }
-#yearDropdown option {
+#yearDropdown option, #sortingDropdown option {
     padding: 10px;
     background-color: ghostwhite;
     border-radius: 2px;
@@ -273,12 +273,12 @@ section {
     transition: 0.2s;
     border-style: none;
 }
-#yearDropdown:focus {
+#yearDropdown:focus, #sortingDropdown:focus {
     outline: none;
     border: 1px solid #2980b9;
 }
 
-.order-btn:hover, #yearDropdown:hover {
+.order-btn:hover, #yearDropdown:hover, #sortingDropdown:hover {
     background-color: #2980b9;
     color: #ffffff;
     option {

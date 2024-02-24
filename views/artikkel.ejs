@@ -78,12 +78,13 @@
                 </div>
             </div>
 
-            <div id="holdEditHeader" style="display: none">
-                <p>Artikli pealkiri: </p>
-                <input type="text" name="editArticleHeader" id="editArticleHeader"  value="<%= articleHeader %>">
-            </div>
-            <div id="summernote" style="display: none;"></div>
-
+            <section id="holdEdit">
+                <div id="holdEditHeader" style="display: none">
+                    <p>Artikli pealkiri: </p>
+                    <input type="text" name="editArticleHeader" id="editArticleHeader"  value="<%= articleHeader %>">
+                </div>
+                <div id="summernote" style="display: none;"></div>
+            </section>
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
                     var isSummernoteVisible = false;
@@ -91,6 +92,7 @@
                     var submitEditButton = document.getElementById("submitEdit");
                     var editArticleHeader = document.getElementById("editArticleHeader");
                     var holdEditHeader = document.getElementById("holdEditHeader");
+                    var holdEdit = document.getElementById("holdEdit");
 
                     document.getElementById("edit-article-trigger").addEventListener("click", function() {
                         if (!isSummernoteVisible) {
@@ -98,6 +100,7 @@
                             submitEditButton.style.display = ""; // Show the submit button
                             editArticleHeader.value = "<%= articleHeader %>";
                             holdEditHeader.style.display = "";
+                            holdEdit.style.display = "flex";
                             $('#summernote').summernote({
                                 tabsize: 2,
                                 height: 200,
@@ -120,6 +123,7 @@
                             holdEditHeader.style.display = "none";
                             editArticleHeader.value = "";
                             $('#summernote').summernote('destroy');
+                            holdEdit.style.display = "none";
                         }
 
                         isSummernoteVisible = !isSummernoteVisible;
