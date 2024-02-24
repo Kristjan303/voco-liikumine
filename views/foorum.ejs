@@ -538,6 +538,32 @@
 
 
 </script>
+<script>
+    function searchPosts() {
+        const searchInput = document.querySelector('.header-search input').value.trim().toLowerCase();
+        const postTitles = document.querySelectorAll('.post h2');
+        const postContents = document.querySelectorAll('.post p');
+        const postAuthors = document.querySelectorAll('.post .hold-data p:first-child');
+        const postDates = document.querySelectorAll('.post .hold-data p:last-child');
+
+        postTitles.forEach((postTitle, index) => {
+            const postContent = postContents[index].textContent.toLowerCase().trim();
+            const postAuthor = postAuthors[index].textContent.toLowerCase().trim();
+
+            if (postTitle.textContent.toLowerCase().includes(searchInput) ||
+                postContent.includes(searchInput) ||
+                postAuthor.includes(searchInput) ||
+                postDates[index].textContent.toLowerCase().includes(searchInput)) {
+                postTitle.closest('.post').style.display = '';
+            } else {
+                postTitle.closest('.post').style.display = 'none';
+            }
+        });
+    }
+
+    document.querySelector('.header-search input').addEventListener('input', searchPosts);
+
+</script>
 
 
 
