@@ -22,7 +22,7 @@
         </a>
     </div>
     <div class="header-search">
-        <input type="text" placeholder="Otsi postituste seast...">
+        <input type="text" placeholder="Otsi kommentaaride seast...">
         <button type="submit">
             <i class="fa-solid fa-search fa-lg" style="color: #000000;"></i>
         </button>
@@ -357,8 +357,34 @@
 
 </script>
 <script>
+    function searchComments() {
+        const searchInput = document.querySelector('.header-search input').value.trim().toLowerCase();
+        const comments = document.querySelectorAll('.comment');
 
+        comments.forEach(comment => {
+            const contentParagraphs = comment.querySelectorAll('p:not(.hold-data p)');
+            let content = '';
+            contentParagraphs.forEach(paragraph => {
+                content += paragraph.textContent.trim().toLowerCase() + ' ';
+            });
 
+            const author = comment.querySelector('.hold-data p:first-child').textContent.toLowerCase().trim();
+            const date = comment.querySelector('.hold-data p:last-child').textContent.toLowerCase().trim();
+
+            if (content.includes(searchInput) ||
+                author.includes(searchInput) ||
+                date.includes(searchInput)) {
+                comment.style.display = ''; // Show the comment if it matches the search
+                comment.parentElement.style.display = ''; // Show the comment logic wrapper
+            } else {
+                comment.style.display = 'none'; // Hide the comment if it doesn't match the search
+                comment.parentElement.style.display = 'none'; // Hide the comment logic wrapper
+            }
+        });
+    }
+
+    // Add event listener to trigger search on input
+    document.querySelector('.header-search input').addEventListener('input', searchComments);
 </script>
 
 
