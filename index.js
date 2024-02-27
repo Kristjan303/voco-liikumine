@@ -496,6 +496,80 @@ app.post('/submit-article', (req, res) => {
     });
 });
 
+app.post('/submit-news', (req, res) => {
+    const { newNewsHeader, summernoteContent, sessionToken, userId, email } = req.body;
+
+    // Check if the session exists in the sessions array
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Query to retrieve user's role_id from the database
+    const roleSql = "SELECT rolli_id FROM vocoliikumine.kasutajad WHERE kasutaja_id = ?";
+    db.query(roleSql, [userId], (roleErr, roleResult) => {
+        if (roleErr) {
+            console.error('Error fetching user role:', roleErr);
+            return res.status(500).json({ success: false, message: 'Error fetching user role' });
+        }
+
+        if (roleResult.length === 0) {
+            console.log('User not found');
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const roleId = roleResult[0].rolli_id;
+
+        // Check if the user's role_id is not 2 or 3
+        if (roleId !== 2 && roleId !== 3) {
+            console.log('User does not have appropriate role');
+            return res.status(403).json({ success: false, message: 'User does not have appropriate role' });
+        }
+
+        // Check if newNewsHeader or summernoteContent is empty
+        if (!newNewsHeader || !summernoteContent) {
+            console.log('New article header or summernote content is empty');
+            return res.status(400).json({ success: false, message: 'Uue uudise pealkiri või sisu ei tohi olla tühi!' });
+        }
+
+        // Check if summernoteContent is '<p><br></p>'
+        if (summernoteContent.trim() === '<p><br></p>') {
+            console.log('Summernote content cannot be empty');
+            return res.status(400).json({ success: false, message: 'uudis ei tohi olla tühi!' });
+        }
+
+        const headerSql = "SELECT uudise_pealkiri FROM vocoliikumine.uudised WHERE uudise_pealkiri = ?";
+        db.query(headerSql, [newNewsHeader], (err, headerResult) => {
+
+            if (headerResult.length > 0 && newNewsHeader === headerResult[0].uudise_pealkiri) {
+                console.log('uudis on juba olemas');
+                return res.status(400).json({ success: false, message: 'uudis on juba olemas!' });
+            } else {
+                if (headerResult.length === 0) {
+                    // No matching news found, proceed with insertion
+                    const sql = "INSERT INTO vocoliikumine.uudised (kasutaja_id, uudise_pealkiri, uudise_sisu, postitamise_kuupäev) VALUES (?, ?, ?, NOW())";
+                    db.query(sql, [userId, newNewsHeader, summernoteContent], (err, result) => {
+                        if (err) {
+                            console.error('Error inserting data:', err);
+                            res.status(500).json({ success: false, message: 'Error inserting data' });
+                        } else {
+                            console.log('Data inserted successfully');
+                            res.status(200).json({ success: true, message: 'Data inserted successfully' });
+                        }
+                    });
+                } else {
+                    // news with the same header already exists, return appropriate error message
+                    console.log('Article with the same header already exists');
+                    return res.status(400).json({ success: false, message: 'uudise pealkiri on juba olemas!' });
+                }
+            }
+        });
+    });
+});
+
+
 
 // Add an endpoint to fetch articles
 app.get('/get-articles',  (req, res) => {
@@ -516,6 +590,31 @@ app.get('/get-articles',  (req, res) => {
         });
 
         res.status(200).json(articlesWithUrls);
+    });
+});
+
+// Add an endpoint to fetch news
+
+app.get('/get-news',  (req, res) => {
+    // Query to retrieve news from the database
+    const sql = "SELECT u.uudise_pealkiri AS newsHeader, u.uudise_sisu AS summernoteContent, k.kasutajanimi AS newsAuthor, DATE_FORMAT(u.postitamise_kuupäev, '%d-%m-%Y') as newsDate FROM vocoliikumine.uudised u JOIN vocoliikumine.kasutajad k ON u.kasutaja_id = k.kasutaja_id ORDER BY u.postitamise_kuupäev DESC;"
+
+// Now you can use the "sql" variable in your code as needed.
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error('Error fetching news:', err);
+            return res.status(500).json({ success: false, message: 'Error fetching news' });
+        }
+
+        // Transform the result to include the URLs
+        const newsWithUrls = result.map(news => {
+            const newsHeader = news.newsHeader;
+            // Create the URL for each news
+            const url = `/uudised/${newsHeader}`;
+            return { ...news, url };
+        });
+
+        res.status(200).json(newsWithUrls);
     });
 });
 
@@ -574,6 +673,61 @@ userRole: 0            });
     });
 });
 
+// Route for accessing individual articles
+app.get('/uudised/:newsHeader', (req, res) => {
+    const newsHeader = req.params.newsHeader;
+
+    // Query to retrieve a specific news content based on the header
+    const sql = "SELECT u.uudise_sisu AS summernoteContent, k.kasutajanimi AS newsAuthor, DATE_FORMAT(u.postitamise_kuupäev, '%d-%m-%Y') AS newsDate FROM vocoliikumine.uudised u JOIN vocoliikumine.kasutajad k ON u.kasutaja_id = k.kasutaja_id WHERE u.uudise_pealkiri = ?";
+    db.query(sql, [newsHeader], (err, result) => {
+        if (err) {
+            console.error('Error fetching news content:', err);
+            return res.status(500).json({ success: false, message: 'Error fetching news content' });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ success: false, message: 'news not found' });
+        }
+
+        const newsContent = result[0].summernoteContent;
+        const newsAuthor = result[0].newsAuthor;
+        const newsDate = result[0].newsDate;
+
+        const wrappedContent = `<div class="wrappedContent"><p class="newsHeader">${newsHeader}</p> <div class="hold-news">${newsContent}</div></p>`;
+
+        // Check if the user is logged in
+        if (req.session.user) {
+            const userId = req.session.user.userId;
+            const userRoleQuery = 'SELECT rolli_id FROM kasutajad WHERE kasutaja_id = ?';
+
+            db.query(userRoleQuery, [userId], (err, results) => {
+                if (err) {
+                    console.error('Error fetching user role:', err);
+                    res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                } else {
+                    const userRole = results[0].rolli_id;
+                    res.render('uudis', {
+                        newsHeader: newsHeader,
+                        newsAuthor: newsAuthor,
+                        newsDate: newsDate,
+                        wrappedContent: wrappedContent,
+                        newsContent: newsContent,
+                        userRole: userRole
+                    });
+                }
+            });
+        } else {
+            // User not logged in; render without userRole
+            res.render('uudis', {
+                newsHeader: newsHeader,
+                newsAuthor: newsAuthor,
+                newsDate: newsDate,
+                wrappedContent: wrappedContent,
+                userRole: 0            });
+        }
+    });
+});
+
 // Endpoint to handle updating Summernote content
 app.post('/update-articles', (req, res) => {
     // Extract content from the request body
@@ -620,6 +774,53 @@ app.post('/update-articles', (req, res) => {
         }
     });
 });
+// Endpoint to handle updating Summernote content in news
+app.post('/update-news', (req, res) => {
+    // Extract content from the request body
+    const { newsHeader, newsContent, editNewsHeader } = req.body;
+
+    // SQL query to retrieve the existing content from the database
+    const sqlRetrieve = 'SELECT uudise_sisu FROM uudised WHERE uudise_pealkiri = ?';
+
+    // Execute the SQL query to retrieve existing content
+    db.query(sqlRetrieve, [newsHeader], (error, results, fields) => {
+        if (error) {
+            // If an error occurs, send an error response
+            console.error('Error retrieving existing content:', error);
+            res.status(500).json({ error: 'An error occurred while retrieving existing content.' });
+        } else {
+            // If retrieval was successful
+            if (results.length > 0) {
+                const existingContent = results[0].uudise_sisu;
+                // Check if the new content is the same as the existing content
+                if (existingContent === newsContent && newsHeader === editNewsHeader) {
+                    // If content is the same, inform frontend that no changes were made
+                    res.json({ success: false, message: 'No changes were made to the news content.' });
+                } else {
+                    // SQL query to update the content in the database
+                    const sqlUpdate = 'UPDATE uudised SET uudise_sisu = ?, uudise_pealkiri = ? WHERE uudise_pealkiri = ?';
+
+                    // Execute the SQL query to update the content
+                    db.query(sqlUpdate, [newsContent, editNewsHeader,newsHeader], (error, results, fields) => {
+                        if (error) {
+                            // If an error occurs, send an error response
+                            console.error('Error updating content:', error);
+                            res.status(500).json({ error: 'An error occurred while updating content.' });
+                        } else {
+                            // If the update was successful, send a success response
+                            console.log('Content updated successfully.');
+                            res.json({ success: true });
+                        }
+                    });
+                }
+            } else {
+                // If no existing content found, send an error response
+                res.status(404).json({ error: 'No existing content found for the provided news header.' });
+            }
+        }
+    });
+});
+
 
 app.post('/submit-post', (req, res) => {
     const { postTitle, postContent, sessionToken, userId, email } = req.body;

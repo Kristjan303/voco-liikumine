@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="../css/uudised.css">
     <title>Uudised 📰 | VOCO Liikumine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
 </head>
 <body>
 <header>
@@ -22,8 +26,8 @@
         </a>
     </div>
     <div class="header-search">
-        <input type="text" placeholder="Otsi...">
-        <button type="submit">
+        <input type="text" id="searchInput" placeholder="Otsi uudiste seast">
+        <button type="submit" onclick="searchNews()">
             <i class="fa-solid fa-search fa-lg" style="color: #000000;"></i>
         </button>
         <a id="siseneButton" class="sisene" href="/sisene">Sisene</a>
@@ -58,17 +62,69 @@
             <p><a href="/">Avaleht</a> > <span>Uudised</span></p>
         </div>
         <h1>Uudised</h1>
+
+        <% if (userRole === 2 || userRole === 3) { %>
+            <section class="hold-create-news">
+                <h2>Lisa uus uudis</h2>
+
+                <div class="new-news">
+                    <form id="createNews" onsubmit="submitForm(event)">
+                        <input type="text" name="newNewsHeader" id="newNewsHeader" placeholder="Uue uudise pealkiri">
+                        <input type="hidden" id="summernoteContent" name="summernoteContent">
+                        <button type="submit"><i class="fa-solid fa-plus fa-lg"></i></button>
+                        <div class="error" id="error-message-container">
+                            <!-- Error message will be dynamically inserted here -->
+                        </div>
+                    </form>
+                </div>
+
+                <div id="summernote"></div>
+                <script>
+                    $('#summernote').summernote({
+                        placeholder: 'uudise sisu...',
+                        tabsize: 2,
+                        height: 200,
+                        toolbar: [
+                            ['style', ['style']],
+                            ['font', ['bold', 'underline', 'clear']],
+                            ['color', ['color']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['table', ['table']],
+                            ['insert', ['link', 'picture']],
+                            ['view', ['help']]
+                        ],
+                        callbacks: {
+                            onPaste: function (e) {
+                                // Prevent the default paste behavior
+                                e.preventDefault();
+
+                                // Get the pasted content
+                                var pastedContent = (e.originalEvent.clipboardData || window.clipboardData).getData('text/plain');
+
+                                // Insert the plain text into the editor
+                                document.execCommand('insertText', false, pastedContent);
+                            }
+                        }
+                    });
+                </script>
+
+            </section>
+        <% } %>
+
+
+        <section class="hold-filter">
+            <button class="order-btn" id="orderButton" onclick="toggleOrder()">Vanimad <i class="fa-solid fa-arrow-down fa-sm"></i> </button>
+            <select id="yearDropdown">
+                <option value="" selected>Vali aasta</option>
+            </select>
+        </section>
+
     </div>
     <div class="search-news">
     </div>
-    <main class="news-content">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
+    <main id="news" class="news-content">
     </main>
 </section>
-
 
 
 
@@ -133,6 +189,238 @@
 </footer>
 
 </body>
+<% if (userRole === 2 || userRole === 3) { %>
+    <script>
+        function submitForm(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get Summernote content
+            var summernoteContent = $('#summernote').summernote('code');
+            // Set Summernote content to the hidden input field
+            document.getElementById('summernoteContent').value = summernoteContent;
+
+            // Get session data from sessionStorage
+            var sessionToken = sessionStorage.getItem('sessionToken');
+            var userId = sessionStorage.getItem('userId');
+            var email = sessionStorage.getItem('email');
+
+            // Create an object to hold form data
+            var formData = {
+                newNewsHeader: document.getElementById('newNewsHeader').value,
+                summernoteContent: summernoteContent,
+                sessionToken: sessionToken,
+                userId: userId,
+                email: email
+            };
+
+            // Check if newNewsHeader or summernoteContent is empty
+            if (!formData.newNewsHeader || !formData.summernoteContent) {
+                console.error('New news header or summernote content is empty');
+                document.getElementById('error-message-container').innerText = 'Uue uudise pealkiri või sisu ei tohi olla tühi!';
+                return;
+            }
+
+// Send form data to server
+            fetch('/submit-news', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        console.log('Data submitted successfully:', data);
+                        alert('Uus uudis lisatud!');
+                        location.reload();
+                        // Optionally, you can redirect the user or perform any other action upon successful submission
+                    } else {
+                        // Display error message if submission failed
+                        console.error('Error submitting data:', data.message);
+                        document.getElementById('error-message-container').innerText = data.message;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting data:', error);
+                    // Display error message if submission failed
+                    document.getElementById('error-message-container').innerText = 'Network error: ' + error.message;
+                });
+
+        }
+
+    </script>
+
+<% } %>
+
+
+<script>
+    function filterNewsByYear() {
+        const selectedYear = document.getElementById('yearDropdown').value;
+
+        const newsPreviews = document.querySelectorAll('.news-preview');
+
+        newsPreviews.forEach(newsPreview => {
+            const newsDateElement = newsPreview.querySelector('.news-date');
+            if (selectedYear === "" || (newsDateElement && newsDateElement.textContent.includes(selectedYear))) {
+                newsPreview.style.display = '';
+            } else {
+                newsPreview.style.display = 'none';
+            }
+        });
+    }
+    document.getElementById('yearDropdown').addEventListener('change', filterNewsByYear);
+
+</script>
+<script>
+
+    let isOldest = true;
+
+    function toggleOrder() {
+        if (isOldest) {
+            orderNewsByLatest();
+            document.getElementById('orderButton').innerHTML = 'Uusimad <i class="fa-solid fa-arrow-up fa-sm"></i>';
+        } else {
+            orderNewsByOldest();
+            document.getElementById('orderButton').innerHTML = 'Vanimad <i class="fa-solid fa-arrow-down fa-sm"></i>';
+        }
+        isOldest = !isOldest;
+    }
+
+    function orderNewsByLatest() {
+        const news = Array.from(document.querySelectorAll('.news-preview'));
+        const newsContainer = document.getElementById('news');
+
+        news.reverse(); // Reverse the order of news
+
+        news.forEach(news => newsContainer.appendChild(news));
+
+        if (document.getElementById('orderButton').innerText = 'Vanimad') {
+            document.getElementById('orderButton').innerText = 'Uusimad';
+        } else {
+            document.getElementById('orderButton').innerText = 'Vanimad';
+        }
+    }
+
+    function orderNewsByOldest() {
+        const news = Array.from(document.querySelectorAll('.news-preview'));
+        const newsContainer = document.getElementById('news');
+
+        news.reverse(); // Reverse the order of news
+
+        news.forEach(news => newsContainer.appendChild(news));
+
+        if (document.getElementById('orderButton').innerText = 'Uusimad') {
+            document.getElementById('orderButton').innerText = 'Vanimad';
+        } else {
+            document.getElementById('orderButton').innerText = 'Uusimad';
+        }
+    }
+
+</script>
+
+
+<script>
+    // Function to fetch articles from the server
+    function fetchNews() {
+        fetch('/get-news')
+            .then(response => response.json())
+            .then(data => {
+                // Clear existing articles
+                document.getElementById('news').innerHTML = '';
+
+                // Get the dropdown element
+                const yearDropdown = document.getElementById('yearDropdown');
+
+                // Array to hold unique years
+                const uniqueYears = [];
+
+                // Loop through fetched articles and append them to the main element
+                data.forEach(news => {
+                    const newsDiv = document.createElement('div');
+                    newsDiv.classList.add('news-preview');
+                    newsDiv.innerHTML = `
+                        <p class="news-author">Autor: ${news.newsAuthor}</p>
+                        <p class="news-date">${news.newsDate}</p>
+                        <h2>${news.newsHeader}</h2>
+                        <div>${news.summernoteContent}</div>
+                        <a href="uudised/${news.newsHeader}">Loe rohkem →</a>
+                    `;
+
+                    // Find potential image inside the div
+                    const imgElement = newsDiv.querySelector('img');
+
+                    // If an image is found, apply the style
+                    if (imgElement) {
+                        imgElement.style.width = '100px';
+                        imgElement.style.height = '100px';
+                        imgElement.style.margin = '10px';
+                        imgElement.style.borderRadius = '10px';
+                    }
+
+                    document.getElementById('news').appendChild(newsDiv);
+
+                    // Extract year from article date (assuming articleDate format is 'DD-MM-YYYY')
+                    const year = news.newsDate.split('-')[2];
+
+                    // Add year to uniqueYears if it's not already there
+                    if (!uniqueYears.includes(year)) {
+                        uniqueYears.push(year);
+                    }
+                });
+
+                // Populate the dropdown with unique years
+                uniqueYears.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearDropdown.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching articles:', error);
+                // Handle errors here
+            });
+    }
+
+    // Call  fetchNews function when the page loads
+    window.onload = fetchNews;
+</script>
+
+<script>
+    function searchNews() {
+        const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
+        const newsPreviews = document.querySelectorAll('.news-preview');
+
+        newsPreviews.forEach(newsPreview => {
+            const newsText = newsPreview.textContent.toLowerCase().trim();
+            const h2Element = newsPreview.querySelector('h2');
+            const summernoteContentElement = newsPreview.querySelector('.summernote-content');
+            const authorElement = newsPreview.querySelector('.news-author');
+            const newsDateElement = newsPreview.querySelector('.news-date');
+
+            if (newsText.includes(searchInput) ||
+                (h2Element && h2Element.textContent.toLowerCase().includes(searchInput)) ||
+                (authorElement && authorElement.textContent.toLowerCase().includes(searchInput)) ||
+                (newsDateElement && newsDateElement.textContent.toLowerCase().includes(searchInput)) ||
+                (summernoteContentElement && summernoteContentElement.textContent.toLowerCase().includes(searchInput))) {
+                newsPreview.style.display = '';
+            } else {
+                newsPreview.style.display = 'none';
+            }
+        });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', searchNews);
+
+
+</script>
+
 <script>
     // checkLogin.js
 
