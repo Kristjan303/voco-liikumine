@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Artiklid 📑 | <%= articleHeader %></title>
-    <link rel="stylesheet" href="../css/artiklid_html.css">
+    <title>Uudised 📰 | <%= newsHeader %></title>
+    <link rel="stylesheet" href="../css/uudis.css">
     <link rel="stylesheet" href="../css/index.css">
-    <link rel="stylesheet" href="../css/artiklid.css">
+    <link rel="stylesheet" href="../css/uudised.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
@@ -48,40 +48,40 @@
                         </svg>
     </a>
     <div class="nav-links">
-        <a style="color: #2980b9" href="../artiklid">Artiklid</a>
-        <a href="../uudised">Uudised</a>
+        <a href="../artiklid">Artiklid</a>
+        <a style="color: #2980b9" href="../uudised">Uudised</a>
         <a href="../foorum">Foorum</a>
         <a href="../treeningud">Treeningud</a>
         <a href="../galerii">Galerii</a>
     </div>
 </nav>
-<section class="artiklid">
+<section class="uudised">
     <div class="section-nav">
         <div class="path">
-            <p><a href="/">Avaleht</a> > <a href="/artiklid">Artiklid</a> > <span>"<%= articleHeader %>"</span></p>
+            <p><a href="/">Avaleht</a> > <a href="/uudised">Uudised</a> > <span>"<%= newsHeader %>"</span></p>
         </div>
-        <h1>Artiklid - <span style="font-weight: lighter"><%= articleHeader %></span></h1>
+        <h1>Uudised - <span style="font-weight: lighter"><%= newsHeader %></span></h1>
     </div>
-    <main class="article">
-        <p class="articleAuthor">Autor: <%= articleAuthor %></p>
-        <p class="articleDate"><%= articleDate %></p>
+    <main class="news">
+        <p class="newsAuthor">Autor: <%= newsAuthor %></p>
+        <p class="newsDate"><%= newsDate %></p>
 
 
         <% if (userRole === 2 || userRole === 3) { %>
 
             <div class="hold-edit">
-                <div class="edit-article" id="edit-article-trigger">
-                    <i class="fa-solid fa-file-pen fa-lg"></i> <p> Muuda </p>
+                <div class="edit-news" id="edit-news-trigger">
+                    <i class="fa-solid fa-file-pen fa-lg"></i> <p> Muuda</p>
                 </div>
-                <div class="submit-edit-article" id="submitEdit" style="display: none;">
+                <div class="submit-edit-news" id="submitEdit" style="display: none;">
                     <i class="fa-solid fa-file-import fa-lg"></i> <p> Salvesta muudatused</p>
                 </div>
             </div>
 
             <section id="holdEdit">
                 <div id="holdEditHeader" style="display: none">
-                    <p>Artikli pealkiri: </p>
-                    <input type="text" name="editArticleHeader" id="editArticleHeader"  value="<%= articleHeader %>">
+                    <p>uudise pealkiri: </p>
+                    <input type="text" name="editNewsHeader" id="editNewsHeader"  value="<%= newsHeader %>">
                 </div>
                 <div id="summernote" style="display: none;"></div>
             </section>
@@ -90,15 +90,15 @@
                     var isSummernoteVisible = false;
                     var summernoteDiv = document.getElementById("summernote");
                     var submitEditButton = document.getElementById("submitEdit");
-                    var editArticleHeader = document.getElementById("editArticleHeader");
+                    var editNewsHeader = document.getElementById("editNewsHeader");
                     var holdEditHeader = document.getElementById("holdEditHeader");
                     var holdEdit = document.getElementById("holdEdit");
 
-                    document.getElementById("edit-article-trigger").addEventListener("click", function() {
+                    document.getElementById("edit-news-trigger").addEventListener("click", function() {
                         if (!isSummernoteVisible) {
                             summernoteDiv.style.display = "block";
                             submitEditButton.style.display = ""; // Show the submit button
-                            editArticleHeader.value = "<%= articleHeader %>";
+                            editNewsHeader.value = "<%= newsHeader %>";
                             holdEditHeader.style.display = "";
                             holdEdit.style.display = "flex";
                             $('#summernote').summernote({
@@ -114,14 +114,14 @@
                                     ['view', ['help']]
                                 ]
                             });
-                            $('#summernote').summernote('code', `<%- articleContent %>`);
+                            $('#summernote').summernote('code', `<%- newsContent %>`);
                         } else {
                             $('#summernote').summernote('code', ''); // Clear Summernote content
                             summernoteDiv.style.display = "none";
                             submitEditButton.style.display = "none"; // Hide the submit button
                             // Destroy Summernote instance
                             holdEditHeader.style.display = "none";
-                            editArticleHeader.value = "";
+                            editNewseHeader.value = "";
                             $('#summernote').summernote('destroy');
                             holdEdit.style.display = "none";
                         }
@@ -131,16 +131,16 @@
 
                     // Add event listener for submit button
                     submitEditButton.addEventListener("click", function() {
-                        var articleHeader = "<%= articleHeader %>";
-                        var articleContent = $('#summernote').summernote('code');
+                        var newsHeader = "<%= newsHeader %>";
+                        var newsContent = $('#summernote').summernote('code');
                         var data = {
-                            articleHeader: articleHeader,
-                            articleContent: articleContent,
-                            editArticleHeader: editArticleHeader.value
+                            newsHeader: newsHeader,
+                            newsContent: newsContent,
+                            editNewsHeader: editNewsHeader.value
                         };
 
-                        // Send a POST request to the backend endpoint to update the article content
-                        fetch('/update-articles', {
+                        // Send a POST request to the backend endpoint to update the news content
+                        fetch('/update-news', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -151,20 +151,20 @@
                             .then(data => {
                                 if (data.success) {
                                     // Alert the user upon successful update
-                                    alert('Artikli sisu edukalt uuendatud!');
-                                    window.location.href = '/artiklid/' + editArticleHeader.value;
+                                    alert('uudise sisu edukalt uuendatud!');
+                                    window.location.href = '/uudised/' + editNewsHeader.value;
                                 } else {
-                                    if (data.message === 'No changes were made to the article content.') {
+                                    if (data.message === 'No changes were made to the news content.') {
                                         // Alert the user that no changes were made
                                         alert('Muudatusi pole tehtud!');
                                     } else {
-                                        console.error('Error updating article content:', data.error);
+                                        console.error('Error updating news content:', data.error);
                                         // Handle other error scenarios appropriately
                                     }
                                 }
                             })
                             .catch(error => {
-                                console.error('Error updating article content:', error);
+                                console.error('Error updating news content:', error);
                                 // Handle the error scenario appropriately
                             });
                     });
@@ -265,8 +265,8 @@
                                 if (data.success) {
                                     // If logout successful, reload the page to reflect the changes
                                     location.reload();
-                                    // delete all sessionStorage
-                                    sessionStorage.clear();
+                                    // clear session storage
+                                    localStorage.clear();
                                 } else {
                                     console.error('Error logging out:', data.message);
                                 }

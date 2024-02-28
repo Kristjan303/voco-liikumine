@@ -36,27 +36,27 @@ body {
     max-width: 750px;
 }
 
-.articleHeader {
+.newsHeader {
     font-size: xxx-large; font-weight: bold; margin-bottom: 20px;
 }
 
-.hold-article {
+.hold-news {
     display: flex; flex-direction: column;     width: 100%;
 
 }
-.article {
+.news {
     width: 100%;
     margin-bottom: 50px;
 }
 
-.articleAuthor {
+.newsAuthor {
     margin-right: auto;
 }
- .articleDate {
+.newsDate {
     margin-right: auto;
     margin-top: 10px;
     font-size: small;}
-.edit-article, .submit-edit-article
+.edit-news, .submit-edit-news
 {
     font-size: small;
     cursor: pointer;
@@ -72,15 +72,15 @@ body {
     border: 1px solid #cccccc;
     align-items: center;
 }
-.edit-article p, .submit-edit-article p {
+.edit-news p, .submit-edit-news p {
     margin-bottom: 0;
 }
 
 
-.submit-edit-article i {
+.submit-edit-news i {
     padding-right: 5px;
 }
-.edit-article i {
+.edit-news i {
     padding-right: 5px;
 }
 
@@ -95,15 +95,15 @@ body {
     flex-direction: row-reverse;
     margin-bottom: 10px;
 }
-.edit-article {
+.edit-news {
     margin-left: 10px
 }
 
-.submit-edit-article:hover {
+.submit-edit-news:hover {
     background-color: #2980b9;
     color: white;
 }
-#editArticleHeader {
+#editnewsHeader {
     min-width: 500px;
     padding: 8px 10px;
     border-radius: 5px;
@@ -112,7 +112,7 @@ body {
     background-color: #f8f8f8;
     height: 40px;
 }
-#editArticleHeader:focus {
+#editnewsHeader:focus {
     outline: none;
     border: 1px solid #2980b9;
 }

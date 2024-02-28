@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <title>Admin ⚙ | VOCO Liikumine</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+</head>
+
+<body>
+<% if (userRole === 3) { %>
+    <nav>
+        <a href="/" class="nav-logo">
+            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                 viewBox="0 0 412.74 334.7" style="enable-background:new 0 0 412.74 334.7;" xml:space="preserve">
+          <style type="text/css">
+              .st0{fill:#FFFFFF;}
+          </style>
+                <path class="st0" d="M259.98,112.52c0,27.49-22.29,49.78-49.78,49.78c-27.49,0-49.78-22.29-49.78-49.78
+              c0-27.49,22.29-49.78,49.78-49.78C237.69,62.74,259.98,85.02,259.98,112.52 M350.92,223.78c0-27.49-22.29-49.78-49.78-49.78
+              s-49.78,22.29-49.78,49.78c0,27.49,22.29,49.78,49.78,49.78S350.92,251.27,350.92,223.78 M214.48,223.92l35.27-35.27
+              c-9.01-9.05-21.49-14.65-35.27-14.65c-27.49,0-49.78,22.29-49.78,49.78s22.29,49.78,49.78,49.78c13.71,0,26.13-5.54,35.13-14.51
+              L214.48,223.92z M60.31,67.73l52.2,90.51l52.2-90.51H60.31z"/>
+        </svg>
+        </a>
+    </nav>
+
+    <main>
+        <!-- Admin navigation -->
+        <section class="admin-nav">
+            <button id="navKasutajad" onclick="toggleView('kasutajad')">Kasutajad</button>
+            <button id="navFoorum" onclick="toggleView('foorum')">Foorum</button>
+            <button id="navEsileht" onclick="toggleView('esileht')">Esileht</button>
+        </section>
+        <!-- Admin content -->
+        <section class="admin-main">
+            <div id="kasutajad">
+                <h2>Kasutajad</h2>
+                <table id="userTable">
+                    <thead>
+                    <tr>
+                        <th>Kasutajanimi</th>
+                        <th>Email</th>
+                        <th>Telefon</th>
+                        <th>Roll</th>
+                    </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                    </tbody>
+                </table>
+
+
+                <!-- Current sessions -->
+                <h2>Aktiivsed sessioonid</h2>
+                <table id="sessionTable">
+                    <thead>
+                    <tr>
+                        <th>Kasutajanimi</th>
+                        <th>Sessiooni pikkus</th>
+                    </tr>
+                    </thead>
+                    <tbody id="sessionTableBody">
+                    </tbody>
+                </table>
+
+
+            </div>
+            <div id="foorum" class="hidden">
+                <h1>Foorum</h1>
+            </div>
+            <div id="esileht" class="hidden">
+                <h1>Esileht</h1>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        // Toggle between sections based on button click
+        function toggleView(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.admin-main > div').forEach(section => {
+                section.classList.add('hidden');
+            });
+            // Show the selected section
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        // By default, show the first section
+        document.getElementById('kasutajad').classList.remove('hidden');
+
+
+
+
+
+
+    </script>
+    <script>
+        function fetchData() {
+            fetch('/kasutajad')
+                .then(response => response.json())
+                .then(users => {
+                    const tableBody = document.getElementById('userTableBody');
+                    tableBody.innerHTML = '';
+                    users.forEach(user => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                        <td>${user.kasutajanimi}</td>
+                        <td>${user.email}</td>
+                        <td>${user.telefon}</td>
+                        <td>${user.rolli_nimetus}</td>
+                    `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchData);
+
+        document.getElementById('navKasutajad').addEventListener('click', fetchData);
+    </script>
+
+    <script>
+        // Function to calculate session length
+        function calculateSessionLength(pushTime) {
+            const currentTime = new Date();
+            const startTime = new Date(pushTime);
+            const sessionLength = currentTime - startTime;
+            // Convert session length to minutes and round to nearest integer
+            return Math.round(sessionLength / (1000 * 60));
+        }
+
+        // Function to update session table
+        function updateSessionTable() {
+            fetch('/sessions')
+                .then(response => response.json())
+                .then(sessions => {
+                    const sessionTableBody = document.getElementById('sessionTableBody');
+                    sessionTableBody.innerHTML = '';
+                    sessions.forEach(session => {
+                        const row = document.createElement('tr');
+                        const usernameCell = document.createElement('td');
+                        usernameCell.textContent = session.username;
+                        const lengthCell = document.createElement('td');
+                        lengthCell.textContent = `${calculateSessionLength(session.pushTime)} minutes`;
+                        row.appendChild(usernameCell);
+                        row.appendChild(lengthCell);
+
+                        // Create the icon element
+                        const icon = document.createElement('i');
+                        icon.classList.add('fa-solid', 'fa-arrow-right-from-bracket', 'fa-sm');
+                        icon.style.color = 'red';
+                        icon.style.float = 'right';
+                        icon.style.visibility = 'hidden'; // Hide the icon by default
+                        icon.style.cursor = 'pointer'; // Change cursor to pointer to indicate interactivity
+                        icon.style.marginTop = '10px'; // Add some margin to the top of the icon
+
+                        // Add click event listener to the icon
+                        // icon.addEventListener('click', () => {
+                        //     const username = session.username; // Get the username from the row
+                        //     // Send a logout request to the server with the username
+                        //     fetch(`/logout/${username}`, { method: 'GET' })
+                        //         .then(response => response.json())
+                        //         .then(data => {
+                        //             if (data.success) {
+                        //                 // If logout is successful, redirect to login page or perform any other action
+                        //                 console.log('User logged out successfully');
+                        //                 location.reload(); // Reload the page to update the session table
+                        //             } else {
+                        //                 // Handle error if logout fails
+                        //                 console.error('Error logging out user:', data.message);
+                        //             }
+                        //         })
+                        //         .catch(error => {
+                        //             console.error('Error logging out user:', error);
+                        //         });
+                        // });
+
+                        // Add the icon to the lengthCell
+                        lengthCell.appendChild(icon);
+
+                        // Add event listeners to the row for icon display
+                        row.addEventListener('mouseover', () => {
+                            icon.style.visibility = 'visible'; // Make the icon visible on mouseover
+                        });
+                        row.addEventListener('mouseout', () => {
+                            icon.style.visibility = 'hidden'; // Hide the icon on mouseout
+                        });
+
+                        sessionTableBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error updating session table:', error);
+                });
+        }
+
+        // Update session table initially
+        updateSessionTable();
+
+        // Update session table every minute
+        setInterval(updateSessionTable, 60000); // Update every minute
+    </script>
+
+
+
+    <footer class="footer">
+        <div class="container container-footer">
+            <div class="footer_content">
+                <div class="footer_logoCol">
+                    <a href="https://liikumine.voco.ee/" class="footer_logo">
+                        <img src="https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/VOCO.svg"
+                             alt="VOCO Liikumine" class="footer_logoImg">
+                    </a>
+                </div>
+                <div class="footer_mainCol">
+                    <div class="footer_grid">
+                        <div class="footer_col">
+                            <h3 class="footer_title">
+                                Kontakt
+                            </h3>
+                            <div class="footer_text">
+                                <p><a href="mailto:info@voco.ee">info@voco.ee</a></p>
+                                <p>7 361 810</p>
+
+                            </div>
+                        </div>
+                        <div class="footer_col">
+                            <h3 class="footer_title">
+                                VOCO
+                            </h3>
+                            <div class="footer_text">
+                                <p>Kopli 1</p>
+                                <p>Tartu 50115 Eesti</p>
+
+                            </div>
+                        </div>
+                        <div class="footer_col">
+                            <h3 class="footer_title">
+                                Privaatsustingimused
+                            </h3>
+                            <div class="footer_text">
+                                <p><a href="#">Andmekaitse</a></p>
+                                <p><a href="#">Küpsised</a></p>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer_bottom">
+            © Tartu rakenduslik kolledž 2024
+        </div>
+    </footer>
+
+
+<% } else { %>
+    <!-- Redirect to login page if user is not authenticated -->
+    <script>
+        window.location.href = '/sisene';
+    </script>
+<% } %>
+</body>
+</html>

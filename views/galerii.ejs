@@ -48,7 +48,7 @@
         <a href="/uudised">Uudised</a>
         <a href="/foorum">Foorum</a>
         <a href="/treeningud">Treeningud</a>
-        <a style="color: #2980b9" href="galerii">Galerii</a>
+        <a style="color: #2980b9" href="/galerii">Galerii</a>
     </div>
 </nav>
 
@@ -538,6 +538,8 @@
                                 if (data.success) {
                                     // If logout successful, reload the page to reflect the changes
                                     location.reload();
+                                    // delete all sessionStorage
+                                    sessionStorage.clear();
                                 } else {
                                     console.error('Error logging out:', data.message);
                                 }

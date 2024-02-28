@@ -1,0 +1,17 @@
+.hidden {
+    display: none;
+}
+
+main {
+    display: flex;
+    width: 1400px;
+    margin: 0 auto;
+}
+
+.admin-nav {
+    width: 200px;
+    background-color: #f4f4f4;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}

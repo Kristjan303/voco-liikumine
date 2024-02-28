@@ -60,16 +60,14 @@
 </section>
 
 <section class="hot">
-    <div>
-        <h4>Took Gandalf:</h4>
-        <h1>"MIKS MA PEAN TEGEMA TRENNI!=!=?!?!?"</h1>
-        <p>Ma teen ja teen trenni, aga atu ei saa miks . . . </p>
-        <a href="#">Vaata rohkem →</a>
-    </div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
+    <section class="hold-articles-news">
+        <div id="holdArticles">
+        </div>
+        <div id="holdNews">
+        </div>
+    </section>
+    <section class="hold-new-posts">
+    </section>
 </section>
 
 <div class="mapBanner">
@@ -158,6 +156,8 @@
                                 if (data.success) {
                                     // If logout successful, reload the page to reflect the changes
                                     location.reload();
+                                    // delete all sessionStorage
+                                    sessionStorage.clear();
                                 } else {
                                     console.error('Error logging out:', data.message);
                                 }

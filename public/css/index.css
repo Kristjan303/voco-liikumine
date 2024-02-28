@@ -151,7 +151,6 @@ section {
 
 .highlights {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     padding-top: 4em;
@@ -224,32 +223,6 @@ section {
     background-color: #dddddd;
 }
 
-.hot div {
-    background-color: #fff;
-    border-radius: 10px;
-    width: 15em;
-    height: 15em;
-    margin: 1em;
-}
-.hot div h4 {
-    margin: 0;
-    font-size: 95%;
-    padding-left: 0.5em;
-    transform: translateY(10px);
-    color: #2980b9;
-}
-.hot div h1 {
-    padding-left: 0.5em;
-}
-.hot div p {
-    padding-left: 0.5em;
-}
-.hot div a {
-    color: #2980b9;
-    display: flex;
-    justify-content: flex-end;
-    padding-right: 1em;
-}
 
 /* ------filter------ */
 
