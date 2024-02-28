@@ -138,5 +138,5 @@ body {
     width: 106%;
     padding: 1em;
     border-radius: 10px;
-    transform: translateX(-3%);
-}
+    position: relative;
+    left: -3%;}

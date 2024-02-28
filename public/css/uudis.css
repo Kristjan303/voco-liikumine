@@ -103,7 +103,7 @@ body {
     background-color: #2980b9;
     color: white;
 }
-#editnewsHeader {
+#editNewsHeader {
     min-width: 500px;
     padding: 8px 10px;
     border-radius: 5px;
@@ -112,7 +112,7 @@ body {
     background-color: #f8f8f8;
     height: 40px;
 }
-#editnewsHeader:focus {
+#editNewsHeader:focus {
     outline: none;
     border: 1px solid #2980b9;
 }
@@ -138,5 +138,6 @@ body {
     width: 106%;
     padding: 1em;
     border-radius: 10px;
-    transform: translateX(-3%);
+    position: relative;
+    left: -3%;
 }

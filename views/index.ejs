@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/foorum.css">
     <title>Avaleht | VOCO Liikumine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
 </head>
@@ -30,17 +31,7 @@
 </header>
 <nav>
     <a href="/public" class="nav-logo">
-        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-             viewBox="0 0 412.74 334.7" style="enable-background:new 0 0 412.74 334.7;" xml:space="preserve">
-          <style type="text/css">
-              .st0{fill:#FFFFFF;}
-          </style>
-            <path class="st0" d="M259.98,112.52c0,27.49-22.29,49.78-49.78,49.78c-27.49,0-49.78-22.29-49.78-49.78
-              c0-27.49,22.29-49.78,49.78-49.78C237.69,62.74,259.98,85.02,259.98,112.52 M350.92,223.78c0-27.49-22.29-49.78-49.78-49.78
-              s-49.78,22.29-49.78,49.78c0,27.49,22.29,49.78,49.78,49.78S350.92,251.27,350.92,223.78 M214.48,223.92l35.27-35.27
-              c-9.01-9.05-21.49-14.65-35.27-14.65c-27.49,0-49.78,22.29-49.78,49.78s22.29,49.78,49.78,49.78c13.71,0,26.13-5.54,35.13-14.51
-              L214.48,223.92z M60.31,67.73l52.2,90.51l52.2-90.51H60.31z"/>
-        </svg>
+        <img style="height: 80px" src="/logos/voco-logo-04-3.png">
     </a>
     <div class="nav-links">
         <a href="artiklid">Artiklid</a>
@@ -52,23 +43,267 @@
 </nav>
 
 <section class="highlights">
-    <a href="#"><i class="left fa-solid fa-chevron-left fa-2xl" style="color: #000000;"></i></a>
-    <div id="left_highlight"></div>
-    <div id="main_highlight"></div>
-    <div id="right_highlight"></div>
-    <a href="#"><i class="right fa-solid fa-chevron-right fa-2xl" style="color: #000000;"></i></a>
+    <div class="items">
+        <div class="item active">
+            <img src="">
+        </div>
+        <div class="item next">
+            <img src="">
+        </div>
+        <div class="item">
+            <img src="">
+        </div>
+        <div class="item">
+            <img src="">
+        </div>
+        <div class="item">
+            <img src="">
+        </div>
+        <div class="item">
+            <img src="">
+        </div>
+        <div class="item">
+            <img src="">
+        </div>
+        <div class="item">
+            <img src="">
+        </div>
+        <div class="item prev">
+            <img src="">
+        </div>
+        <div class="item">
+            <img src="">
+        </div>
+        <div class="button-container">
+            <div class="button"><i class="fas fa-angle-left"></i></div>
+            <div class="button"><i class="fas fa-angle-right"></i></div>
+        </div>
+    </div>
 </section>
 
+
 <section class="hot">
-    <section class="hold-articles-news">
-        <div id="holdArticles">
+    <div class="hotHold">
+        <div class="hotContainer">
+            <section class="hotNews">
+                <div class="hold-title">
+                    <h2>Uudised</h2>
+                    <a href="uudised">Vaata kõiki</a>
+                </div>
+                <main>
+
+                </main>
+            </section>
+            <section class="hotArticles">
+                <div class="hold-title">
+                    <h2>Uusimad artiklid</h2>
+                    <a href="artiklid">Vaata kõiki</a>
+                </div>
+                <main>
+
+                </main>
+            </section>
         </div>
-        <div id="holdNews">
+        <div class="hotPosts">
+            <h2>Kuumimad postitused</h2>
+            <main id="posts"></main>
+
         </div>
-    </section>
-    <section class="hold-new-posts">
-    </section>
+    </div>
 </section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('/get-posts')
+            .then(response => response.json())
+            .then(posts => {
+                // Sort posts by comment count in descending order
+                posts.sort((a, b) => b.commentCount - a.commentCount);
+
+                const postsContainer = document.getElementById('posts');
+                posts.slice(0, 4).forEach(post => {
+                    const postTime = new Date(post.postDate);
+                    const currentTime = new Date();
+                    const timeDifference = Math.abs(currentTime - postTime);
+                    const postUrl = encodeURIComponent(post.url);
+                    const postDate = new Date(post.postDate);
+
+                    let timeAgo;
+                    if (timeDifference < 1000 * 60 * 60) {
+                        const minutesDifference = Math.ceil(timeDifference / (1000 * 60));
+                        timeAgo = minutesDifference > 1 ? `${minutesDifference} minutit tagasi` : '1 minut tagasi';
+                    } else if (timeDifference < 1000 * 60 * 60 * 24) {
+                        const hoursDifference = Math.ceil(timeDifference / (1000 * 60 * 60));
+                        timeAgo = hoursDifference > 1 ? `${hoursDifference} tundi tagasi` : '1 tund tagasi';
+                    } else if (timeDifference < 1000 * 60 * 60 * 24 * 30) {
+                        const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+                        timeAgo = daysDifference > 1 ? `${daysDifference} päeva tagasi` : '1 päev tagasi';
+                    } else if (timeDifference < 1000 * 60 * 60 * 24 * 30 * 12) {
+                        const monthsDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24 * 30));
+                        timeAgo = monthsDifference > 1 ? `${monthsDifference} kuud tagasi` : '1 kuu tagasi';
+                    } else {
+                        const yearsDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24 * 30 * 12));
+                        timeAgo = yearsDifference > 1 ? `${yearsDifference} aastat tagasi` : '1 aaasta tagasi';
+                    }
+
+                    const postElement = document.createElement('div');
+                    postElement.classList.add('post');
+                    postElement.style.width = '300px';
+                    postElement.style.maxHeight = '330px';
+                    postElement.innerHTML = `
+                            <h2>${post.postTitle}</h2>
+                            <div class="hold-data">
+                                <p>Author: ${post.userName}</p>
+                                <p>●</p>
+                                <p class="post-date" data-date="${postDate.toISOString()}">${timeAgo}</p>
+                            </div>
+                            <p>${post.postContent}</p>
+                            <div class="hold-buttons">
+                                <p class="comment"><i class="fa-regular fa-message fa-xm"></i>${post.commentCount} kommentaari</p>
+<a href="/foorum${post.url}" class="open-comments"><i class="fa-solid fa-up-right-from-square fa-xm"></i></a>
+                            </div>
+                            <hr>
+                        `;
+                    postsContainer.appendChild(postElement);
+                });
+            })
+            .catch(error => console.error('Error fetching posts:', error));
+    });
+</script>
+
+<script>
+    // Function to fetch news articles from the server
+    function fetchNews() {
+        fetch('/get-news')
+            .then(response => response.json())
+            .then(news => {
+                const newsContainer = document.querySelector('.hotNews main');
+                newsContainer.innerHTML = ''; // Clear existing news
+
+                const maxNewsToShow = 4;
+                const newsToShow = news.slice(0, maxNewsToShow);
+
+                newsToShow.forEach(article => {
+                    const articleElement = document.createElement('div');
+                    articleElement.classList.add('news-preview');
+                    articleElement.innerHTML = `
+                        <p class="news-author">Autor: ${article.newsAuthor}</p>
+                        <p class="news-date">${article.newsDate}</p>
+                        <h2>${article.newsHeader}</h2>
+                        <div>${article.summernoteContent}</div>
+                        <a href="uudised/${article.newsHeader}">Loe rohkem →</a>
+                    `;
+                    newsContainer.appendChild(articleElement);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching news:', error);
+                // Handle errors here
+            });
+    }
+
+    // Function to fetch articles from the server
+    function fetchArticles() {
+        fetch('/get-articles')
+            .then(response => response.json())
+            .then(data => {
+                const articlesContainer = document.querySelector('.hotArticles main');
+                articlesContainer.innerHTML = ''; // Clear existing articles
+
+                const maxArticlesToShow = 4;
+                const articlesToShow = data.slice(0, maxArticlesToShow);
+
+                articlesToShow.forEach(article => {
+                    const articleDiv = document.createElement('div');
+                    articleDiv.classList.add('article-preview');
+                    articleDiv.innerHTML = `
+                        <p class="article-author">Autor: ${article.articleAuthor}</p>
+                        <p class="article-date">${article.articleDate}</p>
+                        <h2>${article.articleHeader}</h2>
+                        <div>${article.summernoteContent}</div>
+                        <a href="artiklid/${article.articleHeader}">Loe rohkem →</a>
+                    `;
+                    articlesContainer.appendChild(articleDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching articles:', error);
+                // Handle errors here
+            });
+    }
+
+    // Call fetchNews function when the page loads
+    window.onload = function () {
+        fetchNews();
+        fetchArticles();
+    };
+</script>
+
+<script>
+    const slider = document.querySelector(".items");
+    const slides = document.querySelectorAll(".item");
+    const button = document.querySelectorAll(".button");
+
+    let current = 0;
+    let prev = slides.length - 1;
+    let next = 1;
+
+    for (let i = 0; i < button.length; i++) {
+        button[i].addEventListener("click", () => i == 0 ? gotoPrev() : gotoNext());
+    }
+
+    async function fetchImages() {
+        const response = await fetch('/galerii/latest-images');
+        const data = await response.json();
+
+        if (response.ok) {
+            const images = data.latestImages.slice(0, 10);
+
+            images.forEach((image, index) => {
+                if (index < slides.length) {
+                    const img = slides[index].querySelector('img');
+                    img.src = image;
+                }
+            });
+        } else {
+            console.error('Failed to fetch latest images:', data.message);
+        }
+    }
+
+    fetchImages();
+
+    const gotoPrev = () => current > 0 ? gotoNum(current - 1) : gotoNum(slides.length - 1);
+
+    const gotoNext = () => current < slides.length - 1 ? gotoNum(current + 1) : gotoNum(0);
+
+    const gotoNum = number => {
+        current = number;
+        prev = current - 1;
+        next = current + 1;
+
+        if (next == slides.length) {
+            next = 0;
+        }
+
+        if (prev == -1) {
+            prev = slides.length - 1;
+        }
+
+        slides.forEach(slide => {
+            slide.classList.remove("active", "prev", "next");
+        });
+
+        slides[current].classList.add("active");
+        slides[prev].classList.add("prev");
+        slides[next].classList.add("next");
+    };
+
+</script>
+
+
+
+
+
 
 <div class="mapBanner">
     <a href="https://www.google.com/maps?ll=58.349455,26.714113&amp;z=15&amp;t=m&amp;hl=en-US&amp;gl=EG&amp;mapclient=embed&amp;q=Kopli+1+50115+Tartu+Estonia" target="_blank" class="mapBanner_col" style="background-image: url('https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/map_1.jpg')">
