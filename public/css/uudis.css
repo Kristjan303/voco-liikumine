@@ -141,3 +141,7 @@ body {
     position: relative;
     left: -3%;
 }
+.hold-news a{
+    color: #2980b9;
+    text-decoration: underline;
+}

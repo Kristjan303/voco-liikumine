@@ -224,6 +224,26 @@
     background: ghostwhite;
     border: 1px solid #f3f3f3;
 }
+.first-news .line {
+    height: 1px;
+    width: 100%;
+    background-color: #ddd;
+    margin: 40px 0;
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+}
+.line .line-text {
+    position: absolute;
+    margin: 0;
+    padding: 10px;
+    background-color: #fff;
+    color: #ccc;
+    font-size: 80%;
+
+}
+
 .first-news .news-preview .news-author {
     margin-top: 10px;
     margin-bottom: 0;
@@ -251,14 +271,13 @@
     display: flex;
     flex-direction: column;
     align-content: center;
-    align-items: center;
     height: 300px;
     margin: 15px;
     padding: 10px;
     overflow-x: hidden;
     width: 100%;
 }
-.first-news .news-preview h4 {
+.first-news .news-preview .uusim-uudis {
     position: absolute;
     margin: 0;
     padding: 10px;

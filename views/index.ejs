@@ -185,13 +185,27 @@
                 newsToShow.forEach(article => {
                     const articleElement = document.createElement('div');
                     articleElement.classList.add('news-preview');
-                    articleElement.innerHTML = `
+                    articleElement.style.paddingTop = '0';
+                    const banner = getBanner(article.summernoteContent); // Get the first image as banner
+                    if (banner) {
+                        articleElement.innerHTML = `
+                        <figure class="news-banner">
+                            <img src="${banner}" alt="Banner">
+                        </figure>
+                        <p class="news-author">Autor: ${article.newsAuthor}</p>
+                        <p class="news-date">${article.newsDate}</p>
+                        <h2>${article.newsHeader}</h2>
+                        <a href="${article.url}">Loe rohkem →</a>
+                    `;
+                    } else {
+                        articleElement.innerHTML = `
                         <p class="news-author">Autor: ${article.newsAuthor}</p>
                         <p class="news-date">${article.newsDate}</p>
                         <h2>${article.newsHeader}</h2>
                         <div>${article.summernoteContent}</div>
-                        <a href="uudised/${article.newsHeader}">Loe rohkem →</a>
+                        <a href="${article.url}">Loe rohkem →</a>
                     `;
+                    }
                     newsContainer.appendChild(articleElement);
                 });
             })
@@ -215,13 +229,27 @@
                 articlesToShow.forEach(article => {
                     const articleDiv = document.createElement('div');
                     articleDiv.classList.add('article-preview');
-                    articleDiv.innerHTML = `
+                    articleDiv.style.paddingTop = '0';
+                    const banner = getBanner(article.summernoteContent); // Get the first image as banner
+                    if (banner) {
+                        articleDiv.innerHTML = `
+                        <figure class="article-banner">
+                            <img src="${banner}" alt="Banner">
+                        </figure>
+                        <p class="article-author">Autor: ${article.articleAuthor}</p>
+                        <p class="article-date">${article.articleDate}</p>
+                        <h2>${article.articleHeader}</h2>
+                        <a href="${article.url}">Loe rohkem →</a>
+                    `;
+                    } else {
+                        articleDiv.innerHTML = `
                         <p class="article-author">Autor: ${article.articleAuthor}</p>
                         <p class="article-date">${article.articleDate}</p>
                         <h2>${article.articleHeader}</h2>
                         <div>${article.summernoteContent}</div>
-                        <a href="artiklid/${article.articleHeader}">Loe rohkem →</a>
+                        <a href="${article.url}">Loe rohkem →</a>
                     `;
+                    }
                     articlesContainer.appendChild(articleDiv);
                 });
             })
@@ -231,11 +259,23 @@
             });
     }
 
+    // Function to get the first image from HTML content
+    function getBanner(htmlContent) {
+        const tempElement = document.createElement('div');
+        tempElement.innerHTML = htmlContent;
+        const imgElement = tempElement.querySelector('img');
+        if (imgElement) {
+            return imgElement.src;
+        }
+        return null;
+    }
+
     // Call fetchNews function when the page loads
     window.onload = function () {
         fetchNews();
         fetchArticles();
     };
+
 </script>
 
 <script>

@@ -112,8 +112,12 @@
                                         // Get the pasted content
                                         var pastedContent = (e.originalEvent.clipboardData || window.clipboardData).getData('text/plain');
 
+                                        // Remove all HTML tags and extra spaces
+                                        pastedContent = pastedContent.replace(/<[^>]+>/g, ''); // Remove HTML tags
+                                        pastedContent = pastedContent.replace(/\s+/g, ' '); // Remove extra spaces
+
                                         // Insert the plain text into the editor
-                                        document.execCommand('insertText', false, pastedContent);
+                                        document.execCommand('insertText', false, pastedContent.trim());
                                     }
                                 }
 
@@ -156,7 +160,8 @@
                                 if (data.success) {
                                     // Alert the user upon successful update
                                     alert('uudise sisu edukalt uuendatud!');
-                                    window.location.href = '/uudised/' + editNewsHeader.value;
+                                    const encodedHeader = encodeURIComponent(editNewsHeader.value);
+                                    window.location.href = '/uudised/' + encodedHeader;
                                 } else {
                                     if (data.message === 'No changes were made to the news content.') {
                                         // Alert the user that no changes were made
@@ -167,7 +172,8 @@
                                     }
                                 }
                             })
-                            .catch(error => {
+
+                                .catch(error => {
                                 console.error('Error updating news content:', error);
                                 // Handle the error scenario appropriately
                             });

@@ -95,11 +95,14 @@
                                 // Get the pasted content
                                 var pastedContent = (e.originalEvent.clipboardData || window.clipboardData).getData('text/plain');
 
+                                // Remove all HTML tags and extra spaces
+                                pastedContent = pastedContent.replace(/<[^>]+>/g, ''); // Remove HTML tags
+                                pastedContent = pastedContent.replace(/\s+/g, ' '); // Remove extra spaces
+
                                 // Insert the plain text into the editor
-                                document.execCommand('insertText', false, pastedContent);
+                                document.execCommand('insertText', false, pastedContent.trim());
                             }
                         }
-
                     });
                 </script>
 
@@ -370,22 +373,29 @@
                     const articleDiv = document.createElement('div');
                     articleDiv.classList.add('article-preview');
                     articleDiv.innerHTML = `
-                        <p class="article-author">Autor: ${article.articleAuthor}</p>
-                        <p class="article-date">${article.articleDate}</p>
-                        <h2>${article.articleHeader}</h2>
-                        <div>${article.summernoteContent}</div>
-                        <a href="artiklid/${article.articleHeader}">Loe rohkem →</a>
-                    `;
+                <p class="article-author">Autor: ${article.articleAuthor}</p>
+                <p class="article-date">${article.articleDate}</p>
+                <h2>${article.articleHeader}</h2>
+                <div>${article.summernoteContent}</div>
+                <a href="${article.url}">Loe rohkem →</a>
+            `;
 
-                    // Find potential image inside the div
-                    const imgElement = articleDiv.querySelector('img');
+                    // Find the first image inside the div
+                    const imgElements = articleDiv.querySelectorAll('img');
 
-                    // If an image is found, apply the style
-                    if (imgElement) {
-                        imgElement.style.width = '100px';
-                        imgElement.style.height = '100px';
-                        imgElement.style.margin = '10px';
-                        imgElement.style.borderRadius = '10px';
+                    // Loop through imgElements and set width to "200px"
+                    imgElements.forEach(imgElement => {
+                        imgElement.style.width ='200px'
+                    });
+
+                    // If an image is found, set it as the background of the articleDiv
+                    const firstImgElement = imgElements[0]; // Assuming we want to set only the first image as background
+                    if (firstImgElement) {
+                        articleDiv.style.backgroundImage = `url('${firstImgElement.src}')`;
+                        articleDiv.style.backgroundSize = 'cover';
+                        articleDiv.style.backgroundPosition = 'center';
+                        articleDiv.style.backgroundRepeat = 'no-repeat';
+                        articleDiv.style.backgroundBlendMode = 'overlay';
                     }
 
                     document.getElementById('articles').appendChild(articleDiv);
@@ -415,6 +425,8 @@
 
     // Call fetchArticles function when the page loads
     window.onload = fetchArticles;
+
+
 </script>
 <script>
     // checkLogin.js

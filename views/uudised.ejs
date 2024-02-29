@@ -92,8 +92,12 @@
                                 // Get the pasted content
                                 var pastedContent = (e.originalEvent.clipboardData || window.clipboardData).getData('text/plain');
 
+                                // Remove all HTML tags and extra spaces
+                                pastedContent = pastedContent.replace(/<[^>]+>/g, ''); // Remove HTML tags
+                                pastedContent = pastedContent.replace(/\s+/g, ' '); // Remove extra spaces
+
                                 // Insert the plain text into the editor
-                                document.execCommand('insertText', false, pastedContent);
+                                document.execCommand('insertText', false, pastedContent.trim());
                             }
                         }
 
@@ -287,38 +291,44 @@
     function orderNewsByLatest() {
         const news = Array.from(document.querySelectorAll('.news-preview'));
         const newsContainer = document.getElementById('news');
+        const newestNews = newsContainer.firstChild; // Get the newest news element
 
-        news.reverse(); // Reverse the order of news
+        news.shift(); // Remove the newest news from the array
+
+        news.reverse(); // Reverse the order of remaining news articles
 
         news.forEach(news => newsContainer.appendChild(news));
 
-        if (document.getElementById('orderButton').innerText = 'Vanimad') {
-            document.getElementById('orderButton').innerText = 'Uusimad';
-        } else {
-            document.getElementById('orderButton').innerText = 'Vanimad';
-        }
+        // Move the newest news back to the top
+        newsContainer.prepend(newestNews);
+
+        // Update button text
+        document.getElementById('orderButton').innerHTML = 'Vanimad <i class="fa-solid fa-arrow-down fa-sm"></i>';
     }
 
     function orderNewsByOldest() {
         const news = Array.from(document.querySelectorAll('.news-preview'));
         const newsContainer = document.getElementById('news');
+        const newestNews = newsContainer.firstChild; // Get the newest news element
 
-        news.reverse(); // Reverse the order of news
+        news.shift(); // Remove the newest news from the array
+
+        news.reverse(); // Reverse the order of remaining news articles
 
         news.forEach(news => newsContainer.appendChild(news));
 
-        if (document.getElementById('orderButton').innerText = 'Uusimad') {
-            document.getElementById('orderButton').innerText = 'Vanimad';
-        } else {
-            document.getElementById('orderButton').innerText = 'Uusimad';
-        }
+        // Move the newest news back to the top
+        newsContainer.prepend(newestNews);
+
+        // Update button text
+        document.getElementById('orderButton').innerHTML = 'Uusimad <i class="fa-solid fa-arrow-up fa-sm"></i>';
     }
+
 
 </script>
 
 
 <script>
-    // Function to fetch articles from the server
     function fetchNews() {
         fetch('/get-news')
             .then(response => response.json())
@@ -330,13 +340,13 @@
                 const newestNewsDiv = document.createElement('div');
                 newestNewsDiv.classList.add('news-preview');
                 newestNewsDiv.innerHTML = `
-                    <h4>Uusim uudis</h4>
-                    <p class="news-author">Autor: ${newestNews.newsAuthor}</p>
-                    <p class="news-date">${newestNews.newsDate}</p>
-                    <h2>${newestNews.newsHeader}</h2>
-                    <div>${newestNews.summernoteContent}</div>
-                    <a href="uudised/${newestNews.newsHeader}">Loe rohkem →</a>
-                `;
+                <h4 class="uusim-uudis">Uusim uudis</h4>
+                <p class="news-author">Autor: ${newestNews.newsAuthor}</p>
+                <p class="news-date">${newestNews.newsDate}</p>
+                <h2>${newestNews.newsHeader}</h2>
+                <div>${newestNews.summernoteContent}</div>
+                <a href="uudised/${newestNews.newsHeader}">Loe rohkem →</a>
+            `;
 
                 // Append the newest news to the "newestNews" div
                 document.getElementById('newestNews').appendChild(newestNewsDiv);
@@ -347,28 +357,43 @@
                 // Array to hold unique years
                 const uniqueYears = [];
 
+                // Check if there are more than 1 news articles
+                if (data.length > 1) {
+                    const newestNewsDivLine = document.createElement('div');
+                    newestNewsDivLine.classList.add('line');
+                    newestNewsDivLine.innerHTML = `<p class="line-text">Varasemad</p>`;
+                    document.getElementById('newestNews').appendChild(newestNewsDivLine);
+                }
+
                 // Loop through fetched articles (excluding the newest one) and append them to the main element
                 for (let i = 1; i < data.length; i++) {
                     const news = data[i];
                     const newsDiv = document.createElement('div');
                     newsDiv.classList.add('news-preview');
                     newsDiv.innerHTML = `
-                        <p class="news-author">Autor: ${news.newsAuthor}</p>
-                        <p class="news-date">${news.newsDate}</p>
-                        <h2>${news.newsHeader}</h2>
-                        <div>${news.summernoteContent}</div>
-                        <a href="uudised/${news.newsHeader}">Loe rohkem →</a>
-                    `;
+                    <p class="news-author">Autor: ${news.newsAuthor}</p>
+                    <p class="news-date">${news.newsDate}</p>
+                    <h2>${news.newsHeader}</h2>
+                    <div>${news.summernoteContent}</div>
+                    <a href="${news.url}">Loe rohkem →</a>
+                `;
 
-                    // Find potential image inside the div
-                    const imgElement = newsDiv.querySelector('img');
+                    // Find all images inside the div
+                    const imgElements = newsDiv.querySelectorAll('img');
 
-                    // If an image is found, apply the style
-                    if (imgElement) {
-                        imgElement.style.width = '100px';
-                        imgElement.style.height = '100px';
-                        imgElement.style.margin = '10px';
-                        imgElement.style.borderRadius = '10px';
+                    // Loop through imgElements and set width to "200px"
+                    imgElements.forEach(imgElement => {
+                        imgElement.style.width = '200px';
+                    });
+
+                    // If an image is found, set it as the background of the newsDiv
+                    const firstImgElement = imgElements[0]; // Assuming we want to set only the first image as background
+                    if (firstImgElement) {
+                        newsDiv.style.backgroundImage = `url('${firstImgElement.src}')`;
+                        newsDiv.style.backgroundSize = 'cover';
+                        newsDiv.style.backgroundPosition = 'center';
+                        newsDiv.style.backgroundRepeat = 'no-repeat';
+                        newsDiv.style.backgroundBlendMode = 'overlay';
                     }
 
                     document.getElementById('news').appendChild(newsDiv);
@@ -396,8 +421,9 @@
             });
     }
 
-    // Call  fetchNews function when the page loads
+    // Call fetchNews function when the page loads
     window.onload = fetchNews;
+
 </script>
 
 

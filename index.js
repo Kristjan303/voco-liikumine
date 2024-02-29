@@ -474,6 +474,9 @@ app.post('/submit-article', (req, res) => {
             return res.status(400).json({ success: false, message: 'Artikkel ei tohi olla tühi!' });
         }
 
+        // Sanitize summernoteContent to remove <script> elements
+        const sanitizedContent = summernoteContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
         const headerSql = "SELECT artikli_pealkiri FROM vocoliikumine.artiklid WHERE artikli_pealkiri = ?";
         db.query(headerSql, [newArticleHeader], (err, headerResult) => {
 
@@ -484,7 +487,7 @@ app.post('/submit-article', (req, res) => {
                 if (headerResult.length === 0) {
                     // No matching articles found, proceed with insertion
                     const sql = "INSERT INTO vocoliikumine.artiklid (kasutaja_id, artikli_pealkiri, artikli_sisu, postitamise_kuupäev) VALUES (?, ?, ?, NOW())";
-                    db.query(sql, [userId, newArticleHeader, summernoteContent], (err, result) => {
+                    db.query(sql, [userId, newArticleHeader, sanitizedContent], (err, result) => {
                         if (err) {
                             console.error('Error inserting data:', err);
                             res.status(500).json({ success: false, message: 'Error inserting data' });
@@ -516,9 +519,9 @@ app.get('/get-articles',  (req, res) => {
             return res.status(500).json({ success: false, message: 'Error fetching articles' });
         }
 
-        // Transform the result to include the URLs
+// Transform the result to include the URLs for articles
         const articlesWithUrls = result.map(article => {
-            const articleHeader = article.articleHeader;
+            const articleHeader = encodeURIComponent(article.articleHeader);
             // Create the URL for each article
             const url = `/artiklid/${articleHeader}`;
             return { ...article, url };
@@ -588,6 +591,9 @@ app.post('/update-articles', (req, res) => {
     // Extract content from the request body
     const { articleHeader, articleContent, editArticleHeader } = req.body;
 
+    // Sanitize articleContent to remove <script> elements
+    const sanitizedContent = articleContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
     // SQL query to retrieve the existing content from the database
     const sqlRetrieve = 'SELECT artikli_sisu FROM artiklid WHERE artikli_pealkiri = ?';
 
@@ -602,7 +608,7 @@ app.post('/update-articles', (req, res) => {
             if (results.length > 0) {
                 const existingContent = results[0].artikli_sisu;
                 // Check if the new content is the same as the existing content
-                if (existingContent === articleContent && articleHeader === editArticleHeader) {
+                if (existingContent === sanitizedContent && articleHeader === editArticleHeader) {
                     // If content is the same, inform frontend that no changes were made
                     res.json({ success: false, message: 'No changes were made to the article content.' });
                 } else {
@@ -610,7 +616,7 @@ app.post('/update-articles', (req, res) => {
                     const sqlUpdate = 'UPDATE artiklid SET artikli_sisu = ?, artikli_pealkiri = ? WHERE artikli_pealkiri = ?';
 
                     // Execute the SQL query to update the content
-                    db.query(sqlUpdate, [articleContent, editArticleHeader, articleHeader], (error, results, fields) => {
+                    db.query(sqlUpdate, [sanitizedContent, editArticleHeader, articleHeader], (error, results, fields) => {
                         if (error) {
                             // If an error occurs, send an error response
                             console.error('Error updating content:', error);
@@ -629,6 +635,7 @@ app.post('/update-articles', (req, res) => {
         }
     });
 });
+
 
 app.post('/submit-post', (req, res) => {
     const { postTitle, postContent, sessionToken, userId, email } = req.body;
@@ -1015,6 +1022,9 @@ app.post('/submit-news', (req, res) => {
             return res.status(400).json({ success: false, message: 'uudis ei tohi olla tühi!' });
         }
 
+        // Remove <script> elements from summernoteContent
+        const sanitizedContent = summernoteContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
         const headerSql = "SELECT uudise_pealkiri FROM vocoliikumine.uudised WHERE uudise_pealkiri = ?";
         db.query(headerSql, [newNewsHeader], (err, headerResult) => {
 
@@ -1025,7 +1035,7 @@ app.post('/submit-news', (req, res) => {
                 if (headerResult.length === 0) {
                     // No matching news found, proceed with insertion
                     const sql = "INSERT INTO vocoliikumine.uudised (kasutaja_id, uudise_pealkiri, uudise_sisu, postitamise_kuupäev) VALUES (?, ?, ?, NOW())";
-                    db.query(sql, [userId, newNewsHeader, summernoteContent], (err, result) => {
+                    db.query(sql, [userId, newNewsHeader, sanitizedContent], (err, result) => {
                         if (err) {
                             console.error('Error inserting data:', err);
                             res.status(500).json({ success: false, message: 'Error inserting data' });
@@ -1044,6 +1054,7 @@ app.post('/submit-news', (req, res) => {
     });
 });
 
+
 app.get('/get-news',  (req, res) => {
     // Query to retrieve news from the database
     const sql = "SELECT u.uudise_pealkiri AS newsHeader, u.uudise_sisu AS summernoteContent, k.kasutajanimi AS newsAuthor, DATE_FORMAT(u.postitamise_kuupäev, '%d-%m-%Y') as newsDate FROM vocoliikumine.uudised u JOIN vocoliikumine.kasutajad k ON u.kasutaja_id = k.kasutaja_id ORDER BY u.postitamise_kuupäev DESC;"
@@ -1055,9 +1066,9 @@ app.get('/get-news',  (req, res) => {
             return res.status(500).json({ success: false, message: 'Error fetching news' });
         }
 
-        // Transform the result to include the URLs
+// Transform the result to include the URLs for news
         const newsWithUrls = result.map(news => {
-            const newsHeader = news.newsHeader;
+            const newsHeader = encodeURIComponent(news.newsHeader);
             // Create the URL for each news
             const url = `/uudised/${newsHeader}`;
             return { ...news, url };
@@ -1124,6 +1135,9 @@ app.post('/update-news', (req, res) => {
     // Extract content from the request body
     const { newsHeader, newsContent, editNewsHeader } = req.body;
 
+    // Sanitize newsContent to remove <script> elements
+    const sanitizedContent = newsContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
     // SQL query to retrieve the existing content from the database
     const sqlRetrieve = 'SELECT uudise_sisu FROM uudised WHERE uudise_pealkiri = ?';
 
@@ -1138,7 +1152,7 @@ app.post('/update-news', (req, res) => {
             if (results.length > 0) {
                 const existingContent = results[0].uudise_sisu;
                 // Check if the new content is the same as the existing content
-                if (existingContent === newsContent && newsHeader === editNewsHeader) {
+                if (existingContent === sanitizedContent && newsHeader === editNewsHeader) {
                     // If content is the same, inform frontend that no changes were made
                     res.json({ success: false, message: 'No changes were made to the news content.' });
                 } else {
@@ -1146,7 +1160,7 @@ app.post('/update-news', (req, res) => {
                     const sqlUpdate = 'UPDATE uudised SET uudise_sisu = ?, uudise_pealkiri = ? WHERE uudise_pealkiri = ?';
 
                     // Execute the SQL query to update the content
-                    db.query(sqlUpdate, [newsContent, editNewsHeader,newsHeader], (error, results, fields) => {
+                    db.query(sqlUpdate, [sanitizedContent, editNewsHeader, newsHeader], (error, results, fields) => {
                         if (error) {
                             // If an error occurs, send an error response
                             console.error('Error updating content:', error);
@@ -1165,6 +1179,7 @@ app.post('/update-news', (req, res) => {
         }
     });
 });
+
 
 
 // Render the admin page or redirect to /sisene if not authenticated
