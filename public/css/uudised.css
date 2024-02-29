@@ -258,3 +258,15 @@
     overflow-x: hidden;
     width: 100%;
 }
+.first-news .news-preview h4 {
+    position: absolute;
+    margin: 0;
+    padding: 10px;
+    background-color: #fff;
+    color: red;
+    border-radius: 0 10px 0 10px;
+    font-size: 80%;
+    transform: translateX(428px) translateY(-11px);
+    border-bottom: 1px solid #f3f3f3;
+    border-left: 1px solid #f3f3f3;
+}
