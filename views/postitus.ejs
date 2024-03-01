@@ -58,6 +58,9 @@
     <main class="forum-content">
         <h2><%= postTitle %></h2>
         <p><%= postContent %></p>
+        <% if (isAuthor) { %>
+            <button id="deletePost"><i class="fa-solid fa-trash-can fa-sm"></i>Kustuta postitus</button>
+        <% } %>
     </main>
 
     <% if (userRole === 1 || userRole === 2 || userRole === 3) { %>
@@ -296,6 +299,9 @@
                     <% if (isAuthor) { %>
                         <button data-comment-id="${comment.commentId}" class="pinComment" data-high-comment="${comment.highComment}"><i class="fa-solid fa-thumbtack fa-sm"></i></button>
                     <% } %>
+                    <% if (isAuthor) { %>
+                        <button data-comment-id="${comment.commentId}" class="deleteComment"><i class="fa-solid fa-trash-can fa-sm"></i></button>
+                    <% } %>
                 `;
 
                     // Append comment element to comment logic element
@@ -304,6 +310,8 @@
                     // Append comment logic element to comments container
                     commentsContainer.appendChild(commentLogicElement);
                 });
+
+                <% if (isAuthor) { %>
 
                 // Add event listener for dynamically added buttons
                 commentsContainer.addEventListener('click', function(event) {
@@ -344,11 +352,117 @@
                             .catch(error => console.error('Error pinning comment:', error));
                     }
                 });
+                <% } %>
             })
             .catch(error => console.error('Error fetching comments:', error));
     });
 
+
+
 </script>
+
+<% if (isAuthor) { %>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const deletePostButton = document.getElementById('deletePost');
+
+        deletePostButton.addEventListener('click', function() {
+            const email = sessionStorage.getItem('email');
+            const userId = sessionStorage.getItem('userId');
+            const sessionToken = sessionStorage.getItem('sessionToken');
+            const postTitle = '<%= postTitle %>'; // Assuming postTitle is being populated from server-side
+
+            const payload = {
+                email: email,
+                userId: userId,
+                sessionToken: sessionToken,
+                postTitle: postTitle
+            };
+
+            // Ask for confirmation before deleting the post
+            if (confirm('Tõesti soovite kustutada oma postituse?')) {
+                fetch('/delete-post', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to delete post');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert('Post successfully deleted!');
+                        // Redirect or perform other actions after successful deletion
+                        window.location.href = '/foorum'; // Redirect to forum page
+                    })
+                    .catch(error => {
+                        console.error('Error deleting post:', error);
+                        // Handle error if needed
+                    });
+            }
+        });
+    });
+
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Function to handle deletion of comments
+        function deleteComment(commentId) {
+            const email = sessionStorage.getItem('email');
+            const userId = sessionStorage.getItem('userId');
+            const sessionToken = sessionStorage.getItem('sessionToken');
+            const payload = {
+                email: email,
+                userId: userId,
+                sessionToken: sessionToken,
+                commentId: commentId
+            };
+            if (confirm('Olete kindel, et soovite kustutada selle kommentaari?')) {
+                fetch('/delete-comment', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to delete comment');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Handle success response if needed
+                        console.log('Comment deleted successfully');
+                        location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error deleting comment:', error);
+                        // Handle error if needed
+                    });
+        }}
+
+        // Add event listener to dynamically added deleteComment buttons
+        document.addEventListener('click', function(event) {
+            const deleteCommentButton = event.target.closest('.deleteComment');
+            if (deleteCommentButton) {
+                // If the clicked element or its ancestor has the class 'deleteComment'
+                const commentId = deleteCommentButton.getAttribute('data-comment-id');
+                deleteComment(commentId);
+            }
+        });
+    });
+</script>
+<% } %>
+
+
 <script>
     function searchComments() {
         const searchInput = document.querySelector('.header-search input').value.trim().toLowerCase();

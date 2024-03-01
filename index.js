@@ -839,8 +839,8 @@ app.get('/get-comments', (req, res) => {
 
         const postId = result[0].postituse_id;
 
-        // Query to retrieve comments based on the post ID
-        const commentsQuery = "SELECT k.kasutajanimi AS commenterName, fk.kommentaari_sisu AS commentContent, fk.kommentaari_lisamise_kuupäev AS commentDate, fk.esiletõstetud as highComment, fk.kommentaari_id as commentId FROM foorumi_kommentaariumid fk JOIN kasutajad k ON fk.kasutaja_id = k.kasutaja_id WHERE fk.postituse_id = ?";
+        // Query to retrieve comments based on the post ID including author ID
+        const commentsQuery = "SELECT k.kasutajanimi AS commenterName, k.kasutaja_id AS commentAuthorId, fk.kommentaari_sisu AS commentContent, fk.kommentaari_lisamise_kuupäev AS commentDate, fk.esiletõstetud as highComment, fk.kommentaari_id as commentId FROM foorumi_kommentaariumid fk JOIN kasutajad k ON fk.kasutaja_id = k.kasutaja_id WHERE fk.postituse_id = ?";
         db.query(commentsQuery, [postId], (err, result) => {
             if (err) {
                 console.error('Error fetching comments:', err);
@@ -851,6 +851,7 @@ app.get('/get-comments', (req, res) => {
         });
     });
 });
+
 
 app.post('/pin-comment', (req, res) => {
     const { commentId, commenterName, email, sessionToken, userId } = req.body;
@@ -889,6 +890,84 @@ app.post('/pin-comment', (req, res) => {
     });
 });
 
+app.delete('/delete-post', (req, res) => {
+    const { postTitle, email, userId, sessionToken } = req.body;
+
+    // Check if the session exists based on the userId and sessionToken
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Construct MySQL query to fetch postituse_id based on postTitle
+    const postIdQuery = "SELECT postituse_id FROM foorum WHERE postituse_pealkiri = ?";
+    db.query(postIdQuery, [postTitle], (postIdErr, postIdResult) => {
+        if (postIdErr) {
+            console.error('Error fetching post ID:', postIdErr);
+            return res.status(500).json({ success: false, message: 'Error fetching post ID' });
+        }
+
+        const postituse_id = postIdResult[0].postituse_id;
+
+        // Construct MySQL query to delete comments associated with the post
+        const deleteCommentsQuery = "DELETE FROM foorumi_kommentaariumid WHERE postituse_id = ?";
+
+        // Execute the query to delete comments associated with the post
+        db.query(deleteCommentsQuery, [postituse_id], (deleteCommentsErr, deleteCommentsResult) => {
+            if (deleteCommentsErr) {
+                console.error('Error deleting comments:', deleteCommentsErr);
+                return res.status(500).json({ success: false, message: 'Error deleting comments' });
+            }
+
+            // Construct MySQL query to delete the post
+            const deletePostQuery = "DELETE FROM foorum WHERE kasutaja_id = ? AND postituse_pealkiri = ?";
+
+            // Execute the query to delete the post
+            db.query(deletePostQuery, [userId, postTitle], (deletePostErr, deletePostResult) => {
+                if (deletePostErr) {
+                    console.error('Error deleting post:', deletePostErr);
+                    return res.status(500).json({ success: false, message: 'Error deleting post' });
+                }
+
+                if (deletePostResult.affectedRows === 0) {
+                    // No post was deleted, likely due to invalid userId or postTitle
+                    console.log('Post not found or user does not have permission to delete');
+                    return res.status(404).json({ success: false, message: 'Post not found or user does not have permission to delete' });
+                }
+
+                console.log('Post and associated comments deleted successfully');
+                return res.status(200).json({ success: true, message: 'Post and associated comments deleted successfully' });
+            });
+        });
+    });
+});
+app.delete('/delete-comment', (req, res) => {
+    const { email, userId, sessionToken, commentId } = req.body;
+
+    // Check if the session exists based on the userId and sessionToken
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Construct MySQL query to delete the comment
+    const sql = "DELETE FROM foorumi_kommentaariumid WHERE kommentaari_id = ?";
+
+    // Execute the query to delete the comment
+    db.query(sql, [commentId], (deleteErr, deleteResult) => {
+        if (deleteErr) {
+            console.error('Error deleting comment:', deleteErr);
+            return res.status(500).json({ success: false, message: 'Error deleting comment' });
+        }
+
+        console.log('Comment deleted successfully');
+        return res.status(200).json({ success: true, message: 'Comment deleted successfully' });
+    });
+});
 
 app.post('/get-user-posts', (req, res) => {
     const { userId, email, sessionToken } = req.body;

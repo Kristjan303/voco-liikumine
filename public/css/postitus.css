@@ -35,6 +35,23 @@ textarea::-webkit-scrollbar {
     border: 1px solid #f3f3f3;
     flex-direction: column;
 }
+
+.forum-content #deletePost {
+    width: 130px;
+    height: 25px;
+    border-radius: 5px;
+    color: red;
+    background-color: transparent;
+    cursor: pointer;
+    border: none;
+    margin-left: auto;
+    display: flex;
+    /* position: relative; */
+    gap: 10px;
+    flex-direction: row;
+    align-items: center;
+}
+
 .general {
     display: flex;
     gap: 15px;
@@ -167,6 +184,19 @@ color: red;
     border: none;
     z-index: 10;
 }
+.deleteComment {
+    width: 25px;
+    height: 25px;
+    border-radius: 5px;
+    position: absolute;
+    color: red;
+    background-color: transparent;
+    transform: translateX(540px);
+    cursor: pointer;
+    border: none;
+    z-index: 10;
+}
+
 .pinComment i {
     z-index: 5;
 }
