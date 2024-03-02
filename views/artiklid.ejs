@@ -26,12 +26,48 @@
         </a>
     </div>
     <div class="header-search">
-        <input type="text" id="searchInput" placeholder="Otsi artiklite seast...">
-        <button type="button" onclick="searchArticles()">
+        <input type="text" id="searchInput" placeholder="Otsi...">
+        <button type="button" id="searchButton">
             <i class="fa-solid fa-search fa-lg" style="color: #000000;"></i>
         </button>
         <a id="siseneButton" class="sisene" href="/sisene">Sisene</a>
     </div>
+    <script>
+        document.getElementById("searchButton").addEventListener("click", function () {
+            var userInput = document.getElementById("searchInput").value.trim();
+            if (userInput.length > 3) {
+                sendDataToServer(userInput);
+            } else {
+                alert("Please enter at least 4 characters before searching.");
+            }
+        });
+
+        function sendDataToServer(input) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/search", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            var url = response.url;
+                            var data = response.data; // Extract the data from the response
+                            window.location.href = `${url}?data=${JSON.stringify(data)}`; // Pass data as query parameter
+                        } else {
+                            alert("Search failed. Please try again later.");
+                        }
+                    } else {
+                        alert("Error: " + xhr.statusText);
+                    }
+                }
+            };
+            var data = JSON.stringify({ query: input });
+            xhr.send(data);
+        }
+    </script>
+
+
 </header>
 <nav>
     <a href="/" class="nav-logo">
@@ -52,7 +88,6 @@
             <p><a href="/">Avaleht</a> > <span>Artiklid</span></p>
         </div>
         <h1>Artiklid</h1>
-
 
 
         <% if (userRole === 2 || userRole === 3) { %>
@@ -113,6 +148,12 @@
             <select id="yearDropdown">
                 <option value="" selected>Vali aasta</option>
             </select>
+            <div class="filter-search">
+                <input type="text" id="filterSearchInput" placeholder="Otsi artiklite seast...">
+                <button type="button" onclick="deleteInput()">
+                    <i class="fa-regular fa-circle-xmark fa-lg"></i>
+                </button>
+            </div>
         </section>
 
     </div>
@@ -278,7 +319,7 @@
 
 <script>
     function searchArticles() {
-        const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
+        const searchInput = document.getElementById('filterSearchInput').value.trim().toLowerCase();
         const articlePreviews = document.querySelectorAll('.article-preview');
 
         articlePreviews.forEach(articlePreview => {
@@ -300,10 +341,14 @@
         });
     }
 
-    document.getElementById('searchInput').addEventListener('input', searchArticles);
+    function deleteInput() {
+        document.getElementById('filterSearchInput').value = '';
+        searchArticles(); // Call searchArticles to update display after clearing input
+    }
 
-
+    document.getElementById('filterSearchInput').addEventListener('input', searchArticles);
 </script>
+
 
 <script>
 

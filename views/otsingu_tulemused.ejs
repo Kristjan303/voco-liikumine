@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/index.css">
-    <link rel="stylesheet" href="../css/treeningud.css">
-    <title>Treeningud 🏃‍♀️ | VOCO Liikumine</title>
+    <link rel="stylesheet" href="../../css/index.css">
+    <link rel="stylesheet" href="../../css/otsingu_tulemused.css">
+
+    <title>Otsingu tulemused 🔎 | VOCO Liikumine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
 </head>
 <body>
@@ -62,6 +63,8 @@
             xhr.send(data);
         }
     </script>
+
+
 </header>
 <nav>
     <a href="/" class="nav-logo">
@@ -69,29 +72,62 @@
 
     </a>
     <div class="nav-links">
-        <a href="artiklid">Artiklid</a>
-        <a href="uudised">Uudised</a>
-        <a href="foorum">Foorum</a>
-        <a style="color: #2980b9" href="treeningud">Treeningud</a>
-        <a href="galerii">Galerii</a>
+        <a href="/artiklid">Artiklid</a>
+        <a href="/uudised">Uudised</a>
+        <a href="/foorum">Foorum</a>
+        <a href="/treeningud">Treeningud</a>
+        <a href="/galerii">Galerii</a>
     </div>
 </nav>
 
-<section class="treening">
+<section>
     <div class="section-nav">
         <div class="path">
-            <p><a href="/">Avaleht</a> > <span>treeningud</span></p>
+            <p><a href="/">Avaleht</a> > Otsi > <span>"<%= userInput %>"</span></p>
         </div>
-        <h1>Treeningud</h1>
+    <h1>Otsingu tulemused: "<%= userInput %>"</h1>
+
     </div>
-    <div class="search-trenn">
-    </div>
-    <main class="training-content">
-    </main>
+    <% if (data && (data.articleTitles.length > 0 || data.newsTitles.length > 0 || data.postTitles.length > 0)) { %>
+        <% if (data.articleTitles.length > 0) { %>
+            <h4>Artiklid:</h4>
+            <ul>
+                <% data.articleTitles.forEach(function(title) { %>
+                    <li>
+                        <%= title %>
+                        <a href="/artiklid/<%= title.replace(/\s+/g, '%20') %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } %>
+
+        <% if (data.newsTitles.length > 0) { %>
+            <h4>Uudised:</h4>
+            <ul>
+                <% data.newsTitles.forEach(function(title) { %>
+                    <li>
+                        <%= title %>
+                        <a href="/uudised/<%= title.replace(/\s+/g, '%20') %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } %>
+
+        <% if (data.postTitles.length > 0) { %>
+            <h4>Foorumi postitused:</h4>
+            <ul>
+                <% data.postTitles.forEach(function(title) { %>
+                    <li>
+                        <%= title %>
+                        <a href="/foorum/<%= title.replace(/\s+/g, '%20') %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } %>
+    <% } else { %>
+        <p>Ühtegi tulemust ei leitud. . .</p>
+    <% } %>
 </section>
-
-
-
 
 
 <div class="mapBanner">
@@ -153,50 +189,6 @@
     </div>
 </footer>
 
+
 </body>
-<script>
-    // checkLogin.js
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const siseneButton = document.getElementById('siseneButton');
-
-        // Check if the user is logged in by making a request to the server
-        fetch('/test')
-            .then(response => response.json())
-            .then(data => {
-                const isLoggedIn = data.session && data.session.user !== undefined && data.session.user !== null;
-
-                // Update the button text based on the user's login status
-                siseneButton.innerText = isLoggedIn ? 'Välju' : 'Sisene';
-
-                // Add a click event listener to the button
-                siseneButton.addEventListener('click', function () {
-                    if (isLoggedIn) {
-                        // If logged in, make a request to the server to log out
-                        fetch('/logout')
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    // If logout successful, reload the page to reflect the changes
-                                    location.reload();
-                                    // delete all sessionStorage
-                                    sessionStorage.clear();
-                                } else {
-                                    console.error('Error logging out:', data.message);
-                                }
-                            })
-                            .catch(error => console.error('Error logging out:', error));
-                    } else {
-                        // Handle the logic for navigating to the login page or any other actions
-                        // Redirect to the login page, for example:
-                        localStorage.clear();
-                        window.location.href = '/sisene';
-                    }
-                });
-            })
-            .catch(error => console.error('Error checking login status:', error));
-    });
-
-</script>
-
 </html>

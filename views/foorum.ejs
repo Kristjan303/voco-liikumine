@@ -22,12 +22,46 @@
         </a>
     </div>
     <div class="header-search">
-        <input type="text" placeholder="Otsi postituste seast...">
-        <button type="submit">
+        <input type="text" id="searchInput" placeholder="Otsi...">
+        <button type="button" id="searchButton">
             <i class="fa-solid fa-search fa-lg" style="color: #000000;"></i>
         </button>
         <a id="siseneButton" class="sisene" href="/sisene">Sisene</a>
     </div>
+    <script>
+        document.getElementById("searchButton").addEventListener("click", function () {
+            var userInput = document.getElementById("searchInput").value.trim();
+            if (userInput.length > 3) {
+                sendDataToServer(userInput);
+            } else {
+                alert("Please enter at least 4 characters before searching.");
+            }
+        });
+
+        function sendDataToServer(input) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/search", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            var url = response.url;
+                            var data = response.data; // Extract the data from the response
+                            window.location.href = `${url}?data=${JSON.stringify(data)}`; // Pass data as query parameter
+                        } else {
+                            alert("Search failed. Please try again later.");
+                        }
+                    } else {
+                        alert("Error: " + xhr.statusText);
+                    }
+                }
+            };
+            var data = JSON.stringify({ query: input });
+            xhr.send(data);
+        }
+    </script>
 </header>
 <nav>
     <a href="/" class="nav-logo">
@@ -57,6 +91,12 @@
                 <option value="newest">Uusimad</option>
                 <option value="oldest">Vanimad</option>
             </select>
+            <div class="filter-search">
+                <input type="text" id="filterSearchInput" placeholder="Otsi postituste seast...">
+                <button type="submit" onclick="deleteInput()">
+                    <i class="fa-regular fa-circle-xmark fa-lg"></i>
+                </button>
+            </div>
 
             <% if (userRole === 1 || userRole === 2 || userRole === 3) { %>
 
@@ -549,15 +589,16 @@
 
 </script>
 <script>
+
     function searchPosts() {
-        const searchInput = document.querySelector('.header-search input').value.trim().toLowerCase();
+        const searchInput = document.querySelector('.filter-search input').value.trim().toLowerCase();
         const postTitles = document.querySelectorAll('.post h2');
-        const postContents = document.querySelectorAll('.post p');
         const postAuthors = document.querySelectorAll('.post .hold-data p:first-child');
         const postDates = document.querySelectorAll('.post .hold-data p:last-child');
+        const postMainContents = document.querySelectorAll('.post > p:not(.hold-data p)'); // Adjusted selector to target main content <p>
 
         postTitles.forEach((postTitle, index) => {
-            const postContent = postContents[index].textContent.toLowerCase().trim();
+            const postContent = postMainContents[index].textContent.toLowerCase().trim();
             const postAuthor = postAuthors[index].textContent.toLowerCase().trim();
 
             if (postTitle.textContent.toLowerCase().includes(searchInput) ||
@@ -571,7 +612,14 @@
         });
     }
 
-    document.querySelector('.header-search input').addEventListener('input', searchPosts);
+
+    function deleteInput() {
+        document.querySelector('.filter-search input').value = '';
+        searchPosts(); // Call searchPosts to update display after clearing input
+    }
+
+    document.querySelector('.filter-search input').addEventListener('input', searchPosts);
+
 
 </script>
 

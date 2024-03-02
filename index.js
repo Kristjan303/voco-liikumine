@@ -9,6 +9,8 @@ const uuid = require('uuid');
 const cors = require('cors');
 const fs = require('fs');
 const multer = require('multer');
+const router = express.Router();
+
 
 
 const app = express();
@@ -1260,6 +1262,58 @@ app.post('/update-news', (req, res) => {
 });
 
 
+app.post('/search', (req, res) => {
+    const userInput = req.body.query;
+    const query = `
+    SELECT artikli_pealkiri AS title, 'article' AS type FROM artiklid WHERE artikli_pealkiri LIKE ?
+    UNION
+    SELECT uudise_pealkiri AS title, 'news' AS type FROM uudised WHERE uudise_pealkiri LIKE ?
+    UNION
+    SELECT postituse_pealkiri AS title, 'post' AS type FROM foorum WHERE postituse_pealkiri LIKE ?
+  `;
+    db.query(query, [`%${userInput}%`, `%${userInput}%`, `%${userInput}%`], (err, results) => {
+        if (err) {
+            console.error('Error searching titles: ', err);
+            res.status(500).json({ success: false });
+            return;
+        }
+        const data = {
+            articleTitles: [],
+            newsTitles: [],
+            postTitles: []
+        };
+
+        results.forEach(row => {
+            switch (row.type) {
+                case 'article':
+                    data.articleTitles.push(row.title);
+                    break;
+                case 'news':
+                    data.newsTitles.push(row.title);
+                    break;
+                case 'post':
+                    data.postTitles.push(row.title);
+                    break;
+                default:
+                    break;
+            }
+        });
+        console.log('Data:', data);
+
+        const url = `/otsi/${encodeURIComponent(userInput)}/tulemused`;
+        res.status(200).json({ success: true, url, data }); // Sending titles along with URL
+    });
+});
+
+
+app.get('/otsi/:input/tulemused', (req, res) => {
+    const userInput = req.params.input;
+    const data = JSON.parse(req.query.data); // Parse the JSON string to convert it back to an object
+    res.render('otsingu_tulemused', { userInput, data }); // Pass data to the template
+});
+
+
+
 
 // Render the admin page or redirect to /sisene if not authenticated
 app.get('/admin', (req, res) => {
@@ -1284,6 +1338,8 @@ app.get('/admin', (req, res) => {
         res.render('admin', { userRole });
     }
 });
+
+
 
 // Endpoint to retrieve data from the 'kasutajad' table
 app.get('/kasutajad', (req, res) => {
