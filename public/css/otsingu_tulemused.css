@@ -32,6 +32,11 @@ section {
     gap: 20px;
     width: 1000px;
     margin: auto;
-    height: 1000px;
+    margin-bottom: 50px;
     padding: 0 20px;
+}
+
+section img {
+    max-height: 500px;
+    width: 100%;
 }

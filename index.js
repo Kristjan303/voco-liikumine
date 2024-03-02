@@ -1419,7 +1419,10 @@ app.get('/sessions', (req, res) => {
 // });
 
 
-
+// Define a route handler for handling 404 errors (page not found)
+app.use((req, res, next) => {
+    res.status(404).render('notfound'); // Render notfound.ejs
+});
 app.listen(port, () => {
     console.log(`Server is running on port http://localhost:${port}/`);
 });

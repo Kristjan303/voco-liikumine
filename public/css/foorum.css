@@ -268,7 +268,7 @@
     cursor: pointer;
     transition: 0.2s;
     margin: 0;
-    margin-right: auto;
+    margin-left: auto;
 
 }
 #toggle-button:hover {

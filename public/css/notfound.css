@@ -1,0 +1,11 @@
+section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 50px;
+}
+section img {
+    width: 100%;
+    max-width: 500px;
+}

@@ -39,9 +39,14 @@ body {
     width: 360px;
     height: 40px;
     border-radius: 15px;
-    border-style: none ;
     padding-left: 10px;
     background-color: #d9d9d9;
+    border: 1px solid #f3f3f3;
+}
+
+.signup input:focus {
+    outline: none;
+    border: 1px solid #2980b9;
 }
 
 .username{

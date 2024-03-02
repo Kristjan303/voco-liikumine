@@ -127,6 +127,8 @@ header .header-search input {
     border-radius: 7px;
     padding-left: 10px;
     border: 1px solid #cccccc;
+    padding-right: 30px;
+
 }
 header .header-search input:focus {
     outline: none;
@@ -569,7 +571,7 @@ section {
     padding: 0;
     gap: 10px;
     margin-top: 10px;
-
+    width: 100%;
 }
 
 .hold-filter .filter-search input {
@@ -580,7 +582,9 @@ section {
     border: 1px solid #cccccc;
     font-family: "Montserrat", sans-serif;
     height: 100%;
-    width: 200px;
+    width: 400px;
+    padding-right: 30px;
+
 
 }
 .hold-filter .filter-search input:focus {
