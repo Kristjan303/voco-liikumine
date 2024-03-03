@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/index.css">
     <link rel="stylesheet" href="../css/foorum.css">
+    <link rel="stylesheet" href="../css/skeletonItems.css">
     <title>Foorum ✒ | VOCO Liikumine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
 </head>
@@ -355,20 +356,47 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // Function to show skeleton loaders for posts
+        function showPostSkeletonLoader() {
+            const postsContainer = document.getElementById('posts');
+            postsContainer.innerHTML = ''; // Clear existing content
+
+            // Create skeleton elements for posts
+            for (let i = 0; i < 4; i++) {
+                const postSkeleton = document.createElement('div');
+                postSkeleton.classList.add('post-skeleton');
+
+                const titleSkeleton = document.createElement('div');
+                titleSkeleton.classList.add('title-skeleton');
+
+                const contentSkeleton = document.createElement('div');
+                contentSkeleton.classList.add('content-skeleton');
+
+                postSkeleton.appendChild(titleSkeleton);
+                postSkeleton.appendChild(contentSkeleton);
+
+                postsContainer.appendChild(postSkeleton);
+            }
+        }
+
+        // Call function to show skeleton loaders for posts
+        showPostSkeletonLoader();
+
         fetch('/get-posts')
             .then(response => response.json())
             .then(posts => {
+                const postsContainer = document.getElementById('posts');
+                postsContainer.innerHTML = ''; // Clear skeleton loaders
+
                 // Sort posts by comment count in descending order
                 posts.sort((a, b) => b.commentCount - a.commentCount);
 
-                const postsContainer = document.getElementById('posts');
                 posts.forEach(post => {
                     const postTime = new Date(post.postDate);
                     const currentTime = new Date();
                     const timeDifference = Math.abs(currentTime - postTime);
                     const postUrl = post.url;
                     const postDate = new Date(post.postDate);
-
 
                     let timeAgo;
                     if (timeDifference < 1000 * 60 * 60) {
@@ -391,23 +419,23 @@
                     const postElement = document.createElement('div');
                     postElement.classList.add('post');
                     postElement.innerHTML = `
-                    <h2>${post.postTitle}</h2>
-                    <div class="hold-data">
-                        <p>Author: ${post.userName}</p>
-                        <p>●</p>
-    <p class="post-date" data-date="${postDate.toISOString()}">${timeAgo}</p>
-                    </div>
-                    <p>${post.postContent}</p>
-                    <div class="hold-buttons">
-                        <p class="comment"><i class="fa-regular fa-message fa-xm"></i>${post.commentCount} kommentaari</p>
-                        <a href="foorum${postUrl}" class="open-comments"><i class="fa-solid fa-up-right-from-square fa-xm"></i></a>
+                        <h2>${post.postTitle}</h2>
+                        <div class="hold-data">
+                            <p>Author: ${post.userName}</p>
+                            <p>●</p>
+                            <p class="post-date" data-date="${postDate.toISOString()}">${timeAgo}</p>
+                        </div>
+                        <p>${post.postContent}</p>
+                        <div class="hold-buttons">
+                            <p class="comment"><i class="fa-regular fa-message fa-xm"></i>${post.commentCount} kommentaari</p>
+                            <a href="foorum${postUrl}" class="open-comments"><i class="fa-solid fa-up-right-from-square fa-xm"></i></a>
+                        </div>
                     `;
                     postsContainer.appendChild(postElement);
                 });
             })
             .catch(error => console.error('Error fetching posts:', error));
     });
-
 </script>
 
 

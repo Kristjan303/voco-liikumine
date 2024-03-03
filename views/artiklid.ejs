@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/index.css">
     <link rel="stylesheet" href="../css/artiklid.css">
+    <link rel="stylesheet" href="../css/skeletonItems.css">
     <title>Artiklid 📑 | VOCO Liikumine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
@@ -409,6 +410,40 @@
 
 
 <script>
+    // Function to show skeleton loader for articles
+    function showArticlesSkeletonLoader() {
+        const articlesContainer = document.getElementById('articles');
+        articlesContainer.innerHTML = ''; // Clear existing content
+
+        // Create skeleton elements for articles
+        for (let i = 0; i < 4; i++) {
+            const articleSkeleton = document.createElement('div');
+            articleSkeleton.classList.add('article-skeleton');
+
+            const authorSkeleton = document.createElement('div');
+            authorSkeleton.classList.add('author-skeleton');
+
+            const dateSkeleton = document.createElement('div');
+            dateSkeleton.classList.add('date-skeleton');
+
+            const headerSkeleton = document.createElement('div');
+            headerSkeleton.classList.add('header-skeleton');
+
+            const contentSkeleton = document.createElement('div');
+            contentSkeleton.classList.add('content-skeleton');
+
+            articleSkeleton.appendChild(authorSkeleton);
+            articleSkeleton.appendChild(dateSkeleton);
+            articleSkeleton.appendChild(headerSkeleton);
+            articleSkeleton.appendChild(contentSkeleton);
+
+            articlesContainer.appendChild(articleSkeleton);
+        }
+    }
+
+    // Call function to show skeleton loader for articles
+    showArticlesSkeletonLoader();
+
     // Function to fetch articles from the server
     function fetchArticles() {
         fetch('/get-articles')
@@ -481,8 +516,8 @@
     // Call fetchArticles function when the page loads
     window.onload = fetchArticles;
 
-
 </script>
+
 <script>
     // checkLogin.js
 

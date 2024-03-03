@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/index.css">
     <link rel="stylesheet" href="../css/uudised.css">
+    <link rel="stylesheet" href="../css/skeletonItems.css">
     <title>Uudised 📰 | VOCO Liikumine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
@@ -380,10 +381,47 @@
 
 
 <script>
+    // Function to show skeleton loader for news
+    function showNewsSkeletonLoader() {
+        const newsContainer = document.getElementById('news');
+        newsContainer.innerHTML = ''; // Clear existing content
+
+        // Create skeleton elements for news
+        for (let i = 0; i < 4; i++) {
+            const newsSkeleton = document.createElement('div');
+            newsSkeleton.classList.add('news-skeleton');
+
+            const authorSkeleton = document.createElement('div');
+            authorSkeleton.classList.add('author-skeleton');
+
+            const dateSkeleton = document.createElement('div');
+            dateSkeleton.classList.add('date-skeleton');
+
+            const headerSkeleton = document.createElement('div');
+            headerSkeleton.classList.add('header-skeleton');
+
+            const contentSkeleton = document.createElement('div');
+            contentSkeleton.classList.add('content-skeleton');
+
+            newsSkeleton.appendChild(authorSkeleton);
+            newsSkeleton.appendChild(dateSkeleton);
+            newsSkeleton.appendChild(headerSkeleton);
+            newsSkeleton.appendChild(contentSkeleton);
+
+            newsContainer.appendChild(newsSkeleton);
+        }
+    }
+
+    // Call function to show skeleton loader for news
+    showNewsSkeletonLoader();
+
     function fetchNews() {
         fetch('/get-news')
             .then(response => response.json())
             .then(data => {
+                // Clear existing news
+                document.getElementById('news').innerHTML = '';
+
                 // Get the newest news article
                 const newestNews = data[0];
 
@@ -476,6 +514,7 @@
     window.onload = fetchNews;
 
 </script>
+
 
 
 <script>

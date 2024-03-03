@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/index.css">
     <link rel="stylesheet" href="../css/foorum.css">
+    <link rel="stylesheet" href="../css/skeletonIndex.css">
     <title>Avaleht | VOCO Liikumine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+
 </head>
 <body>
 <header>
@@ -178,67 +180,44 @@
     </div>
 </section>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('/get-posts')
-            .then(response => response.json())
-            .then(posts => {
-                // Sort posts by comment count in descending order
-                posts.sort((a, b) => b.commentCount - a.commentCount);
 
-                const postsContainer = document.getElementById('posts');
-                posts.slice(0, 4).forEach(post => {
-                    const postTime = new Date(post.postDate);
-                    const currentTime = new Date();
-                    const timeDifference = Math.abs(currentTime - postTime);
-                    const postUrl = encodeURIComponent(post.url);
-                    const postDate = new Date(post.postDate);
-
-                    let timeAgo;
-                    if (timeDifference < 1000 * 60 * 60) {
-                        const minutesDifference = Math.ceil(timeDifference / (1000 * 60));
-                        timeAgo = minutesDifference > 1 ? `${minutesDifference} minutit tagasi` : '1 minut tagasi';
-                    } else if (timeDifference < 1000 * 60 * 60 * 24) {
-                        const hoursDifference = Math.ceil(timeDifference / (1000 * 60 * 60));
-                        timeAgo = hoursDifference > 1 ? `${hoursDifference} tundi tagasi` : '1 tund tagasi';
-                    } else if (timeDifference < 1000 * 60 * 60 * 24 * 30) {
-                        const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-                        timeAgo = daysDifference > 1 ? `${daysDifference} päeva tagasi` : '1 päev tagasi';
-                    } else if (timeDifference < 1000 * 60 * 60 * 24 * 30 * 12) {
-                        const monthsDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24 * 30));
-                        timeAgo = monthsDifference > 1 ? `${monthsDifference} kuud tagasi` : '1 kuu tagasi';
-                    } else {
-                        const yearsDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24 * 30 * 12));
-                        timeAgo = yearsDifference > 1 ? `${yearsDifference} aastat tagasi` : '1 aaasta tagasi';
-                    }
-
-                    const postElement = document.createElement('div');
-                    postElement.classList.add('post');
-                    postElement.style.width = '300px';
-                    postElement.style.maxHeight = '330px';
-                    postElement.innerHTML = `
-                            <h2>${post.postTitle}</h2>
-                            <div class="hold-data">
-                                <p>Author: ${post.userName}</p>
-                                <p>●</p>
-                                <p class="post-date" data-date="${postDate.toISOString()}">${timeAgo}</p>
-                            </div>
-                            <p>${post.postContent}</p>
-                            <div class="hold-buttons">
-                                <p class="comment"><i class="fa-regular fa-message fa-xm"></i>${post.commentCount} kommentaari</p>
-<a href="/foorum${post.url}" class="open-comments"><i class="fa-solid fa-up-right-from-square fa-xm"></i></a>
-                            </div>
-                        `;
-                    postsContainer.appendChild(postElement);
-                });
-            })
-            .catch(error => console.error('Error fetching posts:', error));
-    });
-</script>
 
 <script>
+    // Function to show skeleton loaders while data is being fetched
+    function showSkeletonLoader(containerSelector) {
+        const container = document.querySelector(containerSelector);
+        container.innerHTML = ''; // Clear existing content
+
+        // Create skeleton elements
+        for (let i = 0; i < 4; i++) { // Assuming 4 skeleton elements for each section
+            const cardElement = document.createElement('div');
+            cardElement.classList.add('card');
+
+            const coverImageSkeleton = document.createElement('div');
+            coverImageSkeleton.classList.add('cover-image-skeleton');
+
+            const skeletonLoader1 = document.createElement('div');
+            skeletonLoader1.classList.add('skeleton-loader');
+
+            const skeletonLoader2 = document.createElement('div');
+            skeletonLoader2.classList.add('skeleton-loader');
+
+            const skeletonLoader3 = document.createElement('div');
+            skeletonLoader3.classList.add('skeleton-loader');
+
+            cardElement.appendChild(coverImageSkeleton);
+            cardElement.appendChild(skeletonLoader1);
+            cardElement.appendChild(skeletonLoader2);
+            cardElement.appendChild(skeletonLoader3);
+
+            container.appendChild(cardElement);
+        }
+    }
+
     // Function to fetch news articles from the server
     function fetchNews() {
+        showSkeletonLoader('.hotNews main'); // Show skeleton loader for news section
+
         fetch('/get-news')
             .then(response => response.json())
             .then(news => {
@@ -283,6 +262,8 @@
 
     // Function to fetch articles from the server
     function fetchArticles() {
+        showSkeletonLoader('.hotArticles main'); // Show skeleton loader for articles section
+
         fetch('/get-articles')
             .then(response => response.json())
             .then(data => {
@@ -336,14 +317,100 @@
         return null;
     }
 
-    // Call fetchNews function when the page loads
+    // Call fetchNews and fetchArticles functions when the page loads
     window.onload = function () {
         fetchNews();
         fetchArticles();
     };
 
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Function to show skeleton loaders while posts are being fetched
+        function showPostSkeletonLoader() {
+            const postsContainer = document.getElementById('posts');
+            postsContainer.innerHTML = ''; // Clear existing content
 
+            // Create skeleton elements
+            for (let i = 0; i < 4; i++) { // Assuming 4 skeleton elements for posts
+                const postElement = document.createElement('div');
+                postElement.classList.add('post-skeleton');
+
+                const titleSkeleton1 = document.createElement('div');
+                titleSkeleton1.classList.add('title-skeleton');
+                const titleSkeleton2 = document.createElement('div');
+                titleSkeleton2.classList.add('title-skeleton');
+
+                const contentSkeleton = document.createElement('div');
+                contentSkeleton.classList.add('content-skeleton');
+
+
+                postElement.appendChild(titleSkeleton1);
+                postElement.appendChild(titleSkeleton2);
+                postElement.appendChild(contentSkeleton);
+                postsContainer.appendChild(postElement);
+            }
+        }
+
+        showPostSkeletonLoader(); // Show skeleton loader for posts
+
+        fetch('/get-posts')
+            .then(response => response.json())
+            .then(posts => {
+                // Sort posts by comment count in descending order
+                posts.sort((a, b) => b.commentCount - a.commentCount);
+
+                const postsContainer = document.getElementById('posts');
+                postsContainer.innerHTML = ''; // Clear skeleton loaders
+
+                posts.slice(0, 4).forEach(post => {
+                    const postTime = new Date(post.postDate);
+                    const currentTime = new Date();
+                    const timeDifference = Math.abs(currentTime - postTime);
+                    const postUrl = encodeURIComponent(post.url);
+                    const postDate = new Date(post.postDate);
+
+                    let timeAgo;
+                    if (timeDifference < 1000 * 60 * 60) {
+                        const minutesDifference = Math.ceil(timeDifference / (1000 * 60));
+                        timeAgo = minutesDifference > 1 ? `${minutesDifference} minutit tagasi` : '1 minut tagasi';
+                    } else if (timeDifference < 1000 * 60 * 60 * 24) {
+                        const hoursDifference = Math.ceil(timeDifference / (1000 * 60 * 60));
+                        timeAgo = hoursDifference > 1 ? `${hoursDifference} tundi tagasi` : '1 tund tagasi';
+                    } else if (timeDifference < 1000 * 60 * 60 * 24 * 30) {
+                        const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+                        timeAgo = daysDifference > 1 ? `${daysDifference} päeva tagasi` : '1 päev tagasi';
+                    } else if (timeDifference < 1000 * 60 * 60 * 24 * 30 * 12) {
+                        const monthsDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24 * 30));
+                        timeAgo = monthsDifference > 1 ? `${monthsDifference} kuud tagasi` : '1 kuu tagasi';
+                    } else {
+                        const yearsDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24 * 30 * 12));
+                        timeAgo = yearsDifference > 1 ? `${yearsDifference} aastat tagasi` : '1 aaasta tagasi';
+                    }
+
+                    const postElement = document.createElement('div');
+                    postElement.classList.add('post');
+                    postElement.style.width = '300px';
+                    postElement.style.maxHeight = '330px';
+                    postElement.innerHTML = `
+                            <h2>${post.postTitle}</h2>
+                            <div class="hold-data">
+                                <p>Author: ${post.userName}</p>
+                                <p>●</p>
+                                <p class="post-date" data-date="${postDate.toISOString()}">${timeAgo}</p>
+                            </div>
+                            <p>${post.postContent}</p>
+                            <div class="hold-buttons">
+                                <p class="comment"><i class="fa-regular fa-message fa-xm"></i>${post.commentCount} kommentaari</p>
+<a href="/foorum${post.url}" class="open-comments"><i class="fa-solid fa-up-right-from-square fa-xm"></i></a>
+                            </div>
+                        `;
+                    postsContainer.appendChild(postElement);
+                });
+            })
+            .catch(error => console.error('Error fetching posts:', error));
+    });
+</script>
 <script>
     const slider = document.querySelector(".items");
     const slides = document.querySelectorAll(".item");
