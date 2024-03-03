@@ -546,7 +546,8 @@ app.get('/artiklid/:articleHeader', (req, res) => {
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ success: false, message: 'Article not found' });
+            // If article not found, render notfound.ejs
+            return res.status(404).render('notfound');
         }
 
         const articleContent = result[0].summernoteContent;
@@ -583,10 +584,12 @@ app.get('/artiklid/:articleHeader', (req, res) => {
                 articleAuthor: articleAuthor,
                 articleDate: articleDate,
                 wrappedContent: wrappedContent,
-userRole: 0            });
+                userRole: 0
+            });
         }
     });
 });
+
 
 // Endpoint to handle updating Summernote content
 app.post('/update-articles', (req, res) => {
@@ -737,7 +740,8 @@ app.get('/foorum/:postTitle', (req, res) => {
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ success: false, message: 'Post not found' });
+            // If post not found, render notfound.ejs
+            return res.status(404).render('notfound');
         }
 
         const postContent = result[0].postContent;
@@ -784,6 +788,7 @@ app.get('/foorum/:postTitle', (req, res) => {
         }
     });
 });
+
 
 
 
@@ -1159,7 +1164,7 @@ app.get('/get-news',  (req, res) => {
     });
 });
 
-app.get('/uudised/:newsHeader', (req, res) => {
+app.get('/uudised/:newsHeader', (req, res, next) => {
     const newsHeader = req.params.newsHeader;
 
     // Query to retrieve a specific news content based on the header
@@ -1171,7 +1176,8 @@ app.get('/uudised/:newsHeader', (req, res) => {
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ success: false, message: 'news not found' });
+            // If news not found, render notfound.ejs
+            return res.status(404).render('notfound');
         }
 
         const newsContent = result[0].summernoteContent;
@@ -1212,6 +1218,7 @@ app.get('/uudised/:newsHeader', (req, res) => {
         }
     });
 });
+
 app.post('/update-news', (req, res) => {
     // Extract content from the request body
     const { newsHeader, newsContent, editNewsHeader } = req.body;
@@ -1262,20 +1269,29 @@ app.post('/update-news', (req, res) => {
 });
 
 
-app.post('/search', (req, res) => {
+app.post('/search', (req, res, next) => {
     const userInput = req.body.query;
     const query = `
-    SELECT artikli_pealkiri AS title, 'article' AS type FROM artiklid WHERE artikli_pealkiri LIKE ?
-    UNION
-    SELECT uudise_pealkiri AS title, 'news' AS type FROM uudised WHERE uudise_pealkiri LIKE ?
-    UNION
-    SELECT postituse_pealkiri AS title, 'post' AS type FROM foorum WHERE postituse_pealkiri LIKE ?
-  `;
+        SELECT artikli_pealkiri AS title, 'article' AS type, kasutajad.kasutajanimi AS username
+        FROM artiklid
+                 JOIN kasutajad ON artiklid.kasutaja_id = kasutajad.kasutaja_id
+        WHERE artikli_pealkiri LIKE ?
+        UNION
+        SELECT uudise_pealkiri AS title, 'news' AS type, kasutajad.kasutajanimi AS username
+        FROM uudised
+                 JOIN kasutajad ON uudised.kasutaja_id = kasutajad.kasutaja_id
+        WHERE uudise_pealkiri LIKE ?
+        UNION
+        SELECT postituse_pealkiri AS title, 'post' AS type, kasutajad.kasutajanimi AS username
+        FROM foorum
+                 JOIN kasutajad ON foorum.kasutaja_id = kasutajad.kasutaja_id
+        WHERE postituse_pealkiri LIKE ?
+    `;
     db.query(query, [`%${userInput}%`, `%${userInput}%`, `%${userInput}%`], (err, results) => {
         if (err) {
             console.error('Error searching titles: ', err);
-            res.status(500).json({ success: false });
-            return;
+            // Pass the error to the next middleware
+            return next(err);
         }
         const data = {
             articleTitles: [],
@@ -1286,24 +1302,25 @@ app.post('/search', (req, res) => {
         results.forEach(row => {
             switch (row.type) {
                 case 'article':
-                    data.articleTitles.push(row.title);
+                    data.articleTitles.push({ title: row.title, username: row.username });
                     break;
                 case 'news':
-                    data.newsTitles.push(row.title);
+                    data.newsTitles.push({ title: row.title, username: row.username });
                     break;
                 case 'post':
-                    data.postTitles.push(row.title);
+                    data.postTitles.push({ title: row.title, username: row.username });
                     break;
                 default:
                     break;
             }
         });
-        console.log('Data:', data);
-
         const url = `/otsi/${encodeURIComponent(userInput)}/tulemused`;
         res.status(200).json({ success: true, url, data }); // Sending titles along with URL
     });
 });
+
+
+
 
 
 app.get('/otsi/:input/tulemused', (req, res) => {
@@ -1419,10 +1436,30 @@ app.get('/sessions', (req, res) => {
 // });
 
 
+
+
+// MUST BE AT THE END OF THIS PAGE EVERY MIDDLEWARE AND ENDPOINT GO ABOUVE THIS
+
+// MAKE SURE TO EDIT THIS SO THAT IT REDIRECTS TO ANOTHER CUSTOM PAGE TELLING THE USER WHAT HAPPENED AND WHERE TO CLICK NEXT!!
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        // Handle JSON parse error
+        return res.status(400).json({ success: false, message: 'Invalid JSON' });
+    } else if (err.status === 500) {
+        return res.status(500).json({ success: false, message: 'Invalid JSON' });
+
+    } else {
+        // For other errors, send the default error message
+        return res.status(err.status || 500).json({ success: false, message: err.message });
+    }
+});
+
 // Define a route handler for handling 404 errors (page not found)
 app.use((req, res, next) => {
     res.status(404).render('notfound'); // Render notfound.ejs
 });
+
 app.listen(port, () => {
     console.log(`Server is running on port http://localhost:${port}/`);
 });
+

@@ -34,13 +34,23 @@
     </div>
     <script>
         document.getElementById("searchButton").addEventListener("click", function () {
+            sendData();
+        });
+
+        document.getElementById("searchInput").addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                sendData();
+            }
+        });
+
+        function sendData() {
             var userInput = document.getElementById("searchInput").value.trim();
             if (userInput.length > 3) {
                 sendDataToServer(userInput);
             } else {
                 alert("Please enter at least 4 characters before searching.");
             }
-        });
+        }
 
         function sendDataToServer(input) {
             var xhr = new XMLHttpRequest();

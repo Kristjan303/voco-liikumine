@@ -31,13 +31,23 @@
     </div>
     <script>
         document.getElementById("searchButton").addEventListener("click", function () {
+            sendData();
+        });
+
+        document.getElementById("searchInput").addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                sendData();
+            }
+        });
+
+        function sendData() {
             var userInput = document.getElementById("searchInput").value.trim();
             if (userInput.length > 3) {
                 sendDataToServer(userInput);
             } else {
                 alert("Please enter at least 4 characters before searching.");
             }
-        });
+        }
 
         function sendDataToServer(input) {
             var xhr = new XMLHttpRequest();
@@ -94,8 +104,8 @@
             <ul>
                 <% data.articleTitles.forEach(function(title) { %>
                     <li>
-                        <%= title %>
-                        <a href="/artiklid/<%= title.replace(/\s+/g, '%20') %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
+                        <%= title.title %> <span class="usernameSearch"> - <%= title.username %></span>
+                        <a href="/artiklid/<%= encodeURIComponent(title.title) %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
                     </li>
                 <% }); %>
             </ul>
@@ -106,8 +116,8 @@
             <ul>
                 <% data.newsTitles.forEach(function(title) { %>
                     <li>
-                        <%= title %>
-                        <a href="/uudised/<%= title.replace(/\s+/g, '%20') %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
+                        <%= title.title %> <span class="usernameSearch"> - <%= title.username %></span>
+                        <a href="/uudised/<%= encodeURIComponent(title.title) %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
                     </li>
                 <% }); %>
             </ul>
@@ -118,8 +128,8 @@
             <ul>
                 <% data.postTitles.forEach(function(title) { %>
                     <li>
-                        <%= title %>
-                        <a href="/foorum/<%= title.replace(/\s+/g, '%20') %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
+                        <%= title.title %> <span class="usernameSearch"> - <%= title.username %></span>
+                        <a href="/foorum/<%= encodeURIComponent(title.title) %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
                     </li>
                 <% }); %>
             </ul>
@@ -128,6 +138,8 @@
         <p>Ühtegi tulemust ei leitud. . .</p>
         <img src="../../images/search.svg">
     <% } %>
+
+
 </section>
 
 

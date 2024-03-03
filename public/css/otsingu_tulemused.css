@@ -40,3 +40,10 @@ section img {
     max-height: 500px;
     width: 100%;
 }
+
+.usernameSearch {
+    color: #2980b9;
+    font-weight: normal;
+    margin-top: 10px;
+
+}
