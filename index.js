@@ -1330,6 +1330,76 @@ app.get('/otsi/:input/tulemused', (req, res) => {
 });
 
 
+// trennid thingamajig
+
+app.post('/submit-trennid', (req, res) => {
+    const { sessionToken, userId, email, eventStartTime, eventEndTime, days, location, eventDescription, eventTitle } = req.body;
+
+    // Check if any required field is missing
+    if (!sessionToken || !userId || !email || !eventStartTime || !eventEndTime || !days || !location || !eventDescription || !eventTitle) {
+        console.log('Missing required fields');
+        return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    // Check if the session exists in the sessions array
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Assuming you are receiving JSON data in the request body
+    const formData = req.body;
+
+    // Construct MySQL query
+    const sql = `INSERT INTO trennid (kasutaja_id, trenni_toimumise_algusaeg, trenni_toimumise_lõppaeg, trenni_toimumise_päev, asukoht, trenni_lisamise_kuupäev, trenni_selgitus, trenni_nimi, trenni_värv, trenni_klass) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    // Execute query
+    db.query(sql, [formData.userId, formData.eventStartTime, formData.eventEndTime, formData.days.join(','), formData.location, new Date(), formData.eventDescription, formData.eventTitle, formData.eventColor, formData.eventRoom], (err, result) => {
+        if (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            console.log('Trenn added successfully');
+            res.status(200).json({ message: 'Trenn added successfully' });
+        }
+    });
+});
+
+
+app.get('/fetch-trennid', (req, res) => {
+
+    // Construct MySQL query to fetch data
+    const sql = `SELECT trennid.kasutaja_id, kasutajad.kasutajanimi AS kasutaja_nimi, trennid.trenni_nimi, trennid.asukoht, trennid.trenni_toimumise_päev, trennid.trenni_toimumise_algusaeg, trennid.trenni_toimumise_lõppaeg, trennid.trenni_lisamise_kuupäev, trennid.trenni_selgitus, trennid.trenni_värv 
+                 FROM trennid 
+                 INNER JOIN kasutajad ON trennid.kasutaja_id = kasutajad.kasutaja_id`;
+
+    // Execute query
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            console.log('Trennid fetched successfully');
+            res.status(200).json(result);
+        }
+    });
+});
+
+
+
+// Function to get the date-time for a specific day of the week
+function getDateTimeForDay(timeString, dayOfWeek) {
+    const daysToAdd = dayOfWeek - new Date().getDay();
+    const date = new Date();
+    date.setDate(date.getDate() + daysToAdd);
+    const [hours, minutes, seconds] = timeString.split(':');
+    date.setHours(hours, minutes, seconds);
+    return date;
+}
+
+
 
 
 // Render the admin page or redirect to /sisene if not authenticated
@@ -1444,11 +1514,17 @@ app.get('/sessions', (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
         // Handle JSON parse error
+        console.error('Error parsing JSON:', err);
+
         return res.status(400).json({ success: false, message: 'Invalid JSON' });
     } else if (err.status === 500) {
+        console.error('Error parsing JSON:', err);
+
         return res.status(500).json({ success: false, message: 'Invalid JSON' });
 
     } else {
+        console.error('Error parsing JSON:', err);
+
         // For other errors, send the default error message
         return res.status(err.status || 500).json({ success: false, message: err.message });
     }

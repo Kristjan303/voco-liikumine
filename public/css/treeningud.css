@@ -1,13 +1,13 @@
 .treening {
     display: flex;
     margin: 0 auto;
-    /* max-width: 1200px; */
+
     padding: 0 20px;
     flex-direction: column;
     align-content: center;
     align-items: center;
     justify-content: flex-start;
-    width: 1000px;
+    width: 1100px;
 }
 
 .treening-content {
@@ -27,4 +27,128 @@
     margin: 20px;
     border-radius: 10px;
     background-color: #dfdfdf;
+}
+
+#calendar {
+    width: 100%;
+    margin-bottom: 50px;
+}
+.fc .fc-toolbar-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0;
+}
+
+#trenniForm {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    background-color: ghostwhite;
+    border-radius: 10px;
+    border: 1px solid #f3f3f3;
+    max-width: 100%;
+    margin-bottom: 50px;
+    margin-right: auto;
+
+}
+#trenniForm textarea {
+    height: 100px;
+    width: 100%;
+    padding: 10px 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+    resize: none;
+    font-family: "Montserrat", sans-serif;
+}
+#trenniForm textarea:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+#trenniForm #eventTitle {
+    width: 100%;
+    padding: 10px 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+#trenniForm #eventTitle:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+#trenniForm #eventStartTime {
+    padding: 5px 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+#trenniForm #eventStartTime:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+#trenniForm #eventEndTime {
+    padding: 5px 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+#trenniForm #eventEndTime:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+#trenniForm #eventColor {
+    padding: 5px 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+#trenniForm #eventColor:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+
+.nimi {
+    font-weight: bold;
+}
+#trenniForm button {
+    padding: 10px 20px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: "Montserrat", sans-serif;
+}
+#trenniForm button:hover {
+    background-color: #1c6a8c;
+}
+
+#trenniForm #põlluRoomSelection {
+    padding: 5px 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+#trenniForm #põlluRoomSelection:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+#trenniForm #kopliRoomSelection {
+    padding: 5px 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+#trenniForm #kopliRoomSelection:focus {
+    outline: none;
+    border: 1px solid #2980b9;
 }

@@ -7,6 +7,88 @@
     <link rel="stylesheet" href="../css/treeningud.css">
     <title>Treeningud 🏃‍♀️ | VOCO Liikumine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                editable: true,
+                height: 500,
+                allDaySlot: false,
+                firstDay: 1,
+                slotMinTime: "08:00:00",
+                slotMaxTime: "21:30:00",
+                slotDuration: "00:15:00",
+                slotLabelFormat: {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    omitZeroMinute: false
+                },
+                aspectRatio: 0.5,
+                height: 500,
+                contentHeight: 500,
+                expandRows: true,
+                handleWindowResize: true
+            });
+            calendar.setOption('locale', 'et');
+
+            // Fetch data from the endpoint
+            fetch('/fetch-trennid', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(event => {
+                        // Convert days to numbers
+                        const days = event.trenni_toimumise_päev.split(',');
+                        const daysInNumbers = days.map(day => {
+                            switch(day.trim()) {
+                                case 'Monday':
+                                    return 1;
+                                case 'Tuesday':
+                                    return 2;
+                                case 'Wednesday':
+                                    return 3;
+                                case 'Thursday':
+                                    return 4;
+                                case 'Friday':
+                                    return 5;
+                                case 'Saturday':
+                                    return 6;
+                                case 'Sunday':
+                                    return 7;
+                                default:
+                                    return -1; // Invalid day
+                            }
+                        });
+
+                        // Create FullCalendar events
+                        daysInNumbers.forEach(day => {
+                            const startDateTime = `${event.trenni_toimumise_päev.substring(0, 10)}T${event.trenni_toimumise_algusaeg}:00`;
+                            const endDateTime = `${event.trenni_toimumise_päev.substring(0, 10)}T${event.trenni_toimumise_lõppaeg}:00`;
+                            calendar.addEvent({
+                                title: event.trenni_nimi,
+                                start: startDateTime,
+                                end: endDateTime,
+                                daysOfWeek: [day],
+                                startTime: event.trenni_toimumise_algusaeg,
+                                endTime: event.trenni_toimumise_lõppaeg,
+                                color: event.trenni_värv,
+                                description: event.trenni_selgitus,
+                            });
+                        });
+                    });
+                    calendar.render();
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        });
+
+    </script>
+
 </head>
 <body>
 <header>
@@ -93,7 +175,123 @@
             <p><a href="/">Avaleht</a> > <span>treeningud</span></p>
         </div>
         <h1>Treeningud</h1>
+
     </div>
+    <div id="calendar"></div>
+    <% if (userRole === 2 || userRole === 3) { %>
+
+    <form id="trenniForm">
+        <h2>Lisa trenn</h2>
+        <div class="form-group">
+            <label class="nimi" for="eventTitle">Trenni nimi:</label>
+            <input type="text" id="eventTitle" class="form-control" placeholder="Korvpall" required>
+        </div>
+        <div>
+            <label class="nimi" for="eventDescription">Trenni kirjeldus:</label>
+            <textarea id="eventDescription" class="form-control" placeholder="Mängime korvpalli"  required></textarea>
+        </div>
+        <div class="form-group weekDays" >
+            <label class="nimi">Mis päevadel võiks toimuda:</label><br>
+            <input type="checkbox" id="monday" name="day" value="Monday">
+            <label for="monday">Esmaspäev</label><br>
+            <input type="checkbox" id="tuesday" name="day" value="Tuesday">
+            <label for="tuesday">Teisipäev</label><br>
+            <input type="checkbox" id="wednesday" name="day" value="Wednesday">
+            <label for="wednesday">Kolmapäev</label><br>
+            <input type="checkbox" id="thursday" name="day" value="Thursday">
+            <label for="thursday">Neljapäev</label><br>
+            <input type="checkbox" id="friday" name="day" value="Friday">
+            <label for="friday">Reede</label><br>
+            <input type="checkbox" id="saturday" name="day" value="Saturday">
+            <label for="saturday">Laupäev</label><br>
+            <input type="checkbox" id="sunday" name="day" value="Sunday">
+            <label for="sunday">Pühapäev</label><br>
+        </div>
+
+        <div class="form-group">
+            <label class="nimi" for="eventStartTime">Trenni algusaeg:</label>
+            <input type="time" id="eventStartTime" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label class="nimi" for="eventEndTime">Trenni lõpuaeg:</label>
+            <input type="time" id="eventEndTime" class="form-control" required>
+        </div>
+        <div>
+            <label class="nimi">Trenni asukoht:</label><br>
+            <input type="radio" id="option1" name="location" value="kopli" class="form-control" required>
+            <label for="option1">Kopli 1a</label><br>
+            <input type="radio" id="option2" name="location" value="põllu" class="form-control" required>
+            <label for="option2">Põllu 11</label><br>
+        </div>
+
+        <!-- Separate form groups for Kopli and Põllu room selection -->
+        <div id="kopliRoomGroup" style="display: none;">
+            <div class="form-group">
+                <label class="nimi">Kopli Trenni asukoht:</label><br>
+                <select id="kopliRoomSelection" class="form-control" required>
+                    <option value="A032a - Kopli jõusaal">A032a - Kopli jõusaal</option>
+                    <option value="A032b - Kopli Aeroobikasaal">A032b - Kopli Aeroobikasaal</option>
+                    <option value="A160A/B - Kopli spordisaal">A160A/B - Kopli spordisaal</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="põlluRoomGroup" style="display: none;">
+            <div class="form-group">
+                <label class="nimi">Põllu Trenni asukoht:</label><br>
+                <select id="põlluRoomSelection" class="form-control" required>
+                    <option value="A121 - Põllu spordisaal">A121 - Põllu spordisaal</option>
+                    <option value="A227 - Põllu spordisaal">A227 - Põllu spordisaal</option>
+                </select>
+            </div>
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var kopliRoomGroup = document.getElementById("kopliRoomGroup");
+                var põlluRoomGroup = document.getElementById("põlluRoomGroup");
+                var kopliRadio = document.getElementById("option1");
+                var põlluRadio = document.getElementById("option2");
+
+                // Function to show/hide room selection based on radio button selection
+                function toggleRoomSelection() {
+                    if (kopliRadio.checked) {
+                        kopliRoomGroup.style.display = "block";
+                        põlluRoomGroup.style.display = "none";
+                    } else if (põlluRadio.checked) {
+                        kopliRoomGroup.style.display = "none";
+                        põlluRoomGroup.style.display = "block";
+                    } else {
+                        kopliRoomGroup.style.display = "none";
+                        põlluRoomGroup.style.display = "none";
+                    }
+                }
+
+                // Event listener for radio button change
+                kopliRadio.addEventListener("change", toggleRoomSelection);
+                põlluRadio.addEventListener("change", toggleRoomSelection);
+            });
+        </script>
+
+        <div class="form-group">
+            <label class="nimi" for="eventColor">Trenni värv:</label><br>
+            <select id="eventColor" class="form-control" required>
+                <option value="#ff4040" style="background-color:#ff4040;">Punane</option>
+                <option value="#70ff70" style="background-color:#70ff70;">Roheline</option>
+                <option value="#2980b9" style="background-color:#2980b9;">Sinine</option>
+                <option value="#ffd629" style="background-color:#ffd629;">Kollane</option>
+                <option value="#ff29db" style="background-color:#ff29db;">Lilla</option>
+                <option value="#afafaf" style="background-color:#afafaf;">Hall</option>
+                <option value="#228B22" style="background-color:#228B22;">Tumeroheline</option>
+                <option value="#FFC0CB" style="background-color:#FFC0CB;">Roosa</option>
+                <option value="#FFA500" style="background-color:#FFA500;">Oranž</option>
+            </select>
+        </div>
+
+        <button type="button" id="addEventButton">Lisa trenn</button>
+    </form>
+
+    <% } %>
+
     <div class="search-trenn">
     </div>
     <main class="training-content">
@@ -208,5 +406,68 @@
     });
 
 </script>
+
+<% if (userRole === 2 || userRole === 3) { %>
+
+<script>
+    document.getElementById('addEventButton').addEventListener('click', function () {
+        // Retrieve user data from sessionStorage
+        var email = sessionStorage.getItem('email');
+        var userId = sessionStorage.getItem('userId');
+        var sessionToken = sessionStorage.getItem('sessionToken');
+
+        // Check if user data exists
+        if (!email || !userId || !sessionToken) {
+            console.error('User data not found in sessionStorage');
+            return;
+        }
+
+        // Prepare form data
+        var formData = {
+            eventTitle: document.getElementById('eventTitle').value,
+            eventDescription: document.getElementById('eventDescription').value,
+            days: [],
+            eventStartTime: document.getElementById('eventStartTime').value,
+            eventEndTime: document.getElementById('eventEndTime').value,
+            location: document.querySelector('input[name="location"]:checked').value,
+            eventColor: document.getElementById('eventColor').value,
+            eventRoom: document.getElementById('kopliRoomSelection') ? document.getElementById('põlluRoomSelection').value : null,
+            email: email,
+            userId: userId,
+            sessionToken: sessionToken
+        };
+
+        // Collect selected days
+        var daysCheckboxes = document.querySelectorAll('input[name="day"]:checked');
+        daysCheckboxes.forEach(function (checkbox) {
+            formData.days.push(checkbox.value);
+        });
+
+        // Send form data to server
+        fetch('/submit-trennid', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                // Optionally, do something after successful submission
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Optionally, handle errors here
+            });
+    });
+</script>
+
+<% } %>
 
 </html>
