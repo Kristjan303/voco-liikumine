@@ -8,14 +8,16 @@
     <title>Treeningud 🏃‍♀️ | VOCO Liikumine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
-                editable: true,
+                editable: false,
                 height: 500,
                 allDaySlot: false,
+                eventClassNames: 'trenni-hover',
                 firstDay: 1,
                 slotMinTime: "08:00:00",
                 slotMaxTime: "21:30:00",
@@ -26,11 +28,14 @@
                     omitZeroMinute: false
                 },
                 aspectRatio: 0.5,
-                height: 500,
                 contentHeight: 500,
                 expandRows: true,
-                handleWindowResize: true
+                handleWindowResize: true,
+                eventRender: function (event, element, view) {
+                    element.find('.fc-title').append('<div class="hr-line-solid-no-margin"></div><span style="font-size: 10px">' + event.description + '</span></div>');
+                },
             });
+
             calendar.setOption('locale', 'et');
 
             // Fetch data from the endpoint
@@ -79,6 +84,7 @@
                                 endTime: event.trenni_toimumise_lõppaeg,
                                 color: event.trenni_värv,
                                 description: event.trenni_selgitus,
+                                location: event.asukoht,
                             });
                         });
                     });
@@ -86,8 +92,9 @@
                 })
                 .catch(error => console.error('Error fetching data:', error));
         });
-
     </script>
+
+
 
 </head>
 <body>
@@ -362,6 +369,7 @@
 </footer>
 
 </body>
+
 <script>
     // checkLogin.js
 
@@ -469,5 +477,6 @@
 </script>
 
 <% } %>
+
 
 </html>

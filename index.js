@@ -1371,7 +1371,7 @@ app.post('/submit-trennid', (req, res) => {
 app.get('/fetch-trennid', (req, res) => {
 
     // Construct MySQL query to fetch data
-    const sql = `SELECT trennid.kasutaja_id, kasutajad.kasutajanimi AS kasutaja_nimi, trennid.trenni_nimi, trennid.asukoht, trennid.trenni_toimumise_päev, trennid.trenni_toimumise_algusaeg, trennid.trenni_toimumise_lõppaeg, trennid.trenni_lisamise_kuupäev, trennid.trenni_selgitus, trennid.trenni_värv 
+    const sql = `SELECT trennid.kasutaja_id, kasutajad.kasutajanimi AS kasutaja_nimi, trennid.trenni_nimi, trennid.asukoht, trennid.trenni_toimumise_päev, trennid.trenni_toimumise_algusaeg, trennid.trenni_toimumise_lõppaeg, trennid.trenni_lisamise_kuupäev, trennid.trenni_selgitus, trennid.trenni_värv, trennid.trenni_klass 
                  FROM trennid 
                  INNER JOIN kasutajad ON trennid.kasutaja_id = kasutajad.kasutaja_id`;
 

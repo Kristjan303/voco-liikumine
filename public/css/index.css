@@ -599,6 +599,103 @@ section {
     position: relative;
     left: -35px;
 }
+/* ------CALENDAR------ */
+#calendar {
+    width: 100%;
+}
+.location {
+    margin-top: auto;
+}
+.fc .fc-toolbar-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0;
+}
+
+.trenni-hover:hover {
+    scale: 1.05;
+    transition: 0.2s;
+    cursor: pointer;
+}
+.calendar-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 0;
+    flex-direction: column;
+}
+.calendar-section .calendar-container {
+    width: 1420px;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-section h2 {
+    margin-right: auto;
+}
+.hold-calendar {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    background-color: ghostwhite;
+    border-radius: 10px;
+    border: 1px solid #f3f3f3;
+    width:100%;
+    margin-bottom: 50px;
+}
+
+.fc-direction-ltr .fc-button-group > .fc-button:not(:first-child) {
+    padding: 5px;
+    background-color: #f8f8f8;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.2s;
+    border-style: none;
+    border: 1px solid #cccccc;
+    font-family: "Montserrat", sans-serif;
+    color: black;
+}
+
+
+.fc-direction-ltr .fc-button-group > .fc-button:not(:last-child) {
+    padding: 5px;
+    background-color: #f8f8f8;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.2s;
+    border-style: none;
+    border: 1px solid #cccccc;
+    font-family: "Montserrat", sans-serif;
+    color: black;
+}
+.fc .fc-button:not(:disabled) {
+    padding: 5px;
+    background-color: #2980b9;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.2s;
+    border-style: none;
+    border: 1px solid #cccccc;
+    font-family: "Montserrat", sans-serif;
+    color: white;
+}
+.fc .fc-button:not(:enabled) {
+    padding: 5px;
+    background-color: ghostwhite;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.2s;
+    border-style: none;
+    border: 1px solid #cccccc;
+    font-family: "Montserrat", sans-serif;
+    color: black;
+}
+
+
+.fc-button-group {
+gap: 10px;
+}
 
 /* ------FOOTER------ */
 
