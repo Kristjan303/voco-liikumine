@@ -213,6 +213,7 @@
 .post p {
     overflow: auto;
     margin-bottom: 20px;
+    word-break: break-word;
 }
 
 .post a {

@@ -1371,7 +1371,7 @@ app.post('/submit-trennid', (req, res) => {
 app.get('/fetch-trennid', (req, res) => {
 
     // Construct MySQL query to fetch data
-    const sql = `SELECT trennid.kasutaja_id, kasutajad.kasutajanimi AS kasutaja_nimi, trennid.trenni_nimi, trennid.asukoht, trennid.trenni_toimumise_päev, trennid.trenni_toimumise_algusaeg, trennid.trenni_toimumise_lõppaeg, trennid.trenni_lisamise_kuupäev, trennid.trenni_selgitus, trennid.trenni_värv, trennid.trenni_klass 
+    const sql = `SELECT trennid.kasutaja_id, kasutajad.kasutajanimi AS kasutaja_nimi, trennid.trenni_nimi, trennid.asukoht, trennid.trenni_toimumise_päev, trennid.trenni_toimumise_algusaeg, trennid.trenni_toimumise_lõppaeg, trennid.trenni_lisamise_kuupäev, trennid.trenni_selgitus, trennid.trenni_värv, trennid.trenni_klass, trennid.trenni_id 
                  FROM trennid 
                  INNER JOIN kasutajad ON trennid.kasutaja_id = kasutajad.kasutaja_id`;
 
@@ -1398,6 +1398,193 @@ function getDateTimeForDay(timeString, dayOfWeek) {
     date.setHours(hours, minutes, seconds);
     return date;
 }
+
+
+// Endpoint to retrieve the user's trennid õpetajad
+app.get('/fetch-user-trennid', (req, res) => {
+    const { userId, email, sessionToken } = req.query;
+
+    // Check if userId, email, and sessionToken are provided
+    if (!userId || !email || !sessionToken) {
+        return res.status(400).json({ success: false, message: 'Invalid session data' });
+    }
+
+    // Check if the session exists based on the userId and sessionToken
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Construct MySQL query to fetch the user's trennid
+    const sql = `SELECT trennid.trenni_nimi, trennid.asukoht, trennid.trenni_toimumise_päev, trennid.trenni_toimumise_algusaeg, trennid.trenni_toimumise_lõppaeg, trennid.trenni_lisamise_kuupäev, trennid.trenni_selgitus, trennid.trenni_värv, trennid.trenni_klass 
+                 FROM trennid 
+                 WHERE trennid.kasutaja_id = ?`;
+
+    // Execute query
+    db.query(sql, [userId], (err, result) => {
+        if (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            console.log('User trennid fetched successfully');
+            res.status(200).json(result);
+        }
+    });
+
+});
+
+// Endpoint to handle form submission
+app.post('/submit-student-registration', (req, res) => {
+    const { trenniId, firstName, lastName, group, gender, userId, email, sessionToken } = req.body;
+
+    // Check if the session exists based on the userId and sessionToken
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Insert submitted data into MySQL database
+    const sql = `INSERT INTO trennis_käijad (nimi, õppegrupp, sugu, trenni_id, kasutaja_id)
+                 VALUES (?, ?, ?, ?, ?)`;
+    db.query(sql, [`${firstName} ${lastName}`, group, gender, trenniId, userId], (err, result) => {
+        if (err) {
+            console.error('Error inserting data into database:', err);
+            res.status(500).json({ success: false, message: 'Internal Server Error' });
+            // send user to /sisene
+
+        } else {
+            res.status(200).json({ success: true, message: 'Data submitted successfully!' });
+        }
+    });
+});
+
+app.post('/fetch-student-trennid', (req, res) => {
+    const { email, sessionToken, userId } = req.body;
+
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Fetch data from MySQL based on userId
+    const query = `
+        SELECT tk.*, t.trenni_nimi, t.asukoht, t.trenni_klass, t.trenni_värv, t.trenni_toimumise_päev, 
+               t.trenni_toimumise_algusaeg, t.trenni_toimumise_lõppaeg, t.trenni_selgitus, t.trenni_id, t.trenni_lisamise_kuupäev
+        FROM trennis_käijad tk
+        INNER JOIN trennid t ON tk.trenni_id = t.trenni_id
+        WHERE tk.kasutaja_id = ?
+    `;
+
+    db.query(query, [userId], (error, results) => {
+        if (error) {
+            console.error('Error executing MySQL query: ' + error.stack);
+            res.status(500).json({ error: 'Internal Server Error' });
+            return;
+        }
+
+        // Check if any rows are returned
+        if (results.length === 0) {
+            // If no rows are returned, send an empty array
+            res.json({ data: [] });
+        } else {
+            // If rows are returned, send the fetched rows as response
+            res.json({ data: results });
+        }
+    });
+});
+
+//lahku trennist
+app.post('/leave-trenn', (req, res) => {
+    const { userId, trenniId, email, sessionToken } = req.body;
+
+    // Check if session data is valid
+    if (!userId || !email || !sessionToken) {
+        return res.status(400).json({ error: 'Invalid session data' });
+    }
+
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Delete row from trennis_käijad table
+    const deleteQuery = 'DELETE FROM trennis_käijad WHERE kasutaja_id = ? AND trenni_id = ?';
+    db.query(deleteQuery, [userId, trenniId], (error, results) => {
+        if (error) {
+            console.error('Error deleting row:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        // Check if any row was deleted
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ error: 'Row not found or user not registered for the trennist' });
+        }
+
+        // Row deleted successfully
+        return res.status(200).json({ message: 'Row deleted successfully' });
+    });
+});
+
+// Endpoint to handle user participation
+app.post('/user-participate', (req, res) => {
+    const { eventId, eventDate, userId, sessionToken, email } = req.body;
+
+    // Check if all required fields are provided
+    if (!eventId || !eventDate || !userId || !sessionToken || !email) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Check if the session exists based on the userId and sessionToken
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Check if the data already exists in the database
+    const sqlSelect = 'SELECT * FROM trennis_osalejad WHERE trenni_id = ? AND kuupäev = ? AND kasutaja_id = ?';
+    db.query(sqlSelect, [eventId, eventDate, userId], (err, results) => {
+        if (err) {
+            console.error('Error selecting data from MySQL:', err);
+            return res.status(500).json({ error: 'Failed to select data from MySQL' });
+        }
+
+        if (results.length > 0) {
+            // Data already exists, so delete the row
+            const sqlDelete = 'DELETE FROM trennis_osalejad WHERE trenni_id = ? AND kuupäev = ? AND kasutaja_id = ?';
+            db.query(sqlDelete, [eventId, eventDate, userId], (err, deleteResults) => {
+                if (err) {
+                    console.error('Error deleting data from MySQL:', err);
+                    return res.status(500).json({ error: 'Failed to delete data from MySQL' });
+                }
+                console.log('Data deleted from MySQL:', deleteResults);
+                res.status(200).json({ message: 'Data deleted successfully' });
+            });
+        } else {
+            // Data doesn't exist, so insert it
+            const sqlInsert = 'INSERT INTO trennis_osalejad (trenni_id, kuupäev, kasutaja_id) VALUES (?, ?, ?)';
+            db.query(sqlInsert, [eventId, eventDate, userId], (err, insertResults) => {
+                if (err) {
+                    console.error('Error inserting data into MySQL:', err);
+                    return res.status(500).json({ error: 'Failed to insert data into MySQL' });
+                }
+                console.log('Data inserted into MySQL:', insertResults);
+                res.status(200).json({ message: 'Data inserted successfully' });
+            });
+        }
+    });
+});
+
+
 
 
 

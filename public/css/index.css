@@ -400,6 +400,7 @@ section {
     padding: 10px;
     /* overflow-y: auto; */
     overflow-x: hidden;
+    word-break: break-word;
 }
 
 .hotNews .news-preview {
@@ -466,6 +467,7 @@ section {
     padding: 10px;
     /* overflow-y: auto; */
     overflow-x: hidden;
+    word-break: break-word;
 }
 
 .hotArticles main .article-preview {

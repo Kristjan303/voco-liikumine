@@ -276,6 +276,8 @@
     padding: 10px;
     overflow-x: hidden;
     width: 100%;
+    word-break: break-word;
+
 }
 .first-news .news-preview .uusim-uudis {
     position: absolute;

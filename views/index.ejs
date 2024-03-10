@@ -40,8 +40,8 @@
                 eventClick: function(info) {
                     info.jsEvent.preventDefault(); // don't let the browser navigate
                     if (info.event.extendedProps.description) {
-                        // Show the event description in a popup and location2
-                        alert(info.event.extendedProps.description + '\n' + info.event.extendedProps.location2);
+                        // redirect to /treeningud
+                        window.location.href = `/treeningud`;
                     }
                 },
                 // rewrite the inner html of buttons to Estonian
@@ -88,20 +88,15 @@
                                 case 'Saturday':
                                     return 6;
                                 case 'Sunday':
-                                    return 7;
+                                    return 0;
                                 default:
                                     return -1; // Invalid day
                             }
                         });
-
                         // Create FullCalendar events
                         daysInNumbers.forEach(day => {
-                            const startDateTime = `${event.trenni_toimumise_päev.substring(0, 10)}T${event.trenni_toimumise_algusaeg}:00`;
-                            const endDateTime = `${event.trenni_toimumise_päev.substring(0, 10)}T${event.trenni_toimumise_lõppaeg}:00`;
                             calendar.addEvent({
                                 title: event.trenni_nimi,
-                                start: startDateTime,
-                                end: endDateTime,
                                 daysOfWeek: [day],
                                 startTime: event.trenni_toimumise_algusaeg,
                                 endTime: event.trenni_toimumise_lõppaeg,
@@ -109,6 +104,7 @@
                                 description: event.trenni_selgitus,
                                 location: event.asukoht,
                                 location2: event.trenni_klass,
+                                startRecur: event.trenni_lisamise_kuupäev,
 
                             });
                         });
@@ -704,7 +700,7 @@
                     } else {
                         // Handle the logic for navigating to the login page or any other actions
                         // Redirect to the login page, for example:
-                        localStorage.clear();
+                        sessionStorage.clear();
                         window.location.href = '/sisene';
                     }
                 });

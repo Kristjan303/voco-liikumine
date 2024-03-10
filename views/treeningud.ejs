@@ -9,16 +9,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 
+
+
+    <% if (userRole === 2 || userRole === 3) { %>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
+                initialView: 'dayGridMonth',
                 editable: false,
-                height: 500,
                 allDaySlot: false,
                 eventClassNames: 'trenni-hover',
                 firstDay: 1,
+                height: 500,
                 slotMinTime: "08:00:00",
                 slotMaxTime: "21:30:00",
                 slotDuration: "00:15:00",
@@ -27,73 +30,100 @@
                     minute: '2-digit',
                     omitZeroMinute: false
                 },
-                aspectRatio: 0.5,
+                aspectRatio: 1,
                 contentHeight: 500,
                 expandRows: true,
                 handleWindowResize: true,
-                eventRender: function (event, element, view) {
-                    element.find('.fc-title').append('<div class="hr-line-solid-no-margin"></div><span style="font-size: 10px">' + event.description + '</span></div>');
+
+                // make buttons estonian
+                buttonText: {
+                    today: 'Täna',
+                    month: 'Kuu',
+                    week: 'Nädal',
+                    day: 'Päev',
+                    list: 'Nimekiri'
+                },
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
             });
 
             calendar.setOption('locale', 'et');
 
             // Fetch data from the endpoint
-            fetch('/fetch-trennid', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(event => {
-                        // Convert days to numbers
-                        const days = event.trenni_toimumise_päev.split(',');
-                        const daysInNumbers = days.map(day => {
-                            switch(day.trim()) {
-                                case 'Monday':
-                                    return 1;
-                                case 'Tuesday':
-                                    return 2;
-                                case 'Wednesday':
-                                    return 3;
-                                case 'Thursday':
-                                    return 4;
-                                case 'Friday':
-                                    return 5;
-                                case 'Saturday':
-                                    return 6;
-                                case 'Sunday':
-                                    return 7;
-                                default:
-                                    return -1; // Invalid day
-                            }
-                        });
+            // Retrieve data from sessionStorage
+            const userId = sessionStorage.getItem('userId');
+            const email = sessionStorage.getItem('email');
+            const sessionToken = sessionStorage.getItem('sessionToken');
 
-                        // Create FullCalendar events
-                        daysInNumbers.forEach(day => {
-                            const startDateTime = `${event.trenni_toimumise_päev.substring(0, 10)}T${event.trenni_toimumise_algusaeg}:00`;
-                            const endDateTime = `${event.trenni_toimumise_päev.substring(0, 10)}T${event.trenni_toimumise_lõppaeg}:00`;
-                            calendar.addEvent({
-                                title: event.trenni_nimi,
-                                start: startDateTime,
-                                end: endDateTime,
-                                daysOfWeek: [day],
-                                startTime: event.trenni_toimumise_algusaeg,
-                                endTime: event.trenni_toimumise_lõppaeg,
-                                color: event.trenni_värv,
-                                description: event.trenni_selgitus,
-                                location: event.asukoht,
+// Check if userId, email, and sessionToken exist
+            if (userId && email && sessionToken) {
+                // Send request to fetch user's trennid
+                fetch(`/fetch-user-trennid?userId=${userId}&email=${email}&sessionToken=${sessionToken}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Process fetched data
+                        data.forEach(event => {
+                            // Convert days to numbers
+                            const days = event.trenni_toimumise_päev.split(',');
+                            const daysInNumbers = days.map(day => {
+                                switch(day.trim()) {
+                                    case 'Monday':
+                                        return 1;
+                                    case 'Tuesday':
+                                        return 2;
+                                    case 'Wednesday':
+                                        return 3;
+                                    case 'Thursday':
+                                        return 4;
+                                    case 'Friday':
+                                        return 5;
+                                    case 'Saturday':
+                                        return 6;
+                                    case 'Sunday':
+                                        return 0;
+                                    default:
+                                        return -1; // Invalid day
+                                }
+                            });
+
+                            // Create FullCalendar events
+                            daysInNumbers.forEach(day => {
+                                const startDateTime = `${event.trenni_toimumise_päev.substring(0, 10)}T${event.trenni_toimumise_algusaeg}:00`;
+                                const endDateTime = `${event.trenni_toimumise_päev.substring(0, 10)}T${event.trenni_toimumise_lõppaeg}:00`;
+                                calendar.addEvent({
+                                    title: event.trenni_nimi,
+                                    start: startDateTime,
+                                    end: endDateTime,
+                                    daysOfWeek: [day],
+                                    startTime: event.trenni_toimumise_algusaeg,
+                                    endTime: event.trenni_toimumise_lõppaeg,
+                                    color: event.trenni_värv,
+                                    description: event.trenni_selgitus,
+                                    location: event.asukoht,
+                                    startRecur: event.trenni_lisamise_kuupäev,
+
+                                });
                             });
                         });
-                    });
-                    calendar.render();
-                })
-                .catch(error => console.error('Error fetching data:', error));
+                        calendar.render();
+                    })
+                    .catch(error => console.error('Error fetching data:', error));
+            } else {
+                console.error('Invalid session data');
+            }
+
         });
     </script>
 
+    <% } %>
 
 
 </head>
@@ -184,128 +214,588 @@
         <h1>Treeningud</h1>
 
     </div>
-    <div id="calendar"></div>
+
+
     <% if (userRole === 2 || userRole === 3) { %>
+    <h2 style="margin-right: auto">Minu trennid:</h2>
+        <div id="calendar"></div>
+    <% } %>
 
-    <form id="trenniForm">
-        <h2>Lisa trenn</h2>
-        <div class="form-group">
-            <label class="nimi" for="eventTitle">Trenni nimi:</label>
-            <input type="text" id="eventTitle" class="form-control" placeholder="Korvpall" required>
-        </div>
-        <div>
-            <label class="nimi" for="eventDescription">Trenni kirjeldus:</label>
-            <textarea id="eventDescription" class="form-control" placeholder="Mängime korvpalli"  required></textarea>
-        </div>
-        <div class="form-group weekDays" >
-            <label class="nimi">Mis päevadel võiks toimuda:</label><br>
-            <input type="checkbox" id="monday" name="day" value="Monday">
-            <label for="monday">Esmaspäev</label><br>
-            <input type="checkbox" id="tuesday" name="day" value="Tuesday">
-            <label for="tuesday">Teisipäev</label><br>
-            <input type="checkbox" id="wednesday" name="day" value="Wednesday">
-            <label for="wednesday">Kolmapäev</label><br>
-            <input type="checkbox" id="thursday" name="day" value="Thursday">
-            <label for="thursday">Neljapäev</label><br>
-            <input type="checkbox" id="friday" name="day" value="Friday">
-            <label for="friday">Reede</label><br>
-            <input type="checkbox" id="saturday" name="day" value="Saturday">
-            <label for="saturday">Laupäev</label><br>
-            <input type="checkbox" id="sunday" name="day" value="Sunday">
-            <label for="sunday">Pühapäev</label><br>
-        </div>
-
-        <div class="form-group">
-            <label class="nimi" for="eventStartTime">Trenni algusaeg:</label>
-            <input type="time" id="eventStartTime" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label class="nimi" for="eventEndTime">Trenni lõpuaeg:</label>
-            <input type="time" id="eventEndTime" class="form-control" required>
-        </div>
-        <div>
-            <label class="nimi">Trenni asukoht:</label><br>
-            <input type="radio" id="option1" name="location" value="kopli" class="form-control" required>
-            <label for="option1">Kopli 1a</label><br>
-            <input type="radio" id="option2" name="location" value="põllu" class="form-control" required>
-            <label for="option2">Põllu 11</label><br>
-        </div>
-
-        <!-- Separate form groups for Kopli and Põllu room selection -->
-        <div id="kopliRoomGroup" style="display: none;">
-            <div class="form-group">
-                <label class="nimi">Kopli Trenni asukoht:</label><br>
-                <select id="kopliRoomSelection" class="form-control" required>
-                    <option value="A032a - Kopli jõusaal">A032a - Kopli jõusaal</option>
-                    <option value="A032b - Kopli Aeroobikasaal">A032b - Kopli Aeroobikasaal</option>
-                    <option value="A160A/B - Kopli spordisaal">A160A/B - Kopli spordisaal</option>
-                </select>
-            </div>
-        </div>
-
-        <div id="põlluRoomGroup" style="display: none;">
-            <div class="form-group">
-                <label class="nimi">Põllu Trenni asukoht:</label><br>
-                <select id="põlluRoomSelection" class="form-control" required>
-                    <option value="A121 - Põllu spordisaal">A121 - Põllu spordisaal</option>
-                    <option value="A227 - Põllu spordisaal">A227 - Põllu spordisaal</option>
-                </select>
-            </div>
-        </div>
+    <% if (userRole === 1) { %>
+        <h2 style="margin-right: auto">Minu trennikava:</h2>
+        <div id="calendar"></div>
         <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                var kopliRoomGroup = document.getElementById("kopliRoomGroup");
-                var põlluRoomGroup = document.getElementById("põlluRoomGroup");
-                var kopliRadio = document.getElementById("option1");
-                var põlluRadio = document.getElementById("option2");
+            document.addEventListener('DOMContentLoaded', function() {
+                var calendarEl = document.getElementById('calendar');
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'timeGridWeek',
+                    editable: false,
+                    height: 500,
+                    allDaySlot: false,
+                    eventClassNames: 'trenni-hover',
+                    firstDay: 1,
+                    slotMinTime: "08:00:00",
+                    slotMaxTime: "21:30:00",
+                    slotDuration: "00:15:00",
+                    slotLabelFormat: {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        omitZeroMinute: false
+                    },
+                    aspectRatio: 0.5,
+                    contentHeight: 500,
+                    expandRows: true,
+                    handleWindowResize: true,
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'timeGridWeek,timeGridDay'
+                    },
+                    // rewrite the inner html of buttons to Estonian
+                    buttonText: {
+                        today: 'Täna',
+                        month: 'Kuu',
+                        week: 'Nädal',
+                        day: 'Päev',
+                        list: 'Nimekiri'
+                    },
+                    // render description and location in the event and add checkbox to the event
+                    eventContent: function(arg) {
+                        const currentDate = new Date();
+                        const currentYear = currentDate.getFullYear();
+                        const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+                        const currentDay = currentDate.getDate().toString().padStart(2, '0');
+                        const today = `${currentYear}-${currentMonth}-${currentDay}`;
 
-                // Function to show/hide room selection based on radio button selection
-                function toggleRoomSelection() {
-                    if (kopliRadio.checked) {
-                        kopliRoomGroup.style.display = "block";
-                        põlluRoomGroup.style.display = "none";
-                    } else if (põlluRadio.checked) {
-                        kopliRoomGroup.style.display = "none";
-                        põlluRoomGroup.style.display = "block";
-                    } else {
-                        kopliRoomGroup.style.display = "none";
-                        põlluRoomGroup.style.display = "none";
-                    }
+                        const hasEventOnCurrentDay = arg.event.start.toISOString().slice(0, 10) === today;
+
+                        let checkboxHTML = '';
+                        if (hasEventOnCurrentDay) {
+                            checkboxHTML = `<div class="osaleb"> Ei osale: <input type="checkbox" id="${arg.event.id}" name="trenn" value="${arg.event.title}" data-date="${arg.event.daysOfWeek}" ${localStorage.getItem(arg.event.id) === 'true' ? 'checked' : ''}> </div>`;
+                        }
+
+                        return {
+                            html: `<b>${arg.timeText}</b> ${arg.event.title} <br> ${checkboxHTML} <br> <i style="bottom: 0; position: absolute">${arg.event.extendedProps.location2}</i>`
+                        };
+                    },
+                });
+
+                calendar.setOption('locale', 'et');
+
+                // Retrieve data from sessionStorage
+                const userId = sessionStorage.getItem('userId');
+                const email = sessionStorage.getItem('email');
+                const sessionToken = sessionStorage.getItem('sessionToken');
+
+                // Check if userId, email, and sessionToken exist
+                if (userId && email && sessionToken) {
+                    // Send request to fetch user's trennid
+                    fetch(`/fetch-student-trennid`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, sessionToken, userId })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Check if data is returned and if it's not an invalid session
+                            if (data && data.data && data.data.length > 0) {
+                                // Process fetched data and add events to the calendar
+                                data.data.forEach(event => {
+                                    // Convert days to numbers
+                                    const days = event.trenni_toimumise_päev.split(',');
+                                    const daysInNumbers = days.map(day => {
+                                        switch (day.trim()) {
+                                            case 'Monday':
+                                                return 1;
+                                            case 'Tuesday':
+                                                return 2;
+                                            case 'Wednesday':
+                                                return 3;
+                                            case 'Thursday':
+                                                return 4;
+                                            case 'Friday':
+                                                return 5;
+                                            case 'Saturday':
+                                                return 6;
+                                            case 'Sunday':
+                                                return 0;
+                                            default:
+                                                return -1; // Invalid day
+                                        }
+                                    });
+
+                                    // Create FullCalendar events
+                                    daysInNumbers.forEach(day => {
+                                        calendar.addEvent({
+                                            title: event.trenni_nimi,
+                                            daysOfWeek: [day],
+                                            startTime: event.trenni_toimumise_algusaeg,
+                                            endTime: event.trenni_toimumise_lõppaeg,
+                                            color: event.trenni_värv,
+                                            description: event.trenni_selgitus,
+                                            location: event.asukoht,
+                                            location2: event.trenni_klass,
+                                            id: event.trenni_id,
+                                            startRecur: event.trenni_lisamise_kuupäev,
+                                        });
+                                    });
+                                });
+                                calendar.render(); // Render the calendar
+                                console.log('Data:', data);
+                            } else {
+                                // If no data or invalid session, hide the calendar
+                                calendarEl.style.display = 'none';
+                            }
+                        })
+                        .catch(error => console.error('Error fetching data:', error));
+
+                } else {
+                    console.error('Invalid session data');
                 }
 
-                // Event listener for radio button change
-                kopliRadio.addEventListener("change", toggleRoomSelection);
-                põlluRadio.addEventListener("change", toggleRoomSelection);
             });
         </script>
 
-        <div class="form-group">
-            <label class="nimi" for="eventColor">Trenni värv:</label><br>
-            <select id="eventColor" class="form-control" required>
-                <option value="#ff4040" style="background-color:#ff4040;">Punane</option>
-                <option value="#70ff70" style="background-color:#70ff70;">Roheline</option>
-                <option value="#2980b9" style="background-color:#2980b9;">Sinine</option>
-                <option value="#ffd629" style="background-color:#ffd629;">Kollane</option>
-                <option value="#ff29db" style="background-color:#ff29db;">Lilla</option>
-                <option value="#afafaf" style="background-color:#afafaf;">Hall</option>
-                <option value="#228B22" style="background-color:#228B22;">Tumeroheline</option>
-                <option value="#FFC0CB" style="background-color:#FFC0CB;">Roosa</option>
-                <option value="#FFA500" style="background-color:#FFA500;">Oranž</option>
-            </select>
-        </div>
+    <% } %>
 
-        <button type="button" id="addEventButton">Lisa trenn</button>
-    </form>
+    <% if (userRole === 2 || userRole === 3) { %>
+
+        <section class="hold-filter">
+            <button id="toggle-button"><i class="fa-regular fa-eye fa-lg"></i></button>
+        </section>
+    <% } %>
+
+<% if (userRole === 2 || userRole === 3) { %>
+
+        <section class="hold-teacher-calendar">
+            <form id="trenniForm" class="hidden">
+                <h2>Lisa trenn</h2>
+                <div class="form-group">
+                    <label class="nimi" for="eventTitle">Trenni nimi:</label>
+                    <input type="text" id="eventTitle" class="form-control" placeholder="Korvpall" required>
+                </div>
+                <div>
+                    <label class="nimi" for="eventDescription">Trenni kirjeldus:</label>
+                    <textarea id="eventDescription" class="form-control" placeholder="Mängime korvpalli"  required></textarea>
+                </div>
+                <div class="form-group weekDays" >
+                    <label class="nimi">Mis päevadel võiks toimuda:</label><br>
+                    <input type="checkbox" id="monday" name="day" value="Monday">
+                    <label for="monday">Esmaspäev</label><br>
+                    <input type="checkbox" id="tuesday" name="day" value="Tuesday">
+                    <label for="tuesday">Teisipäev</label><br>
+                    <input type="checkbox" id="wednesday" name="day" value="Wednesday">
+                    <label for="wednesday">Kolmapäev</label><br>
+                    <input type="checkbox" id="thursday" name="day" value="Thursday">
+                    <label for="thursday">Neljapäev</label><br>
+                    <input type="checkbox" id="friday" name="day" value="Friday">
+                    <label for="friday">Reede</label><br>
+                    <input type="checkbox" id="saturday" name="day" value="Saturday">
+                    <label for="saturday">Laupäev</label><br>
+                    <input type="checkbox" id="sunday" name="day" value="Sunday">
+                    <label for="sunday">Pühapäev</label><br>
+                </div>
+
+                <div class="form-group">
+                    <label class="nimi" for="eventStartTime">Trenni algusaeg:</label>
+                    <input type="time" id="eventStartTime" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="nimi" for="eventEndTime">Trenni lõpuaeg:</label>
+                    <input type="time" id="eventEndTime" class="form-control" required>
+                </div>
+                <div>
+                    <label class="nimi">Trenni asukoht:</label><br>
+                    <input type="radio" id="option1" name="location" value="kopli" class="form-control" required>
+                    <label for="option1">Kopli 1a</label><br>
+                    <input type="radio" id="option2" name="location" value="põllu" class="form-control" required>
+                    <label for="option2">Põllu 11</label><br>
+                </div>
+
+                <!-- Separate form groups for Kopli and Põllu room selection -->
+                <div id="kopliRoomGroup" style="display: none;">
+                    <div class="form-group">
+                        <label class="nimi">Kopli Trenni asukoht:</label><br>
+                        <select id="kopliRoomSelection" class="form-control" required>
+                            <option value="A032a - Kopli jõusaal">A032a - Kopli jõusaal</option>
+                            <option value="A032b - Kopli Aeroobikasaal">A032b - Kopli Aeroobikasaal</option>
+                            <option value="A160A/B - Kopli spordisaal">A160A/B - Kopli spordisaal</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="põlluRoomGroup" style="display: none;">
+                    <div class="form-group">
+                        <label class="nimi">Põllu Trenni asukoht:</label><br>
+                        <select id="põlluRoomSelection" class="form-control" required>
+                            <option value="A121 - Põllu spordisaal">A121 - Põllu spordisaal</option>
+                            <option value="A227 - Põllu spordisaal">A227 - Põllu spordisaal</option>
+                        </select>
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        var kopliRoomGroup = document.getElementById("kopliRoomGroup");
+                        var põlluRoomGroup = document.getElementById("põlluRoomGroup");
+                        var kopliRadio = document.getElementById("option1");
+                        var põlluRadio = document.getElementById("option2");
+
+                        // Function to show/hide room selection based on radio button selection
+                        function toggleRoomSelection() {
+                            if (kopliRadio.checked) {
+                                kopliRoomGroup.style.display = "block";
+                                põlluRoomGroup.style.display = "none";
+                            } else if (põlluRadio.checked) {
+                                kopliRoomGroup.style.display = "none";
+                                põlluRoomGroup.style.display = "block";
+                            } else {
+                                kopliRoomGroup.style.display = "none";
+                                põlluRoomGroup.style.display = "none";
+                            }
+                        }
+
+                        // Event listener for radio button change
+                        kopliRadio.addEventListener("change", toggleRoomSelection);
+                        põlluRadio.addEventListener("change", toggleRoomSelection);
+                    });
+                </script>
+
+                <div class="form-group">
+                    <label class="nimi" for="eventColor">Trenni värv:</label><br>
+                    <select id="eventColor" class="form-control" required>
+                        <option value="#ff4040" style="background-color:#ff4040;">Punane</option>
+                        <option value="#70ff70" style="background-color:#70ff70;">Roheline</option>
+                        <option value="#2980b9" style="background-color:#2980b9;">Sinine</option>
+                        <option value="#ffd629" style="background-color:#ffd629;">Kollane</option>
+                        <option value="#ff29db" style="background-color:#ff29db;">Lilla</option>
+                        <option value="#afafaf" style="background-color:#afafaf;">Hall</option>
+                        <option value="#228B22" style="background-color:#228B22;">Tumeroheline</option>
+                        <option value="#FFC0CB" style="background-color:#FFC0CB;">Roosa</option>
+                        <option value="#FFA500" style="background-color:#FFA500;">Oranž</option>
+                    </select>
+                </div>
+
+                <button type="button" id="addEventButton">Lisa trenn</button>
+            </form>
+
+            <div class="current-trenn">
+                <h2>Halda trenne</h2>
+                <div class="trenn-list">
+
+                </div>
+            </div>
+
+        </section>
 
     <% } %>
+
 
     <div class="search-trenn">
     </div>
     <main class="training-content">
+
+        <% if (userRole === 1) { %>
+        <div class="subTitle">
+            <h2>Registreeritud trennid</h2>
+        </div>
+
+        <section class="minu-trennid">
+
+        </section>
+        <% } %>
+
+        <% if (userRole !== 2) { %>
+        <div class="subTitle">
+            <h2>Liitu trennidega!</h2>
+        </div>
+
+        <section class="join-trennid">
+
+        </section>
+        <% } %>
     </main>
+
+    <script>
+        // Function to create popup for user input
+        function createPopup(trenniId, trenniNimi) {
+            // Add class to body to prevent scrolling
+            document.body.classList.add('popup-open');
+
+            // Create overlay
+            const overlay = document.createElement('div');
+            overlay.classList.add('overlay');
+            document.body.appendChild(overlay);
+
+            const popup = document.createElement('div');
+            popup.classList.add('popup');
+
+            popup.innerHTML = `
+            <form id="userForm" onsubmit="submitForm(event, ${trenniId}, '${trenniNimi}')">
+                <button class="close-button" type="button" onclick="closePopup()"><i class="fa-solid fa-xmark fa-xl"></i></button>
+                <h2>Registreeri trenni</h2>
+                <h4>${trenniNimi}</h4>
+                <label for="firstName">Eesnimi:</label>
+                <input type="text" id="firstName" name="firstName" required>
+
+                <label for="lastName">Perenimi:</label>
+                <input type="text" id="lastName" name="lastName" required>
+
+                <label for="group">Õppegrupp:</label>
+                <input oninput="this.value = this.value.toUpperCase()" type="text" id="group" name="group" maxlength="10" required>
+
+                <label for="gender">Sugu:</label>
+                <div class="hold-radio">
+                    <div>
+                        <label for="male">Mees:</label>
+                        <input type="radio" id="male" name="gender" value="mees" required>
+                    </div>
+                    <div>
+                        <label for="female">Naine:</label>
+                        <input type="radio" id="female" name="gender" value="naine" required>
+                    </div>
+                </div>
+                <br>
+                <button class="submit-registration" type="submit">Registreeri!</button>
+            </form>
+        `;
+
+            document.body.appendChild(popup);
+        }
+
+        // Function to submit form data
+        function submitForm(event, trenniId, trenniNimi) {
+            event.preventDefault();
+
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const group = document.getElementById('group').value;
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const email = sessionStorage.getItem('email');
+            const sessionToken = sessionStorage.getItem('sessionToken');
+            const userId = sessionStorage.getItem('userId');
+
+            fetch('/submit-student-registration', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    trenniId,
+                    firstName,
+                    lastName,
+                    group,
+                    gender,
+                    email,
+                    sessionToken,
+                    userId
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        // throw that error which server said 401, etc
+                        throw new Error(response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    // Optionally, handle success response here
+                    closePopup();
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                    const form = document.getElementById('userForm');
+                    if (error.message.includes('Unauthorized')) {
+                        // Redirect to /sisene if session is invalid
+                        closePopup();
+                        window.location.href = '/sisene';
+                    } else {
+                        // Display error message and redirect to /
+                        form.innerHTML = `
+            <h2 class="valesti" style="color: red">${error.message}</h2>
+        `;
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 2000);
+                    }
+                });
+        }
+
+
+        // Function to close the popup
+        function closePopup() {
+            const popup = document.querySelector('.popup');
+            const overlay = document.querySelector('.overlay');
+            popup.remove();
+            overlay.remove();
+            // Remove class to allow scrolling
+            document.body.classList.remove('popup-open');
+        }
+        </script>
+
+    <script>
+        // Function to fetch data from the endpoint
+        async function fetchData() {
+            try {
+                const response = await fetch('/fetch-trennid');
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        <% if (userRole === 1) { %>
+
+        // Function to handle leaving trennist
+        async function leaveTrennist(userId, trenniId) {
+            // Retrieve session data from sessionStorage
+            const email = sessionStorage.getItem('email');
+            const sessionToken = sessionStorage.getItem('sessionToken');
+
+            if (!userId || !email || !sessionToken) {
+                console.error('Invalid session data');
+                return;
+            }
+
+            // Display confirmation dialog
+            const confirmLeave = window.confirm('Olete kindel, et tahate lahkuda trennist?');
+
+            // If user confirms leaving, proceed with the deletion
+            if (confirmLeave) {
+                try {
+                    // Send request to delete row from trennis_käijad
+                    const response = await fetch(`/leave-trenn`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ userId, trenniId, email, sessionToken })
+                    });
+                    const data = await response.json();
+                    console.log(data); // Log the response from the server
+                    // Call displayData function to refresh the UI
+                    displayData();
+                    location.reload();
+                } catch (error) {
+                    console.error('Error leaving trennist:', error);
+                }
+            }
+        }
+
+        <% } %>
+
+        // Function to display fetched data
+        async function displayData() {
+            const data = await fetchData();
+            const joinTrennidSection = document.querySelector('.join-trennid');
+            const minuTrennidSection = document.querySelector('.minu-trennid');
+
+
+
+            // Retrieve data from sessionStorage
+            const userId = sessionStorage.getItem('userId');
+            const email = sessionStorage.getItem('email');
+            const sessionToken = sessionStorage.getItem('sessionToken');
+
+            // Send request to fetch user's trennid if session data exists
+            if (userId && email && sessionToken) {
+                fetch(`/fetch-student-trennid`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, sessionToken, userId })
+                })
+                    .then(response => response.json())
+                    .then(studentData => {
+                        // Iterate through fetched data and create HTML elements to display it
+                        data.forEach(trenn => {
+                            const trennElement = document.createElement('div');
+                            trennElement.classList.add('trenn');
+                            // background color gradient
+                            trennElement.style.background = `linear-gradient(90deg, ${trenn.trenni_värv} 0%, ghostwhite 2%)`;
+
+                            // Populate trennElement with data
+                            const startTime = trenn.trenni_toimumise_algusaeg.slice(0, 5);
+                            // Format end time (lõpuaeg) to show only hours and minutes
+                            const endTime = trenn.trenni_toimumise_lõppaeg.slice(0, 5);
+
+                            // Translate weekdays to Estonian
+                            const translatedDays = trenn.trenni_toimumise_päev.replace(/Monday/g, 'Esmaspäev').replace(/Tuesday/g, 'Teisipäev').replace(/Wednesday/g, 'Kolmapäev').replace(/Thursday/g, 'Neljapäev').replace(/Friday/g, 'Reede').replace(/Saturday/g, 'Laupäev').replace(/Sunday/g, 'Pühapäev');
+
+                            // Check if the current trenn ID is in the student data
+                            const isJoined = studentData.data && studentData.data.find(studentTrenn => studentTrenn.trenni_id === trenn.trenni_id);
+
+                            // Determine the button text based on whether the user is joined to the trenn
+                            const buttonText = isJoined ? 'Lahku trennist' : 'Registreeri trenni!';
+                            const buttonAction = isJoined ? `leaveTrennist('${userId}', '${trenn.trenni_id}')` : `createPopup('${trenn.trenni_id}', '${trenn.trenni_nimi}')`;
+
+                            // Populate trennElement with data
+                            trennElement.innerHTML = `
+            <div class="trenni-header">
+                <h2>${trenn.trenni_nimi}</h2>
+                <p>${startTime} - ${endTime}</p>
+            </div>
+            <p><strong>Õpetaja:</strong> ${trenn.kasutaja_nimi}</p>
+            <p style="color: #6b6b6b">${trenn.trenni_selgitus}</p>
+            <p><strong>Toimumis päevad:</strong> ${translatedDays}</p>
+            <p class="trenni-asukoht">${trenn.asukoht} | ${trenn.trenni_klass}</p>
+            <button class="join-trenn-button" onclick="${buttonAction}">${buttonText}</button>
+        `;
+
+                            if (isJoined) {
+                                minuTrennidSection.appendChild(trennElement);
+                            } else {
+                                joinTrennidSection.appendChild(trennElement);
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error fetching student data:', error));
+            } else {
+                // If session data doesn't exist, display all fetched trennid with "Registreeri trenni!" button
+                data.forEach(trenn => {
+                    const trennElement = document.createElement('div');
+                    trennElement.classList.add('trenn');
+                    // background color gradient
+                    trennElement.style.background = `linear-gradient(90deg, ${trenn.trenni_värv} 0%, ghostwhite 2%)`;
+
+                    // Populate trennElement with data
+                    const startTime = trenn.trenni_toimumise_algusaeg.slice(0, 5);
+                    // Format end time (lõpuaeg) to show only hours and minutes
+                    const endTime = trenn.trenni_toimumise_lõppaeg.slice(0, 5);
+
+                    // Translate weekdays to Estonian
+                    const translatedDays = trenn.trenni_toimumise_päev.replace(/Monday/g, ' Esmaspäev').replace(/Tuesday/g, ' Teisipäev').replace(/Wednesday/g, ' Kolmapäev').replace(/Thursday/g, ' Neljapäev').replace(/Friday/g, ' Reede').replace(/Saturday/g, ' Laupäev').replace(/Sunday/g, ' Pühapäev');
+
+                    // Populate trennElement with data
+                    trennElement.innerHTML = `
+        <div class="trenni-header">
+            <h2>${trenn.trenni_nimi}</h2>
+            <p>${startTime} - ${endTime}</p>
+        </div>
+        <p><strong>Õpetaja:</strong> ${trenn.kasutaja_nimi}</p>
+        <p style="color: #6b6b6b">${trenn.trenni_selgitus}</p>
+        <p><strong>Toimumis päevad:</strong> ${translatedDays}</p>
+        <p class="trenni-asukoht">${trenn.asukoht} | ${trenn.trenni_klass}</p>
+        <button class="join-trenn-button" onclick="window.location.href = '/sisene'">Registreeri trenni!</button>
+    `;
+
+                    joinTrennidSection.appendChild(trennElement);
+                });
+            }
+        }
+
+        // Call displayData function when the page loads
+        window.onload = displayData;
+
+    </script>
+
+
 </section>
-
-
 
 
 
@@ -370,6 +860,10 @@
 
 </body>
 
+
+
+
+
 <script>
     // checkLogin.js
 
@@ -405,7 +899,7 @@
                     } else {
                         // Handle the logic for navigating to the login page or any other actions
                         // Redirect to the login page, for example:
-                        localStorage.clear();
+                        sessionStorage.clear();
                         window.location.href = '/sisene';
                     }
                 });
@@ -415,7 +909,30 @@
 
 </script>
 
+
+
+
 <% if (userRole === 2 || userRole === 3) { %>
+
+<script>
+    const myToggleButton = document.querySelector('#toggle-button');
+    const myTargetElement = document.querySelector('#trenniForm');
+
+    let isHidden = false;
+
+    myToggleButton.onclick = function() {
+        myTargetElement.classList.toggle('hidden');
+        if (isHidden) {
+            myToggleButton.innerHTML = '<i class="fa-regular fa-eye fa-lg"></i>';
+        } else {
+            myToggleButton.innerHTML = '<i class="fa-regular fa-eye-slash fa-lg"></i>';
+        }
+        isHidden = !isHidden;
+    };
+
+
+</script>
+
 
 <script>
     document.getElementById('addEventButton').addEventListener('click', function () {
@@ -437,9 +954,9 @@
             days: [],
             eventStartTime: document.getElementById('eventStartTime').value,
             eventEndTime: document.getElementById('eventEndTime').value,
-            location: document.querySelector('input[name="location"]:checked').value,
+            location: (document.getElementById('option1').checked) ? "kopli" : "põllu",
             eventColor: document.getElementById('eventColor').value,
-            eventRoom: document.getElementById('kopliRoomSelection') ? document.getElementById('põlluRoomSelection').value : null,
+            eventRoom: (document.getElementById('option1').checked) ? document.getElementById('kopliRoomSelection').value : document.getElementById('põlluRoomSelection').value,
             email: email,
             userId: userId,
             sessionToken: sessionToken
@@ -477,6 +994,74 @@
 </script>
 
 <% } %>
+
+
+<% if (userRole === 1) { %>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Event delegation to capture click on checkboxes
+        document.addEventListener('click', function(event) {
+            if (event.target.type === 'checkbox' && event.target.name === 'trenn') {
+                const checkbox = event.target;
+                const eventId = checkbox.id;
+                const eventName = checkbox.value;
+
+                // Save checkbox status to local storage
+                localStorage.setItem(eventId, checkbox.checked);
+
+                // Traverse up the DOM to find the parent element with data-date attribute
+                let parentElement = checkbox.parentElement;
+                while (parentElement && !parentElement.dataset.date) {
+                    parentElement = parentElement.parentElement;
+                }
+
+                // If parent element found, retrieve data-date attribute
+                if (parentElement && parentElement.dataset.date) {
+                    const eventDate = parentElement.dataset.date;
+
+                    // Retrieve data from sessionStorage
+                    const userId = sessionStorage.getItem('userId');
+                    const email = sessionStorage.getItem('email');
+                    const sessionToken = sessionStorage.getItem('sessionToken');
+
+                    // Check if userId, email, and sessionToken exist
+                    if (userId && email && sessionToken) {
+                        // Send request to server endpoint
+                        fetch('/user-participate', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                email,
+                                sessionToken,
+                                userId,
+                                eventId,
+                                eventName,
+                                eventDate
+                            })
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    console.log('Data sent successfully');
+                                } else {
+                                    console.error('Failed to send data to server');
+                                }
+                            })
+                            .catch(error => console.error('Error sending data:', error));
+                    } else {
+                        console.error('Invalid session data');
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<% } %>
+
+
 
 
 </html>

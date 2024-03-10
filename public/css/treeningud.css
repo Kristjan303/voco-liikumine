@@ -1,7 +1,17 @@
+.fc .fc-scroller-liquid-absolute::-webkit-scrollbar {
+    width: 3px;
+}
+.fc .fc-scroller-liquid-absolute::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+}
+.fc .fc-scroller-liquid-absolute::-webkit-scrollbar-track {
+    border-radius: 5px;
+}
+
+
 .treening {
     display: flex;
     margin: 0 auto;
-
     padding: 0 20px;
     flex-direction: column;
     align-content: center;
@@ -9,30 +19,89 @@
     justify-content: flex-start;
     width: 1100px;
 }
-
-.treening-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr;
-}
-
-.training-content div {
+.training-content {
     display: flex;
     flex-direction: column;
+    align-items: start;
     justify-content: center;
-    align-content: center;
-    align-items: center;
-    width: 300px;
-    height: 300px;
-    margin: 20px;
+    width: 100%;
+}
+.join-trennid {
+    /*make its children 2 per row*/
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+
+    width: 100%;
+    padding: 0;
+    margin-bottom: 50px;
+}
+.minu-trennid {
+    /*make its children 2 per row*/
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+
+    width: 100%;
+    padding: 0;
+    margin-bottom: 50px;
+}
+.trenn {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+    gap: 15px;
+    max-width: 100%;
+    background-color: ghostwhite;
     border-radius: 10px;
-    background-color: #dfdfdf;
+    border: 1px solid #f3f3f3;
+    padding: 0 20px;
+    word-break: break-word;
+}
+.trenn p {
+    margin: 0;
+    padding: 0;
+}
+.trenni-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+.trenni-asukoht {
+    margin-right: auto;
+    margin-top: auto;
+}
+
+.join-trenn-button {
+    padding: 10px 20px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: "Montserrat", sans-serif;
+    margin-bottom: 20px ;
+
+}
+.join-trenn-button:hover {
+    background-color: #1c6a8c;
 }
 
 #calendar {
-    width: 100%;
     margin-bottom: 50px;
+    max-width: 100%;
+    background-color: ghostwhite;
+    border-radius: 10px;
+    border: 1px solid #f3f3f3;
+    padding: 20px;
 }
+
 .fc .fc-toolbar-title {
     font-size: 1.2em;
     font-weight: bold;
@@ -44,6 +113,18 @@
     transition: 0.2s;
 }
 
+#toggle-button {
+    padding: 10px;
+    border: 1px solid #cccccc;
+    background-color: #f8f8f8;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+    margin: 0;
+    height: 40px;
+
+
+}
 
 
 #trenniForm {
@@ -158,4 +239,142 @@
 #trenniForm #kopliRoomSelection:focus {
     outline: none;
     border: 1px solid #2980b9;
+}
+.hold-teacher-calendar {
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 50px;
+    width: 100%;
+    padding: 0;
+
+}
+
+.hidden {
+    display: none !important;
+}
+
+
+#userForm {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    background-color: ghostwhite;
+    border-radius: 10px;
+    border: 1px solid #f3f3f3;
+    width: 500px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+#userForm input {
+    width: 100%;
+    padding: 10px 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+#userForm input:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+#userForm .submit-registration {
+    padding: 10px 20px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: "Montserrat", sans-serif;
+    margin-left: auto;
+}
+#userForm .submit-registration:hover {
+    background-color: #1c6a8c;
+}
+#userForm h2 {
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.hold-radio {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    gap: 15px;
+}
+.hold-radio div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+}
+
+/* Styling for the darkened background */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+/* Prevent scrolling when popup is open */
+body.popup-open {
+    overflow: hidden;
+}
+.close-button {
+    padding: 10px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    transition: 0.2s;
+    margin: 0;
+    margin-left: auto;
+    /* height: 40px; */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border-radius: 50%;
+}
+.close-button:hover {
+    color: #dddddd;
+}
+
+.valesti {
+    padding: 20px;
+    margin: 0 auto;
+
+}
+.subTitle {
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 20px;
+}
+.osaleb {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    padding: 0;
+    margin: 0;
+    margin-bottom: 20px;
+    color: black;
+    font-weight: bold;
 }
