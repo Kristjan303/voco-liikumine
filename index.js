@@ -1418,7 +1418,7 @@ app.get('/fetch-user-trennid', (req, res) => {
     }
 
     // Construct MySQL query to fetch the user's trennid
-    const sql = `SELECT trennid.trenni_nimi, trennid.asukoht, trennid.trenni_toimumise_päev, trennid.trenni_toimumise_algusaeg, trennid.trenni_toimumise_lõppaeg, trennid.trenni_lisamise_kuupäev, trennid.trenni_selgitus, trennid.trenni_värv, trennid.trenni_klass 
+    const sql = `SELECT trennid.trenni_nimi, trennid.asukoht, trennid.trenni_toimumise_päev, trennid.trenni_toimumise_algusaeg, trennid.trenni_toimumise_lõppaeg, trennid.trenni_lisamise_kuupäev, trennid.trenni_selgitus, trennid.trenni_värv, trennid.trenni_klass, trennid.trenni_id
                  FROM trennid 
                  WHERE trennid.kasutaja_id = ?`;
 
@@ -1584,6 +1584,133 @@ app.post('/user-participate', (req, res) => {
     });
 });
 
+
+// fetch trennis käijad
+
+app.post('/fetch-trennis-kaijad', (req, res) => {
+    const { sessionToken, email, trenniId, userId } = req.body;
+
+    if (!trenniId || !sessionToken || !email || !userId) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Check if the session exists based on the userId and sessionToken
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Fetching data from the database using trenniId
+    const query = `
+    SELECT tk.*, IF(tos.kasutaja_id IS NOT NULL AND DATE(tos.kuupäev) = CURDATE(), 'puudub', 'osaleb') AS osaleb
+    FROM trennis_käijad tk
+    LEFT JOIN trennis_osalejad tos ON tk.kasutaja_id = tos.kasutaja_id AND tos.trenni_id = ?
+    WHERE tk.trenni_id = ?
+  `;
+
+    db.query(query, [trenniId, trenniId], (err, results) => {
+        if (err) {
+            console.error('Error fetching data from database: ' + err.stack);
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+
+        res.status(200).json(results);
+    });
+});
+
+// Define endpoint to delete registrations
+app.post('/delete-registration', (req, res) => {
+    const { sessionToken, email, userId, kasutaja_id, trenniId } = req.body;
+
+    console.log('delete-registration', req.body)
+
+    if (!userId || !kasutaja_id || !trenniId || !sessionToken || !email) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Check if the session exists based on the userId and sessionToken
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+
+    // Delete entries from trennis_käijad table where kasutaja_id = userId and trenni_id = trenniId
+    const deleteQuery1 = `DELETE FROM trennis_käijad WHERE kasutaja_id = ? AND trenni_id = ?`;
+    db.query(deleteQuery1, [kasutaja_id, trenniId], (error1, results1) => {
+        if (error1) {
+            res.status(500).json({ error: 'An error occurred while deleting registration from trennis_käijad.' });
+            return;
+        }
+
+        console.log('Deleted registrations from trennis_käijad:', results1);
+
+        // Delete entries from trennis_osalejad table where kasutaja_id = userId and trenni_id = trenniId
+        const deleteQuery2 = `DELETE FROM trennis_osalejad WHERE kasutaja_id = ? AND trenni_id = ?`;
+        db.query(deleteQuery2, [kasutaja_id, trenniId], (error2, results2) => {
+            if (error2) {
+                res.status(500).json({ error: 'An error occurred while deleting registration from trennis_osalejad.' });
+                return;
+            }
+
+            res.status(200).json({ message: 'Registrations deleted successfully!' });
+        });
+    });
+});
+
+// Endpoint for deleting trennid
+app.post('/delete-trenn', (req, res) => {
+    const { sessionToken, email, userId, trenniId } = req.body;
+
+    if (!userId || !trenniId || !sessionToken || !email) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Check if the session exists based on the userId and sessionToken
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    // Delete from trennis_käijad
+    const deleteTrennisKaijadQuery = `DELETE FROM trennis_käijad WHERE trenni_id = ?`;
+    db.query(deleteTrennisKaijadQuery, [trenniId], (error, results, fields) => {
+        if (error) {
+            console.error('Error deleting from trennis_käijad:', error);
+            res.status(500).json({ error: 'Error deleting from trennis_käijad' });
+            return;
+        }
+    });
+
+    // Delete from trennid
+    const deleteTrennidQuery = `DELETE FROM trennid WHERE trenni_id = ?`;
+    db.query(deleteTrennidQuery, [trenniId], (error, results, fields) => {
+        if (error) {
+            console.error('Error deleting from trennid:', error);
+            res.status(500).json({ error: 'Error deleting from trennid' });
+            return;
+        }
+    });
+
+    // Delete from trennis_osalejad
+    const deleteTrennisOsalejadQuery = `DELETE FROM trennis_osalejad WHERE trenni_id = ?`;
+    db.query(deleteTrennisOsalejadQuery, [trenniId], (error, results, fields) => {
+        if (error) {
+            console.error('Error deleting from trennis_osalejad:', error);
+            res.status(500).json({ error: 'Error deleting from trennis_osalejad' });
+            return;
+        }
+    });
+
+    res.status(200).json({ message: 'Rows deleted successfully' });
+});
 
 
 

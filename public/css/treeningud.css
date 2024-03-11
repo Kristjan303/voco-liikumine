@@ -75,6 +75,7 @@
 .trenni-asukoht {
     margin-right: auto;
     margin-top: auto;
+    font-style: italic;
 }
 
 .join-trenn-button {
@@ -334,6 +335,28 @@
     z-index: 999;
 }
 
+.overlay2 {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.popup2 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 50%;
+}
+
 /* Prevent scrolling when popup is open */
 body.popup-open {
     overflow: hidden;
@@ -378,3 +401,95 @@ body.popup-open {
     color: black;
     font-weight: bold;
 }
+.trenni {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    background-color: ghostwhite;
+    border-radius: 10px;
+    border: 1px solid #f3f3f3;
+    padding: 0 20px;
+    word-break: break-word;
+    padding-bottom: 10px;
+}
+.current-trenn {
+width: 100%;
+
+}
+.trenn-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    padding: 0;
+    margin-bottom: 50px;
+}
+.kasutaja-id {
+    font-size: 90%;
+
+}
+
+.trenni-footer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.trenni-footer button {
+    border: none;
+    color: #2980b9;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: "Montserrat", sans-serif;
+    background-color: transparent;
+}
+.delete-registration-button {
+    display: none;
+    background-color: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+
+}
+.hold-trenni-edits {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 30px;
+
+}
+.hold-trenni-delete, .hold-trenni-edit {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+    justify-content: flex-end;
+}
+.hold-trenni-delete p, .hold-trenni-edit p {
+    margin: 0;
+    padding: 0;
+}
+
+.hold-trenni-edit button {
+    background-color: transparent;
+    border: none;
+    color: #2980b9;
+    cursor: pointer;
+}
+.hold-trenni-delete button {
+    background-color: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+}
+
+

@@ -343,7 +343,6 @@
                                     });
                                 });
                                 calendar.render(); // Render the calendar
-                                console.log('Data:', data);
                             } else {
                                 // If no data or invalid session, hide the calendar
                                 calendarEl.style.display = 'none';
@@ -485,12 +484,328 @@
                 <div class="trenn-list">
 
                 </div>
-            </div>
+                <script>
+                    // Retrieve userId, email, and sessionToken from sessionStorage
+                    const userId = sessionStorage.getItem('userId');
+                    const email = sessionStorage.getItem('email');
+                    const sessionToken = sessionStorage.getItem('sessionToken');
 
+                    // Check if userId, email, and sessionToken are present in sessionStorage
+                    if (!userId || !email || !sessionToken) {
+                        console.error('User information not found in sessionStorage.');
+                    } else {
+                        // Construct the fetch URL with userId, email, and sessionToken for the first endpoint
+                        const fetchUrlTrennid = `/fetch-user-trennid?userId=${userId}&email=${email}&sessionToken=${sessionToken}`;
+
+                        // Fetch user trennid data
+                        fetch(fetchUrlTrennid)
+                            .then(response => response.json())
+                            .then(data => {
+                                const trennList = document.querySelector('.trenn-list');
+
+                                // Check if data is received successfully
+                                if (data && data.length > 0) {
+                                    // Iterate over the fetched data and create HTML elements to display it
+                                    data.forEach(trenni => {
+                                        const trenniElement = document.createElement('div');
+                                        trenniElement.classList.add('trenni');
+
+                                        const startTime = trenni.trenni_toimumise_algusaeg.slice(0, 5);
+                                        const endTime = trenni.trenni_toimumise_lõppaeg.slice(0, 5);
+                                        const translatedDays = trenni.trenni_toimumise_päev.replace(/Monday/g, 'Esmaspäev').replace(/Tuesday/g, 'Teisipäev').replace(/Wednesday/g, 'Kolmapäev').replace(/Thursday/g, 'Neljapäev').replace(/Friday/g, 'Reede').replace(/Saturday/g, 'Laupäev').replace(/Sunday/g, 'Pühapäev');
+                                        trenniElement.style.background = `linear-gradient(90deg, ${trenni.trenni_värv} 0%, ghostwhite 2%)`;
+
+                                        trenniElement.innerHTML = `
+            <div class="trenni-header">
+                <h4>${trenni.trenni_nimi}</h4>
+                <p>${startTime} - ${endTime}</p>
+            </div>
+            <p style="color: #6b6b6b">${trenni.trenni_selgitus}</p>
+            <p>Toimumis päevad: ${translatedDays}</p>
+            <p class="trenni-asukoht"> ${trenni.asukoht} | ${trenni.trenni_klass}</p>
+            <div class="trenni-footer">
+            <p class="kasutaja-id"></p>
+<button class="popup-button" data-id="${trenni.trenni_id}" data-color="${trenni.trenni_värv}"><i class="fa-solid fa-ellipsis-vertical fa-lg"></i></button>
+</div>
+
+                            `;
+                                        trennList.appendChild(trenniElement);
+
+                                        // Fetch additional data from the second endpoint and append it under each .trenni div
+                                        const fetchUrlKaijad = '/fetch-trennis-kaijad';
+                                        const requestData = {
+                                            sessionToken: sessionToken,
+                                            email: email,
+                                            trenniId: trenni.trenni_id,
+                                            userId: userId
+                                        };
+
+                                        fetch(fetchUrlKaijad, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            },
+                                            body: JSON.stringify(requestData)
+                                        })
+                                            .then(response => response.json())
+                                            .then(kaijadData => {
+                                                const kasutajaIdElement = trenniElement.querySelector('.kasutaja-id');
+                                                const trenniKaijadCount = kaijadData.length;
+
+                                                if (trenniKaijadCount > 0) {
+                                                    kasutajaIdElement.textContent = `Registreeritud kasutajaid: ${trenniKaijadCount}`;
+                                                    kasutajaIdElement.style.color = `${trenni.trenni_värv}`;
+                                                } else {
+                                                    kasutajaIdElement.textContent = 'Keegi pole registreerinud.';
+                                                }
+                                            })
+                                            .catch(error => console.error('Error fetching trennis kaijad:', error));
+                                    });
+                                } else {
+                                    // Display a message if no data is found
+                                    trennList.innerHTML = '<p>No trennid found.</p>';
+                                }
+                            })
+                            .catch(error => console.error('Error fetching user trennid:', error));
+                    }
+
+
+
+                </script>
+
+                <div class="overlay2" id="overlay">
+                    <div class="popup2">
+                        <button class="close-button" id="closeButton"><i class="fa-solid fa-xmark fa-xl"></i></button>
+                        <h2>Registreerinud kasutajad:</h2>
+                        <div id="popupContentReg"></div>
+                        <h2>Tulevases trennis osalejad:</h2>
+                        <div id="popupContentOsalejad"></div>
+
+                        <div class="hold-trenni-edits">
+
+                            <div class="hold-trenni-delete">
+                                <p>Kustuta: </p>
+                                <button class="delete-trenn" id="deleteTrenniButton"><i class="fa-solid fa-trash-can fa-lg"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const overlay = document.getElementById('overlay');
+                        const closeButton = document.getElementById('closeButton');
+                        const popupContentReg = document.getElementById('popupContentReg');
+                        const popupContentOsalejad = document.getElementById('popupContentOsalejad');
+                        const popup2 = document.querySelector('.popup2');
+                        const deleteButton = document.getElementById('deleteTrenniButton');
+                        const editButton = document.getElementById('editTrenniButton');
+
+
+
+
+
+                        document.querySelector('.trenn-list').addEventListener('click', function(event) {
+                            const button = event.target.closest('.popup-button');
+                            if(button) {
+                                const trenniId = button.getAttribute('data-id');
+                                fetchTrennisData(trenniId);
+                                overlay.style.display = 'block';
+                                document.body.classList.add('popup-open');
+                                // Set the color of the popup to the color of the trenni
+                                popup2.style.background = `linear-gradient(45deg, rgba(255,255,255,1) 90%, ${button.getAttribute('data-color')}80 100%`;
+                                // Set the trenniId to the delete button
+                                deleteButton.setAttribute('data-id', trenniId);
+                                // Set the trenniId to the edit button
+                                editButton.setAttribute('data-id', trenniId);
+                            }
+                        });
+
+                        closeButton.addEventListener('click', function () {
+                            overlay.style.display = 'none';
+                            document.body.classList.remove('popup-open');
+                        });
+
+                        function fetchTrennisData(trenniId) {
+                            const sessionToken = sessionStorage.getItem('sessionToken');
+                            const email = sessionStorage.getItem('email');
+                            const userId = sessionStorage.getItem('userId');
+
+                            console.log(trenniId, sessionToken, email, userId);
+
+                            fetch('/fetch-trennis-kaijad', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    sessionToken: sessionToken,
+                                    email: email,
+                                    trenniId: trenniId,
+                                    userId: userId
+
+                                })
+                            })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    // Render fetched data
+                                    renderData(data);
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching data:', error);
+                                });
+                        }
+
+                        deleteButton.addEventListener('click', function () {
+                            const confirmation = confirm("Kas olete kindel, et soovite trenni kustutada?");
+                            if (confirmation) {
+                                const trenniId = deleteButton.getAttribute('data-id');
+                                const sessionToken = sessionStorage.getItem('sessionToken');
+                                const email = sessionStorage.getItem('email');
+                                const userId = sessionStorage.getItem('userId');
+
+                                console.log(trenniId);
+
+                                fetch('/delete-trenn', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        sessionToken: sessionToken,
+                                        email: email,
+                                        userId: userId,
+                                        trenniId: trenniId
+                                    })
+                                })
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error('Network response was not ok');
+                                        }
+                                        location.reload();
+                                    })
+                                    .catch(error => {
+                                        console.error('Error deleting trenn:', error);
+                                    });
+                            }
+                        });
+
+
+                        function renderData(data) {
+                            // Clear previous content
+                            popupContentReg.innerHTML = '';
+                            popupContentOsalejad.innerHTML = '';
+
+
+                            // Check if data is empty
+                            if (data.length === 0) {
+                                popupContentReg.textContent = 'Keegi pole registreerinud.';
+                                return;
+                            }
+
+                            // Render fetched data to both popupContentReg and popupContentOsalejad
+                            data.forEach(item => {
+                                const regListItem = document.createElement('div');
+                                regListItem.classList.add('reg-row');
+                                regListItem.textContent = `${item.nimi} - ${item.õppegrupp}`; // Adjust this according to your fetched data structure
+
+                                // Create button
+                                const button = document.createElement('button');
+                                button.innerHTML = '<i class="fa-solid fa-user-minus fa-sm"></i>';
+                                button.classList.add('delete-registration-button');
+
+                                // Add event listener to show button on text hover
+                                regListItem.addEventListener('mouseover', function () {
+                                    button.style.display = 'inline-block';
+                                    // cross the text out
+                                    regListItem.style.textDecoration = 'line-through';
+                                    regListItem.style.color = 'red';
+                                });
+                                regListItem.addEventListener('mouseout', function () {
+                                    button.style.display = 'none';
+                                    // remove the cross
+                                    regListItem.style.textDecoration = 'none';
+                                    regListItem.style.color = 'black';
+                                });
+
+                                // Add event listener to handle button click
+                                button.addEventListener('click', function() {
+                                    const sessionToken = sessionStorage.getItem('sessionToken');
+                                    const email = sessionStorage.getItem('email');
+                                    const userId = sessionStorage.getItem('userId');
+                                    const kasutaja_id = item.kasutaja_id;
+                                    const trenniId = item.trenni_id;
+
+
+                                    // Confirm deletion
+                                    const confirmDelete = confirm('Kas olete kindel, et soovite registreeritud kasutaja kustutada?');
+                                    if (confirmDelete) {
+                                        // Send data to delete-registration endpoint
+                                        fetch('/delete-registration', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            },
+                                            body: JSON.stringify({
+                                                sessionToken: sessionToken,
+                                                email: email,
+                                                userId: userId,
+                                                kasutaja_id: kasutaja_id,
+                                                trenniId: trenniId
+                                            })
+                                        })
+                                            .then(response => {
+                                                if (!response.ok) {
+                                                    throw new Error('Network response was not ok');
+                                                }
+                                                // handle response if needed
+                                                return response.json();
+                                            })
+                                            .then(data => {
+                                                // handle success or display message to the user
+                                                location.reload();
+                                                // perform any other actions if needed
+                                            })
+                                            .catch(error => {
+                                                console.error('Error deleting registration:', error);
+                                                // handle error or display message to the user
+                                                alert('An error occurred while deleting registration.');
+                                            });
+                                    }
+                                });
+
+                                // Append button to the row
+                                regListItem.appendChild(button);
+
+                                // Append row to the popup content
+                                popupContentReg.appendChild(regListItem);
+
+                                const osalejadListItem = document.createElement('div');
+                                // Check if the content is 'Puudub' or 'Osaleb' and set color accordingly
+                                if (item.osaleb === 'puudub') {
+                                    osalejadListItem.textContent = `${item.nimi} - Puudub`;
+                                    osalejadListItem.style.color = 'red'; // Color red if 'Puudub'
+                                } else {
+                                    osalejadListItem.textContent = `${item.nimi} - Osaleb`;
+                                    osalejadListItem.style.color = 'green'; // Color green otherwise
+                                }
+                                popupContentOsalejad.appendChild(osalejadListItem);
+                            });
+                        }
+                    });
+                </script>
+
+
+            </div>
         </section>
 
-    <% } %>
 
+    <% } %>
 
     <div class="search-trenn">
     </div>
@@ -516,6 +831,8 @@
         </section>
         <% } %>
     </main>
+
+    <% if (userRole === 1) { %>
 
     <script>
         // Function to create popup for user input
@@ -563,7 +880,6 @@
 
             document.body.appendChild(popup);
         }
-
         // Function to submit form data
         function submitForm(event, trenniId, trenniNimi) {
             event.preventDefault();
@@ -600,7 +916,6 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log(data);
                     // Optionally, handle success response here
                     closePopup();
                     location.reload();
@@ -624,7 +939,6 @@
                 });
         }
 
-
         // Function to close the popup
         function closePopup() {
             const popup = document.querySelector('.popup');
@@ -635,7 +949,7 @@
             document.body.classList.remove('popup-open');
         }
         </script>
-
+    <% } %>
     <script>
         // Function to fetch data from the endpoint
         async function fetchData() {
@@ -676,7 +990,6 @@
                         body: JSON.stringify({ userId, trenniId, email, sessionToken })
                     });
                     const data = await response.json();
-                    console.log(data); // Log the response from the server
                     // Call displayData function to refresh the UI
                     displayData();
                     location.reload();
@@ -693,8 +1006,6 @@
             const data = await fetchData();
             const joinTrennidSection = document.querySelector('.join-trennid');
             const minuTrennidSection = document.querySelector('.minu-trennid');
-
-
 
             // Retrieve data from sessionStorage
             const userId = sessionStorage.getItem('userId');
@@ -762,7 +1073,6 @@
                     trennElement.classList.add('trenn');
                     // background color gradient
                     trennElement.style.background = `linear-gradient(90deg, ${trenn.trenni_värv} 0%, ghostwhite 2%)`;
-
                     // Populate trennElement with data
                     const startTime = trenn.trenni_toimumise_algusaeg.slice(0, 5);
                     // Format end time (lõpuaeg) to show only hours and minutes
@@ -826,7 +1136,6 @@
                         <div class="footer_text">
                             <p><a href="mailto:info@voco.ee">info@voco.ee</a></p>
                             <p>7 361 810</p>
-
                         </div>
                     </div>
                     <div class="footer_col">
@@ -836,7 +1145,6 @@
                         <div class="footer_text">
                             <p>Kopli 1</p>
                             <p>Tartu 50115 Eesti</p>
-
                         </div>
                     </div>
                     <div class="footer_col">
@@ -857,11 +1165,7 @@
         © Tartu rakenduslik kolledž 2024
     </div>
 </footer>
-
 </body>
-
-
-
 
 
 <script>
@@ -909,9 +1213,6 @@
 
 </script>
 
-
-
-
 <% if (userRole === 2 || userRole === 3) { %>
 
 <script>
@@ -932,7 +1233,6 @@
 
 
 </script>
-
 
 <script>
     document.getElementById('addEventButton').addEventListener('click', function () {
@@ -983,7 +1283,6 @@
                 return response.json();
             })
             .then(data => {
-                console.log('Success:', data);
                 // Optionally, do something after successful submission
             })
             .catch(error => {
@@ -995,9 +1294,7 @@
 
 <% } %>
 
-
 <% if (userRole === 1) { %>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Event delegation to capture click on checkboxes
@@ -1060,8 +1357,5 @@
 </script>
 
 <% } %>
-
-
-
 
 </html>
