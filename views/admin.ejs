@@ -13,10 +13,13 @@
 <% if (userRole === 3) { %>
     <nav>
         <a href="/" class="nav-logo">
-            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                 xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
                  viewBox="0 0 412.74 334.7" style="enable-background:new 0 0 412.74 334.7;" xml:space="preserve">
           <style type="text/css">
-              .st0{fill:#FFFFFF;}
+              .st0 {
+                  fill: #FFFFFF;
+              }
           </style>
                 <path class="st0" d="M259.98,112.52c0,27.49-22.29,49.78-49.78,49.78c-27.49,0-49.78-22.29-49.78-49.78
               c0-27.49,22.29-49.78,49.78-49.78C237.69,62.74,259.98,85.02,259.98,112.52 M350.92,223.78c0-27.49-22.29-49.78-49.78-49.78
@@ -31,13 +34,63 @@
         <!-- Admin navigation -->
         <section class="admin-nav">
             <button id="navKasutajad" onclick="toggleView('kasutajad')">Kasutajad</button>
-            <button id="navFoorum" onclick="toggleView('foorum')">Foorum</button>
             <button id="navEsileht" onclick="toggleView('esileht')">Esileht</button>
+            <button id="navArtiklid" onclick="toggleView('artiklid')">Artiklid</button>
+            <button id="navUudised" onclick="toggleView('uudised')">Uudised</button>
+            <button id="navFoorum" onclick="toggleView('foorum')">Foorum</button>
+            <button id="navGalerii" onclick="toggleView('galerii')">Galerii</button>
         </section>
         <!-- Admin content -->
         <section class="admin-main">
             <div id="kasutajad">
                 <h2>Kasutajad</h2>
+                <div class="header-search">
+                    <input type="text" id="searchInput" placeholder="Otsi kasutajaid...">
+                    <button type="button" id="searchButton">
+                        <i class="fa-solid fa-search fa-lg" style="color: #000000;"></i>
+                    </button>
+                </div>
+                <script>
+                    document.getElementById("searchButton").addEventListener("click", function () {
+                        sendData();
+                    });
+
+                    document.getElementById("searchInput").addEventListener("keydown", function (event) {
+                        if (event.key === "Enter") {
+                            sendData();
+                        }
+                    });
+
+                    function sendData() {
+                        var userInput = document.getElementById("searchInput").value.trim();
+                        if (userInput.length === 0) {
+                            fetchData();
+                        } else if (userInput.length) {
+                            sendDataToServer(userInput);
+                        }
+                    }
+
+                    function sendDataToServer(input) {
+                        var xhr = new XMLHttpRequest();
+                        xhr.open("POST", "/search-users", true);
+                        xhr.setRequestHeader("Content-Type", "application/json");
+                        xhr.onreadystatechange = function () {
+                            if (xhr.readyState === 4) {
+                                if (xhr.status === 200) {
+                                    var users = JSON.parse(xhr.responseText);
+                                    // Process the users as needed, e.g., update the table
+                                    updateTable(users);
+                                } else {
+                                    alert("Error: " + xhr.statusText);
+                                }
+                            }
+                        };
+                        var data = JSON.stringify({ query: input });
+                        xhr.send(data);
+                    }
+
+                </script>
+
                 <table id="userTable">
                     <thead>
                     <tr>
@@ -48,6 +101,7 @@
                     </tr>
                     </thead>
                     <tbody id="userTableBody">
+
                     </tbody>
                 </table>
 
@@ -64,20 +118,109 @@
                     <tbody id="sessionTableBody">
                     </tbody>
                 </table>
+            </div>
 
-
+            <div id="esileht" class="hidden">
+                <h1>Esileht</h1>
+            </div>
+            <div id="artiklid" class="hidden">
+                <h1>Artiklid</h1>
+            </div>
+            <div id="uudised" class="hidden">
+                <h1>Uudised</h1>
             </div>
             <div id="foorum" class="hidden">
                 <h1>Foorum</h1>
             </div>
-            <div id="esileht" class="hidden">
-                <h1>Esileht</h1>
+            <div id="galerii" class="hidden">
+                <h1>Galerii</h1>
             </div>
 
         </section>
     </main>
 
+
+
     <script>
+        function updateTable(users) {
+            const tableBody = document.getElementById('userTableBody');
+            tableBody.innerHTML = '';
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td class="kasutajanimi">${user.kasutajanimi}</td>
+            <td class="email">${user.email}</td>
+            <td class="telefon">${user.telefon}</td>
+            <td class="rolli_nimetus">${user.rolli_nimetus}</td>
+        `;
+
+                // Access the rolli_nimetus cell directly
+                const kasutajanimiCell = row.children[0];
+                const emailCell = row.children[1];
+                const telefonCell = row.children[2];
+                const rolliNimetusCell = row.children[3];
+
+
+                rolliNimetusCell.addEventListener('click', function (event) {
+                    // Check if the click target is the select element
+                    if (event.target.tagName !== 'SELECT') {
+                        // Get the entire table row
+                        const tableRow = rolliNimetusCell.parentElement;
+
+                        // Pass the entire table row to the handleRoleChange function
+                        handleRoleChange(tableRow);
+                    }
+                });
+
+                kasutajanimiCell.addEventListener('click', function (event) {
+                    // Check if the click target is the select element
+                    if (event.target.tagName !== 'INPUT') {
+                        // Get the entire table row
+                        const tableRow = kasutajanimiCell.parentElement;
+                        //get the username before edit
+                        const textBeforeEdit = kasutajanimiCell.textContent.trim();
+
+                        // Pass the entire table row to the handleRoleChange function
+                        handleUserNameChange(tableRow,textBeforeEdit);
+                    }
+                });
+
+                emailCell.addEventListener('click', function (event) {
+                    // Check if the click target is the input element
+                    if (event.target.tagName !== 'INPUT') {
+                        // Get the entire table row
+                        const tableRow = emailCell.parentElement;
+                        // Get the text before edit
+                        const textBeforeEdit = emailCell.textContent.trim();
+
+                        // Pass the entire table row to the handleEmailChange function
+                        handleEmailChange(tableRow, textBeforeEdit);
+                    }
+                });
+
+                telefonCell.addEventListener('click', function (event) {
+                    // Check if the click target is the input element
+                    if (event.target.tagName !== 'INPUT') {
+                        // Get the entire table row
+                        const tableRow = telefonCell.parentElement;
+                        // Get the text before edit
+                        const textBeforeEdit = telefonCell.textContent.trim();
+
+                        // Pass the entire table row to the handleEmailChange function
+                        handlePhoneChange(tableRow, textBeforeEdit);
+                    }
+                });
+
+                tableBody.appendChild(row);
+            });
+        }
+
+
+    </script>
+
+    <script>
+
         // Toggle between sections based on button click
         function toggleView(sectionId) {
             // Hide all sections
@@ -92,14 +235,34 @@
         document.getElementById('kasutajad').classList.remove('hidden');
 
 
-
-
-
-
     </script>
     <script>
         function fetchData() {
-            fetch('/kasutajad')
+            // Get user information from sessionStorage
+            const userId = sessionStorage.getItem('userId');
+            const email = sessionStorage.getItem('email');
+            const sessionToken = sessionStorage.getItem('sessionToken');
+
+            // Check if required information is present
+            if (!userId || !email || !sessionToken) {
+                console.error('User information missing. Cannot fetch data.');
+                return;
+            }
+
+            // Include user information in the request headers
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            };
+
+            // Build the URL with query parameters
+            const url = `/kasutajad?userId=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`;
+
+            // Make the fetch request without a body for GET
+            fetch(url, {
+                method: 'GET', // Use GET for fetching data
+                headers,
+            })
                 .then(response => response.json())
                 .then(users => {
                     const tableBody = document.getElementById('userTableBody');
@@ -107,21 +270,593 @@
                     users.forEach(user => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                        <td>${user.kasutajanimi}</td>
-                        <td>${user.email}</td>
-                        <td>${user.telefon}</td>
-                        <td>${user.rolli_nimetus}</td>
-                    `;
+            <td class="kasutajanimi">${user.kasutajanimi}</td>
+            <td class="email">${user.email}</td>
+            <td class="telefon">${user.telefon}</td>
+            <td class="rolli_nimetus">${user.rolli_nimetus}</td>
+        `;
+
+                        // Access the rolli_nimetus cell directly
+                        const kasutajanimiCell = row.children[0];
+                        const emailCell = row.children[1];
+                        const telefonCell = row.children[2];
+                        const rolliNimetusCell = row.children[3];
+
+
+                        rolliNimetusCell.addEventListener('click', function (event) {
+                            // Check if the click target is the select element
+                            if (event.target.tagName !== 'SELECT') {
+                                // Get the entire table row
+                                const tableRow = rolliNimetusCell.parentElement;
+
+                                // Pass the entire table row to the handleRoleChange function
+                                handleRoleChange(tableRow);
+                            }
+                        });
+
+                        kasutajanimiCell.addEventListener('click', function (event) {
+                            // Check if the click target is the select element
+                            if (event.target.tagName !== 'INPUT') {
+                                // Get the entire table row
+                                const tableRow = kasutajanimiCell.parentElement;
+                                //get the username before edit
+                                const textBeforeEdit = kasutajanimiCell.textContent.trim();
+
+                                // Pass the entire table row to the handleRoleChange function
+                                handleUserNameChange(tableRow,textBeforeEdit);
+                            }
+                        });
+
+                        emailCell.addEventListener('click', function (event) {
+                            // Check if the click target is the input element
+                            if (event.target.tagName !== 'INPUT') {
+                                // Get the entire table row
+                                const tableRow = emailCell.parentElement;
+                                // Get the text before edit
+                                const textBeforeEdit = emailCell.textContent.trim();
+
+                                // Pass the entire table row to the handleEmailChange function
+                                handleEmailChange(tableRow, textBeforeEdit);
+                            }
+                        });
+
+                        telefonCell.addEventListener('click', function (event) {
+                            // Check if the click target is the input element
+                            if (event.target.tagName !== 'INPUT') {
+                                // Get the entire table row
+                                const tableRow = telefonCell.parentElement;
+                                // Get the text before edit
+                                const textBeforeEdit = telefonCell.textContent.trim();
+
+                                // Pass the entire table row to the handleEmailChange function
+                                handlePhoneChange(tableRow, textBeforeEdit);
+                            }
+                        });
+
                         tableBody.appendChild(row);
                     });
                 })
+
                 .catch(error => console.error('Error fetching data:', error));
         }
 
+
+
+        function handleRoleChange(tableRow) {
+            // Find the role cell within the row
+            const roleCell = tableRow.querySelector('.rolli_nimetus');
+
+            //get the text before edit
+            const textBeforeEdit = roleCell.textContent.trim();
+
+            // Check if the role cell already contains a select element
+            const existingSelect = roleCell.querySelector('select');
+
+            // If the select element doesn't exist, create and append it
+            if (!existingSelect) {
+                // Create a select element
+                const selectElement = document.createElement('select');
+
+                // Add options to the select element (you can customize these options)
+                const options = ['admin', 'õpetaja', 'õpilane'];
+                options.forEach(optionText => {
+                    const option = document.createElement('option');
+                    option.text = optionText;
+                    selectElement.add(option);
+                });
+
+                // Set the initial value of the select element based on the current role
+                selectElement.value = roleCell.textContent.trim();
+
+                // Make the text content of the role cell invisible
+                roleCell.textContent = '';
+
+                // Add an event listener to handle changes in the select element
+                selectElement.addEventListener('change', function () {
+                    // Update the text content of the role cell with the selected value
+                    roleCell.textContent = selectElement.value;
+
+                    // Get the email associated with the table row
+                    const email = tableRow.querySelector('.email').textContent;
+                    const username = tableRow.querySelector('.kasutajanimi').textContent;
+
+                    // Call the function to update the role on the server with role and email
+                    updateRoleOnServer(selectElement.value, email, username, textBeforeEdit);
+
+                    // Hide the select element after the selection is made
+                    selectElement.style.display = 'none';
+                });
+
+                // Append the select element to the role cell
+                roleCell.appendChild(selectElement);
+
+                // Show the select element
+                selectElement.style.display = 'block';
+            } else {
+                // If the select element already exists, toggle its visibility
+                const displayValue = existingSelect.style.display === 'none' ? 'block' : 'none';
+                existingSelect.style.display = displayValue;
+
+                // Make the text content of the role cell invisible when showing the select element
+                roleCell.textContent = '';
+            }
+        }
+        function updateRoleOnServer(newRole, accountEmail, accountUsername, PreviousRole) {
+            // Get user information from sessionStorage
+            const userId = sessionStorage.getItem('userId');
+            const email = sessionStorage.getItem('email');
+            const sessionToken = sessionStorage.getItem('sessionToken');
+
+
+
+            // Check if required information is present
+            if (!userId || !email || !sessionToken) {
+                console.error('User information missing. Cannot fetch data.');
+                return;
+            }
+
+            // Include user information in the request headers
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            };
+
+            // convert role to number
+
+            const roleMappings = {
+                'admin': 3,
+                'õpetaja': 2,
+                'õpilane': 1
+            };
+
+            // Map the role name to the corresponding numerical value
+            const numericalValue = roleMappings[newRole];
+
+            // Include the new role, userId, and email in the request body
+            const body = JSON.stringify({
+                newRole: numericalValue,
+                userId: userId,
+                email: email,
+                sessionToken: sessionToken,
+                accountEmail: accountEmail,
+                accountUsername: accountUsername,
+                PreviousRole: PreviousRole
+            });
+
+
+            // Make the fetch request with a body for POST
+            fetch('/admin-update-role', {
+                method: 'POST', // Use POST for updating data
+                headers,
+                body,
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('Role updated successfully!');
+                    } else if (result.message === 'Cannot remove the last admin role') {
+                        alert('Cannot remove the last admin role. There must be at least one admin.');
+                        location.reload();
+                    } else {
+                        console.error('Error updating role:', result);
+                        alert('Error updating role. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating role:', error);
+                    alert('An unexpected error occurred. Please try again later.');
+                });
+        }
+
+        function handleUserNameChange(tableRow, textBeforeEdit) {
+            // Find the username cell within the row
+            const usernameCell = tableRow.querySelector('.kasutajanimi');
+
+
+            // Check if the username cell already contains an input element
+            const existingInput = usernameCell.querySelector('input');
+
+            // If the input element doesn't exist, create and append it
+            if (!existingInput) {
+                // Create an input element
+                const inputElement = document.createElement('input');
+                inputElement.type = 'text';
+                inputElement.value = usernameCell.textContent.trim();
+
+                // Make the text content of the username cell invisible
+                usernameCell.textContent = '';
+
+                // Add an event listener to handle changes in the input element
+                inputElement.addEventListener('input', function () {
+                    // Update the value of the input element with the typed text
+                    inputElement.value = inputElement.value.trim();
+                });
+
+                inputElement.addEventListener('keyup', function (event) {
+                    if (event.key === 'Enter') {
+                        // Update the text content of the username cell with the input value
+                        usernameCell.textContent = inputElement.value;
+
+                        // Get the email associated with the table row
+                        const email = tableRow.querySelector('.email').textContent;
+
+                        // Call the function to update the username on the server with the new username
+                        updateUserNameOnServer(inputElement.value, email, textBeforeEdit);
+
+                        // Hide the input element after the Enter key is pressed
+                        inputElement.style.display = 'none';
+                    }
+                });
+
+                // Append the input element to the username cell
+                usernameCell.appendChild(inputElement);
+
+                // Show the input element
+                inputElement.style.display = 'block';
+
+                // Set focus on the input element
+                inputElement.focus();
+            } else {
+                // If the input element already exists, toggle its visibility
+                const displayValue = existingInput.style.display === 'none' ? 'block' : 'none';
+                existingInput.style.display = displayValue;
+
+                // Make the text content of the username cell invisible when showing the input element
+                usernameCell.textContent = textBeforeEdit;
+            }
+        }
+
+
+        function updateUserNameOnServer(newUserName, accountEmail, accountUsername) {
+            // Get user information from sessionStorage
+            const userId = sessionStorage.getItem('userId');
+            const email = sessionStorage.getItem('email');
+            const sessionToken = sessionStorage.getItem('sessionToken');
+
+
+            // Check if required information is present
+            if (!userId || !email || !sessionToken) {
+                console.error('User information missing. Cannot fetch data.');
+                return;
+            }
+
+            // Include user information in the request headers
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            };
+            // Include the new role, userId, and email in the request body
+            const body = JSON.stringify({
+                userId: userId,
+                email: email,
+                sessionToken: sessionToken,
+                newUserName: newUserName,
+                accountEmail: accountEmail,
+                accountUsername: accountUsername
+            });
+
+            // Make the fetch request with a body for POST
+            fetch('/admin-update-username', {
+                method: 'POST',
+                headers,
+                body,
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('Username updated successfully!');
+                    } else {
+                        console.error('Error updating username:', result);
+
+                        if (result.message === 'Invalid session') {
+                            alert('Invalid session. Please log in again.');
+                        } else if (result.message === 'Unauthorized') {
+                            alert('Unauthorized. You do not have the necessary permissions.');
+                        } else if (result.message === 'Invalid new username') {
+                            alert('Invalid new username. Please provide a valid username.');
+                        } else if (result.message === 'Username is already taken') {
+                            alert('The username is already taken. Please choose a different one.');
+                            // Refresh the page
+                            location.reload();
+                        } else if (result.message === 'Internal server error') {
+                            alert('Internal server error. Please try again later.');
+                        } else if (result.message === 'Invalid username or email') {
+                            alert('Invalid username or email. Please check your input.');
+                        } else {
+                            alert('Unknown error. Please try again.');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in fetch request:', error);
+                    alert('An unexpected error occurred. Please try again.');
+                });
+
+        }
+
+
+        function handleEmailChange(tableRow, textBeforeEdit) {
+            // Find the email cell within the row
+            const emailCell = tableRow.querySelector('.email');
+
+            // Check if the email cell already contains an input element
+            const existingInput = emailCell.querySelector('input');
+
+            // If the input element doesn't exist, create and append it
+            if (!existingInput) {
+                // Create an input element
+                const inputElement = document.createElement('input');
+                inputElement.type = 'text';
+                inputElement.value = emailCell.textContent.trim();
+
+                // Make the text content of the email cell invisible
+                emailCell.textContent = '';
+
+                // Add an event listener to handle changes in the input element
+                inputElement.addEventListener('input', function () {
+                    // Update the value of the input element with the typed text
+                    inputElement.value = inputElement.value.trim();
+                });
+
+                inputElement.addEventListener('keyup', function (event) {
+                    if (event.key === 'Enter') {
+                        // Check if the entered email ends with "@voco.ee"
+                        if (!inputElement.value.endsWith('@voco.ee')) {
+                            // Alert the user and don't proceed if the email doesn't match the required format
+                            alert('Email must end with "@voco.ee"');
+                            return;
+                        }
+
+                        // Update the text content of the email cell with the input value
+                        emailCell.textContent = inputElement.value;
+
+                        // Get the username associated with the table row
+                        const username = tableRow.querySelector('.kasutajanimi').textContent;
+
+                        // Call the function to update the email on the server with the new email
+                        updateEmailOnServer(inputElement.value, username, textBeforeEdit);
+                        // Hide the input element after the Enter key is pressed
+                        inputElement.style.display = 'none';
+                    }
+                });
+
+                // Append the input element to the email cell
+                emailCell.appendChild(inputElement);
+
+                // Show the input element
+                inputElement.style.display = 'block';
+
+                // Set focus on the input element
+                inputElement.focus();
+            } else {
+                // If the input element already exists, toggle its visibility
+                const displayValue = existingInput.style.display === 'none' ? 'block' : 'none';
+                existingInput.style.display = displayValue;
+
+                // Make the text content of the email cell invisible when showing the input element
+                emailCell.textContent = textBeforeEdit;
+            }
+        }
+
+
+        function updateEmailOnServer(newEmail, username, oldEmail) {
+            // Get user information from sessionStorage
+            const userId = sessionStorage.getItem('userId');
+            const email = sessionStorage.getItem('email');
+            const sessionToken = sessionStorage.getItem('sessionToken');
+
+            // Check if required information is present
+            if (!userId || !email || !sessionToken) {
+                console.error('User information missing. Cannot fetch data.');
+                return;
+            }
+
+            // Include user information in the request headers
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            };
+
+            // Include the new email, userId, and username in the request body
+            const body = JSON.stringify({
+                userId: userId,
+                email: email,
+                sessionToken: sessionToken,
+                newEmail: newEmail,
+                username: username,
+                oldEmail: oldEmail
+            });
+
+            // Make the fetch request with a body for POST
+            fetch('/admin-update-email', {
+                method: 'POST',
+                headers,
+                body,
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('Email updated successfully!');
+                    } else {
+                        console.error('Error updating email:', result);
+
+                        if (result.message === 'Invalid session') {
+                            alert('Invalid session. Please log in again.');
+                        } else if (result.message === 'Unauthorized') {
+                            alert('Unauthorized. You do not have the necessary permissions.');
+                        } else if (result.message === 'Invalid new username') {
+                            alert('Invalid new email. Please provide a valid email address.');
+                        } else if (result.message === 'email is already taken') {
+                            alert('The email is already taken. Please choose a different one.');
+                            // Refresh the page
+                            location.reload();
+                        } else if (result.message === 'Internal server error') {
+                            alert('Internal server error. Please try again later.');
+                        } else if (result.message === 'Invalid username or email') {
+                            alert('Invalid username or email. Please check your input.');
+                        } else {
+                            alert('Unknown error. Please try again.');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in fetch request:', error);
+                    alert('An unexpected error occurred. Please try again.');
+                });
+        }
+
+        function handlePhoneChange(tableRow, textBeforeEdit) {
+            // Find the username cell within the row
+            const phoneCell = tableRow.querySelector('.telefon');
+
+
+            // Check if the username cell already contains an input element
+            const existingInput = phoneCell.querySelector('input');
+
+            // If the input element doesn't exist, create and append it
+            if (!existingInput) {
+                // Create an input element
+                const inputElement = document.createElement('input');
+                inputElement.type = 'text';
+                inputElement.value = phoneCell.textContent.trim();
+
+                // Make the text content of the username cell invisible
+                phoneCell.textContent = '';
+
+                // Add an event listener to handle changes in the input element
+                inputElement.addEventListener('input', function () {
+                    // Update the value of the input element with the typed text
+                    inputElement.value = inputElement.value.trim();
+                });
+
+                inputElement.addEventListener('keyup', function (event) {
+                    if (event.key === 'Enter') {
+                        // Update the text content of the username cell with the input value
+                        phoneCell.textContent = inputElement.value;
+
+                        // Get the email associated with the table row
+                        const username = tableRow.querySelector('.kasutajanimi').textContent;
+
+                        // Call the function to update the username on the server with the new username
+                        updatePhoneOnServer(inputElement.value, username, textBeforeEdit);
+                        // Hide the input element after the Enter key is pressed
+                        inputElement.style.display = 'none';
+                    }
+                });
+
+                // Append the input element to the username cell
+                phoneCell.appendChild(inputElement);
+
+                // Show the input element
+                inputElement.style.display = 'block';
+
+                // Set focus on the input element
+                inputElement.focus();
+            } else {
+                // If the input element already exists, toggle its visibility
+                const displayValue = existingInput.style.display === 'none' ? 'block' : 'none';
+                existingInput.style.display = displayValue;
+
+                // Make the text content of the username cell invisible when showing the input element
+                phoneCell.textContent = '';
+            }
+        }
+        function updatePhoneOnServer(newPhone, accountUsername, textBeforeEdit) {
+            // Get user information from sessionStorage
+            const userId = sessionStorage.getItem('userId');
+            const email = sessionStorage.getItem('email');
+            const sessionToken = sessionStorage.getItem('sessionToken');
+
+
+            // Check if required information is present
+            if (!userId || !email || !sessionToken) {
+                console.error('User information missing. Cannot fetch data.');
+                return;
+            }
+
+            // Include user information in the request headers
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            };
+            // Include the new role, userId, and email in the request body
+            const body = JSON.stringify({
+                userId: userId,
+                email: email,
+                sessionToken: sessionToken,
+                newPhone: newPhone,
+                Username: accountUsername,
+                textBeforeEdit: textBeforeEdit
+            });
+
+            // Make the fetch request with a body for POST
+            fetch('/admin-update-phone', {
+                method: 'POST',
+                headers,
+                body,
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert('Phone updated successfully!');
+                    } else {
+                        console.error('Error updating phone:', result);
+
+                        if (result.message === 'Invalid session') {
+                            alert('Invalid session. Please log in again.');
+                        } else if (result.message === 'Unauthorized') {
+                            alert('Unauthorized. You do not have the necessary permissions.');
+                        } else if (result.message === 'Invalid new phone') {
+                            alert('Invalid new phone. Please provide a valid phone number.');
+                        } else if (result.message === 'phone is already taken') {
+                            alert('The phone is already taken. Please choose a different one.');
+                            // Refresh the page
+                            location.reload();
+                        } else if (result.message === 'Internal server error') {
+                            alert('Internal server error. Please try again later.');
+                        } else if (result.message === 'Invalid username or email') {
+                            alert('Invalid username or email. Please check your input.');
+                        } else {
+                            alert('Unknown error. Please try again.');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in fetch request:', error);
+                    alert('An unexpected error occurred. Please try again.');
+                });
+
+        }
+
+
+
+        // Add the new role handling logic to the existing click event listener
+        document.getElementById('navKasutajad').addEventListener('click', fetchData);
+
         document.addEventListener('DOMContentLoaded', fetchData);
 
-        document.getElementById('navKasutajad').addEventListener('click', fetchData);
     </script>
+
 
     <script>
         // Function to calculate session length
@@ -129,69 +864,83 @@
             const currentTime = new Date();
             const startTime = new Date(pushTime);
             const sessionLength = currentTime - startTime;
-            // Convert session length to minutes and round to nearest integer
-            return Math.round(sessionLength / (1000 * 60));
+            // if session length is in more than 60minutes then convert it to hours and round else give minutes and round
+            if (sessionLength > 3600000) {
+                return Math.floor(sessionLength / 3600000 ) + ' tundi' ;
+            } else {
+                return Math.floor(sessionLength / 60000) + ' minutit';
+            }
         }
 
         // Function to update session table
         function updateSessionTable() {
-            fetch('/sessions')
-                .then(response => response.json())
+            // Get user information from sessionStorage
+            const userId = sessionStorage.getItem('userId');
+            const email = sessionStorage.getItem('email');
+            const sessionToken = sessionStorage.getItem('sessionToken');
+
+            // Check if required information is present
+            if (!userId || !email || !sessionToken) {
+                console.error('User information missing. Cannot fetch session data.');
+                return;
+            }
+
+            // Include user information in the request headers
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            };
+
+            // Fetch sessions from the backend
+            fetch(`/sessions?userId=${userId}&email=${email}`, {
+                method: 'GET',
+                headers,
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(sessions => {
-                    const sessionTableBody = document.getElementById('sessionTableBody');
-                    sessionTableBody.innerHTML = '';
-                    sessions.forEach(session => {
-                        const row = document.createElement('tr');
-                        const usernameCell = document.createElement('td');
-                        usernameCell.textContent = session.username;
-                        const lengthCell = document.createElement('td');
-                        lengthCell.textContent = `${calculateSessionLength(session.pushTime)} minutes`;
-                        row.appendChild(usernameCell);
-                        row.appendChild(lengthCell);
+                    if (Array.isArray(sessions)) {
+                        // Update the session table on the frontend
+                        const sessionTableBody = document.getElementById('sessionTableBody');
+                        sessionTableBody.innerHTML = '';
+                        sessions.forEach(session => {
+                            const row = document.createElement('tr');
+                            const usernameCell = document.createElement('td');
+                            usernameCell.textContent = session.username;
+                            const lengthCell = document.createElement('td');
+                            lengthCell.textContent = `${calculateSessionLength(session.pushTime)}`;
+                            row.appendChild(usernameCell);
+                            row.appendChild(lengthCell);
 
-                        // Create the icon element
-                        const icon = document.createElement('i');
-                        icon.classList.add('fa-solid', 'fa-arrow-right-from-bracket', 'fa-sm');
-                        icon.style.color = 'red';
-                        icon.style.float = 'right';
-                        icon.style.visibility = 'hidden'; // Hide the icon by default
-                        icon.style.cursor = 'pointer'; // Change cursor to pointer to indicate interactivity
-                        icon.style.marginTop = '10px'; // Add some margin to the top of the icon
+                            // Create the icon element
+                            const icon = document.createElement('i');
+                            icon.classList.add('fa-solid', 'fa-arrow-right-from-bracket', 'fa-sm');
+                            icon.style.color = 'red';
+                            icon.style.float = 'right';
+                            icon.style.visibility = 'hidden';
+                            icon.style.cursor = 'pointer';
+                            icon.style.marginTop = '10px';
 
-                        // Add click event listener to the icon
-                        // icon.addEventListener('click', () => {
-                        //     const username = session.username; // Get the username from the row
-                        //     // Send a logout request to the server with the username
-                        //     fetch(`/logout/${username}`, { method: 'GET' })
-                        //         .then(response => response.json())
-                        //         .then(data => {
-                        //             if (data.success) {
-                        //                 // If logout is successful, redirect to login page or perform any other action
-                        //                 console.log('User logged out successfully');
-                        //                 location.reload(); // Reload the page to update the session table
-                        //             } else {
-                        //                 // Handle error if logout fails
-                        //                 console.error('Error logging out user:', data.message);
-                        //             }
-                        //         })
-                        //         .catch(error => {
-                        //             console.error('Error logging out user:', error);
-                        //         });
-                        // });
+                            // Add the icon to the lengthCell
+                            lengthCell.appendChild(icon);
 
-                        // Add the icon to the lengthCell
-                        lengthCell.appendChild(icon);
+                            // Add event listeners to the row for icon display
+                            row.addEventListener('mouseover', () => {
+                                icon.style.visibility = 'visible';
+                            });
+                            row.addEventListener('mouseout', () => {
+                                icon.style.visibility = 'hidden';
+                            });
 
-                        // Add event listeners to the row for icon display
-                        row.addEventListener('mouseover', () => {
-                            icon.style.visibility = 'visible'; // Make the icon visible on mouseover
+                            sessionTableBody.appendChild(row);
                         });
-                        row.addEventListener('mouseout', () => {
-                            icon.style.visibility = 'hidden'; // Hide the icon on mouseout
-                        });
-
-                        sessionTableBody.appendChild(row);
-                    });
+                    } else {
+                        console.error('Received invalid session data:', sessions);
+                    }
                 })
                 .catch(error => {
                     console.error('Error updating session table:', error);
@@ -203,6 +952,7 @@
 
         // Update session table every minute
         setInterval(updateSessionTable, 60000); // Update every minute
+
     </script>
 
 
@@ -256,7 +1006,6 @@
             © Tartu rakenduslik kolledž 2024
         </div>
     </footer>
-
 
 <% } else { %>
     <!-- Redirect to login page if user is not authenticated -->
