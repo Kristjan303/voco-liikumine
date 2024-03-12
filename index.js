@@ -9,7 +9,6 @@ const uuid = require('uuid');
 const cors = require('cors');
 const fs = require('fs');
 const multer = require('multer');
-const router = express.Router();
 
 
 
@@ -76,6 +75,7 @@ app.get('/uudised', renderFile('uudised'));
 app.get('/sisene', renderFile('sisene'));
 app.get('/register', renderFile('register'));
 app.get('/home', renderFile('load'));
+app.get('/kontakt', renderFile('kontakt'));
 
 
 // Render the admin page
@@ -1711,6 +1711,21 @@ app.post('/delete-trenn', (req, res) => {
 
     res.status(200).json({ message: 'Rows deleted successfully' });
 });
+
+
+// fetch kasutajanimi, telefon, email from kasutajad where rolli_id === 2
+app.get('/fetch-opetajad', (req, res) => {
+    const query = 'SELECT kasutajanimi, telefon, email FROM kasutajad WHERE rolli_id = 2';
+    db.query(query, (error, results) => {
+        if (error) {
+            console.error('Error fetching data:', error);
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+        res.status(200).json(results);
+    });
+
+})
 
 
 

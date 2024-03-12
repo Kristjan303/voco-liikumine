@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../css/index.css">
-    <link rel="stylesheet" href="../../css/otsingu_tulemused.css">
-
-    <title>Otsingu tulemused 🔎 | VOCO Liikumine</title>
+    <title>Kontakt 📧 | VOCO Liikumine</title>
+    <link rel="stylesheet" href="../css/artiklid_html.css">
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/kontakt.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
 </head>
 <body>
@@ -73,8 +73,6 @@
             xhr.send(data);
         }
     </script>
-
-
 </header>
 <nav>
     <a href="/" class="nav-logo">
@@ -82,68 +80,48 @@
 
     </a>
     <div class="nav-links">
-        <a href="/artiklid">Artiklid</a>
-        <a href="/uudised">Uudised</a>
-        <a href="/foorum">Foorum</a>
-        <a href="/treeningud">Treeningud</a>
-        <a href="/galerii">Galerii</a>
-        <a href="kontakt">Kontakt</a>
-
+        <a href="../artiklid">Artiklid</a>
+        <a href="../uudised">Uudised</a>
+        <a href="../foorum">Foorum</a>
+        <a href="../treeningud">Treeningud</a>
+        <a href="../galerii">Galerii</a>
+        <a  style="color: #2980b9" href="../kontakt">Kontakt</a>
     </div>
 </nav>
-
-<section>
+<section class="kontaktid">
     <div class="section-nav">
         <div class="path">
-            <p><a href="/">Avaleht</a> > Otsi > <span>"<%= userInput %>"</span></p>
+            <p><a href="/">Avaleht</a> > <span>Kontakt</span></p>
         </div>
-    <h1>Otsingu tulemused: "<%= userInput %>"</h1>
-
+        <h1>Kontakt</h1>
     </div>
-    <% if (data && (data.articleTitles.length > 0 || data.newsTitles.length > 0 || data.postTitles.length > 0)) { %>
-        <% if (data.articleTitles.length > 0) { %>
-            <h4>Artiklid:</h4>
-            <ul>
-                <% data.articleTitles.forEach(function(title) { %>
-                    <li>
-                        <%= title.title %> <span class="usernameSearch"> - <%= title.username %></span>
-                        <a href="/artiklid/<%= encodeURIComponent(title.title) %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
-                    </li>
-                <% }); %>
-            </ul>
-        <% } %>
-
-        <% if (data.newsTitles.length > 0) { %>
-            <h4>Uudised:</h4>
-            <ul>
-                <% data.newsTitles.forEach(function(title) { %>
-                    <li>
-                        <%= title.title %> <span class="usernameSearch"> - <%= title.username %></span>
-                        <a href="/uudised/<%= encodeURIComponent(title.title) %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
-                    </li>
-                <% }); %>
-            </ul>
-        <% } %>
-
-        <% if (data.postTitles.length > 0) { %>
-            <h4>Foorumi postitused:</h4>
-            <ul>
-                <% data.postTitles.forEach(function(title) { %>
-                    <li>
-                        <%= title.title %> <span class="usernameSearch"> - <%= title.username %></span>
-                        <a href="/foorum/<%= encodeURIComponent(title.title) %>"><i class="fa-solid fa-arrow-up-right-from-square fa-lg"></i></a>
-                    </li>
-                <% }); %>
-            </ul>
-        <% } %>
-    <% } else { %>
-        <p>Ühtegi tulemust ei leitud. . .</p>
-        <img src="../../images/search.svg">
-    <% } %>
+    <main class="contact">
 
 
+
+    </main>
+    <script>
+        // fetch from /fetch-opetajad and display the data to .contact
+        fetch('/fetch-opetajad')
+            .then(response => response.json())
+            .then(data => {
+                const contact = document.querySelector('.contact');
+                data.forEach(opetaja => {
+                    const div = document.createElement('div');
+                    div.classList.add('contact_col');
+                    div.innerHTML = `
+                        <div class="contact_textCol">
+                            <h3 class="contact_title">${opetaja.kasutajanimi}</h3>
+                            <p class="contact_text">📧 Email: ${opetaja.email}</p>
+                            <p class="contact_text">📞 Tel: ${opetaja.telefon}</p>
+                        </div>
+                    `;
+                    contact.appendChild(div);
+                });
+            })
+            .catch(error => console.error('Error fetching and displaying data:', error));
+    </script>
 </section>
-
 
 <div class="mapBanner">
     <a href="https://www.google.com/maps?ll=58.349455,26.714113&amp;z=15&amp;t=m&amp;hl=en-US&amp;gl=EG&amp;mapclient=embed&amp;q=Kopli+1+50115+Tartu+Estonia" target="_blank" class="mapBanner_col" style="background-image: url('https://liikumine.voco.ee/wp-content/uploads/sites/11/2023/01/map_1.jpg')">
@@ -203,9 +181,8 @@
         © Tartu rakenduslik kolledž 2024
     </div>
 </footer>
-
-
 </body>
+
 
 <script>
     // checkLogin.js
@@ -251,5 +228,6 @@
     });
 
 </script>
+
 
 </html>
