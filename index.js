@@ -12,13 +12,12 @@ const multer = require('multer');
 const router = express.Router();
 
 
-
 const app = express();
 const port = 3000;
 
 // Increase payload size limit
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb', extended: true}));
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -36,7 +35,6 @@ app.use(session({
 }));
 
 
-
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
@@ -52,17 +50,17 @@ const renderFile = (page, userRole) => async (req, res) => {
         db.query(userRoleQuery, [userId], (err, results) => {
             if (err) {
                 console.error('Error fetching user role:', err);
-                res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                res.status(500).json({success: false, message: 'Serveripoolne viga!'});
             } else {
                 const userRole = results[0].rolli_id;
 
                 // Render the page and pass the userRole to the EJS template
-                res.render(page, { userRole });
+                res.render(page, {userRole});
             }
         });
     } else {
         // Render the page with userRole set to undefined
-        res.render(page, { userRole });
+        res.render(page, {userRole});
     }
 };
 
@@ -88,7 +86,7 @@ app.get('/test', (req, res) => {
     console.log('User session in test route:', req.session.user);
 
     // Send the session information in the response
-    res.json({ session: req.session });
+    res.json({session: req.session});
 });
 
 // Handle the sign-up form submission
@@ -142,12 +140,10 @@ app.post('/signup', async (req, res) => {
 });
 
 
-
-
 const sessions = []; // Object to store active sessions
 
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
     try {
         // Check if username exists
@@ -155,12 +151,12 @@ app.post('/login', async (req, res) => {
         db.query(checkQuery, [email], async (checkErr, checkResults) => {
             if (checkErr) {
                 console.error('Error checking existing username:', checkErr);
-                return res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                return res.status(500).json({success: false, message: 'Serveripoolne viga!'});
             }
 
             if (checkResults.length === 0) {
                 // Username does not exist
-                return res.status(400).json({ success: false, message: 'Emailiga pole registreeritud!' });
+                return res.status(400).json({success: false, message: 'Emailiga pole registreeritud!'});
             }
 
             // Check if password is correct
@@ -173,7 +169,7 @@ app.post('/login', async (req, res) => {
                 db.query(rolliQuery, [user.kasutaja_id], async (rolliErr, rolliResults) => {
                     if (rolliErr) {
                         console.error('Error fetching rolli_id:', rolliErr);
-                        return res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                        return res.status(500).json({success: false, message: 'Serveripoolne viga!'});
                     }
 
                     // Generate a random session token using uuid
@@ -206,15 +202,14 @@ app.post('/login', async (req, res) => {
                     });
                 });
             } else {
-                res.status(400).json({ success: false, message: 'Ebakorrektne parool!' });
+                res.status(400).json({success: false, message: 'Ebakorrektne parool!'});
             }
         });
     } catch (error) {
         console.error('Error comparing passwords:', error);
-        res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+        res.status(500).json({success: false, message: 'Serveripoolne viga!'});
     }
 });
-
 
 
 // Update the server-side code
@@ -234,10 +229,10 @@ app.get('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
             console.error('Error destroying session:', err);
-            res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+            res.status(500).json({success: false, message: 'Serveripoolne viga!'});
         } else {
             console.log('User logged out successfully');
-            res.json({ success: true, message: 'Kasutaja välja logitud!' });
+            res.json({success: true, message: 'Kasutaja välja logitud!'});
         }
     });
 });
@@ -245,20 +240,20 @@ app.get('/logout', (req, res) => {
 
 //admin view for active-sessions
 app.get('/active-sessions', (req, res) => {
-    res.json({ activeSessions: sessions });
+    res.json({activeSessions: sessions});
     console.log(sessions);
 });
 // get folder from folderform
 
 app.post('/create-directory', (req, res) => {
-    const { newDirectoryName, userId, sessionToken, email } = req.body;
+    const {newDirectoryName, userId, sessionToken, email} = req.body;
 
     // Check if the session exists in the sessions array
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Query to retrieve user's role_id from the database
@@ -266,12 +261,12 @@ app.post('/create-directory', (req, res) => {
     db.query(roleSql, [userId], (roleErr, roleResult) => {
         if (roleErr) {
             console.error('Error fetching user role:', roleErr);
-            return res.status(500).json({ success: false, message: 'Error fetching user role' });
+            return res.status(500).json({success: false, message: 'Error fetching user role'});
         }
 
         if (roleResult.length === 0) {
             console.log('User not found');
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({success: false, message: 'User not found'});
         }
 
         const roleId = roleResult[0].rolli_id;
@@ -279,11 +274,11 @@ app.post('/create-directory', (req, res) => {
         // Check if the user's role_id is not 2 or 3
         if (roleId !== 2 && roleId !== 3) {
             console.log('User does not have appropriate role');
-            return res.status(403).json({ success: false, message: 'User does not have appropriate role' });
+            return res.status(403).json({success: false, message: 'User does not have appropriate role'});
         }
 
         if (!newDirectoryName) {
-            return res.status(400).json({ success: false, message: 'Sisesta kausta nimi!' });
+            return res.status(400).json({success: false, message: 'Sisesta kausta nimi!'});
         }
 
         const newDirectoryPath = path.join(__dirname, 'Galerii', newDirectoryName);
@@ -310,7 +305,7 @@ app.get('/galerii/folders', (req, res) => {
     fs.readdir(galeriiPath, (err, files) => {
         if (err) {
             console.error('Error reading directory:', err);
-            res.status(500).json({ error: 'Internal Server Error' });
+            res.status(500).json({error: 'Internal Server Error'});
             return;
         }
 
@@ -332,18 +327,18 @@ const storage = multer.diskStorage({
     },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({storage: storage});
 
 // Endpoint for uploading files
 app.post('/galerii/upload', upload.array('files'), (req, res) => {
-    const { sessionToken, userId, email } = req.body;
+    const {sessionToken, userId, email} = req.body;
 
     // Check if the session exists in the sessions array
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Query to retrieve user's role_id from the database
@@ -351,12 +346,12 @@ app.post('/galerii/upload', upload.array('files'), (req, res) => {
     db.query(roleSql, [userId], (roleErr, roleResult) => {
         if (roleErr) {
             console.error('Error fetching user role:', roleErr);
-            return res.status(500).json({ success: false, message: 'Error fetching user role' });
+            return res.status(500).json({success: false, message: 'Error fetching user role'});
         }
 
         if (roleResult.length === 0) {
             console.log('User not found');
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({success: false, message: 'User not found'});
         }
 
         const roleId = roleResult[0].rolli_id;
@@ -364,7 +359,7 @@ app.post('/galerii/upload', upload.array('files'), (req, res) => {
         // Check if the user's role_id is not 2 or 3
         if (roleId !== 2 && roleId !== 3) {
             console.log('User does not have appropriate role');
-            return res.status(403).json({ success: false, message: 'User does not have appropriate role' });
+            return res.status(403).json({success: false, message: 'User does not have appropriate role'});
         }
 
         // Retrieve uploaded files and their paths
@@ -388,7 +383,7 @@ app.post('/galerii/upload', upload.array('files'), (req, res) => {
             });
         });
 
-        res.json({ message: 'Files uploaded successfully!' });
+        res.json({message: 'Files uploaded successfully!'});
     });
 });
 
@@ -396,7 +391,7 @@ app.get('/galerii/images', (req, res) => {
     const folder = req.query.folder;
 
     if (!folder) {
-        return res.status(400).json({ success: false, message: 'Kaust pole valitud!' });
+        return res.status(400).json({success: false, message: 'Kaust pole valitud!'});
     }
 
     const folderPath = path.join(__dirname, 'Galerii', folder);
@@ -405,7 +400,7 @@ app.get('/galerii/images', (req, res) => {
     fs.readdir(folderPath, (err, files) => {
         if (err) {
             console.error('Error reading folder:', err);
-            res.status(500).json({ error: 'Internal Server Error' });
+            res.status(500).json({error: 'Internal Server Error'});
             return;
         }
 
@@ -423,24 +418,24 @@ app.get('/galerii/latest-images', (req, res) => {
     db.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching latest images:', err);
-            res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+            res.status(500).json({success: false, message: 'Serveripoolne viga!'});
         } else {
             // Reverse the order of the results to have the newest images first
             const latestImages = results.map(row => `${row.media}`).reverse(); // Reverse the order
-            res.json({ success: true, latestImages });
+            res.json({success: true, latestImages});
         }
     });
 });
 
 app.post('/submit-article', (req, res) => {
-    const { newArticleHeader, summernoteContent, sessionToken, userId, email } = req.body;
+    const {newArticleHeader, summernoteContent, sessionToken, userId, email} = req.body;
 
     // Check if the session exists in the sessions array
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Query to retrieve user's role_id from the database
@@ -448,12 +443,12 @@ app.post('/submit-article', (req, res) => {
     db.query(roleSql, [userId], (roleErr, roleResult) => {
         if (roleErr) {
             console.error('Error fetching user role:', roleErr);
-            return res.status(500).json({ success: false, message: 'Error fetching user role' });
+            return res.status(500).json({success: false, message: 'Error fetching user role'});
         }
 
         if (roleResult.length === 0) {
             console.log('User not found');
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({success: false, message: 'User not found'});
         }
 
         const roleId = roleResult[0].rolli_id;
@@ -461,19 +456,19 @@ app.post('/submit-article', (req, res) => {
         // Check if the user's role_id is not 2 or 3
         if (roleId !== 2 && roleId !== 3) {
             console.log('User does not have appropriate role');
-            return res.status(403).json({ success: false, message: 'User does not have appropriate role' });
+            return res.status(403).json({success: false, message: 'User does not have appropriate role'});
         }
 
         // Check if newArticleHeader or summernoteContent is empty
         if (!newArticleHeader || !summernoteContent) {
             console.log('New article header or summernote content is empty');
-            return res.status(400).json({ success: false, message: 'Uue artikli pealkiri või sisu ei tohi olla tühi!' });
+            return res.status(400).json({success: false, message: 'Uue artikli pealkiri või sisu ei tohi olla tühi!'});
         }
 
         // Check if summernoteContent is '<p><br></p>'
         if (summernoteContent.trim() === '<p><br></p>') {
             console.log('Summernote content cannot be empty');
-            return res.status(400).json({ success: false, message: 'Artikkel ei tohi olla tühi!' });
+            return res.status(400).json({success: false, message: 'Artikkel ei tohi olla tühi!'});
         }
 
         // Sanitize summernoteContent to remove <script> elements
@@ -484,7 +479,7 @@ app.post('/submit-article', (req, res) => {
 
             if (headerResult.length > 0 && newArticleHeader === headerResult[0].artikli_pealkiri) {
                 console.log('Artikkel on juba olemas');
-                return res.status(400).json({ success: false, message: 'Artikkel on juba olemas!' });
+                return res.status(400).json({success: false, message: 'Artikkel on juba olemas!'});
             } else {
                 if (headerResult.length === 0) {
                     // No matching articles found, proceed with insertion
@@ -492,16 +487,16 @@ app.post('/submit-article', (req, res) => {
                     db.query(sql, [userId, newArticleHeader, sanitizedContent], (err, result) => {
                         if (err) {
                             console.error('Error inserting data:', err);
-                            res.status(500).json({ success: false, message: 'Error inserting data' });
+                            res.status(500).json({success: false, message: 'Error inserting data'});
                         } else {
                             console.log('Data inserted successfully');
-                            res.status(200).json({ success: true, message: 'Data inserted successfully' });
+                            res.status(200).json({success: true, message: 'Data inserted successfully'});
                         }
                     });
                 } else {
                     // Article with the same header already exists, return appropriate error message
                     console.log('Article with the same header already exists');
-                    return res.status(400).json({ success: false, message: 'Artikli pealkiri on juba olemas!' });
+                    return res.status(400).json({success: false, message: 'Artikli pealkiri on juba olemas!'});
                 }
             }
 
@@ -512,13 +507,13 @@ app.post('/submit-article', (req, res) => {
 
 
 // Add an endpoint to fetch articles
-app.get('/get-articles',  (req, res) => {
+app.get('/get-articles', (req, res) => {
     // Query to retrieve articles from the database
     const sql = "SELECT a.artikli_pealkiri AS articleHeader, a.artikli_sisu AS summernoteContent, k.kasutajanimi AS articleAuthor, DATE_FORMAT(a.postitamise_kuupäev, '%d-%m-%Y') as articleDate FROM vocoliikumine.artiklid a JOIN vocoliikumine.kasutajad k ON a.kasutaja_id = k.kasutaja_id ORDER BY a.postitamise_kuupäev DESC";
     db.query(sql, (err, result) => {
         if (err) {
             console.error('Error fetching articles:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching articles' });
+            return res.status(500).json({success: false, message: 'Error fetching articles'});
         }
 
 // Transform the result to include the URLs for articles
@@ -526,7 +521,7 @@ app.get('/get-articles',  (req, res) => {
             const articleHeader = encodeURIComponent(article.articleHeader);
             // Create the URL for each article
             const url = `/artiklid/${articleHeader}`;
-            return { ...article, url };
+            return {...article, url};
         });
 
         res.status(200).json(articlesWithUrls);
@@ -542,7 +537,7 @@ app.get('/artiklid/:articleHeader', (req, res) => {
     db.query(sql, [articleHeader], (err, result) => {
         if (err) {
             console.error('Error fetching article content:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching article content' });
+            return res.status(500).json({success: false, message: 'Error fetching article content'});
         }
 
         if (result.length === 0) {
@@ -564,7 +559,7 @@ app.get('/artiklid/:articleHeader', (req, res) => {
             db.query(userRoleQuery, [userId], (err, results) => {
                 if (err) {
                     console.error('Error fetching user role:', err);
-                    res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                    res.status(500).json({success: false, message: 'Serveripoolne viga!'});
                 } else {
                     const userRole = results[0].rolli_id;
                     res.render('artikkel', {
@@ -594,7 +589,7 @@ app.get('/artiklid/:articleHeader', (req, res) => {
 // Endpoint to handle updating Summernote content
 app.post('/update-articles', (req, res) => {
     // Extract content from the request body
-    const { articleHeader, articleContent, editArticleHeader } = req.body;
+    const {articleHeader, articleContent, editArticleHeader} = req.body;
 
     // Sanitize articleContent to remove <script> elements
     const sanitizedContent = articleContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
@@ -607,7 +602,7 @@ app.post('/update-articles', (req, res) => {
         if (error) {
             // If an error occurs, send an error response
             console.error('Error retrieving existing content:', error);
-            res.status(500).json({ error: 'An error occurred while retrieving existing content.' });
+            res.status(500).json({error: 'An error occurred while retrieving existing content.'});
         } else {
             // If retrieval was successful
             if (results.length > 0) {
@@ -615,7 +610,7 @@ app.post('/update-articles', (req, res) => {
                 // Check if the new content is the same as the existing content
                 if (existingContent === sanitizedContent && articleHeader === editArticleHeader) {
                     // If content is the same, inform frontend that no changes were made
-                    res.json({ success: false, message: 'No changes were made to the article content.' });
+                    res.json({success: false, message: 'No changes were made to the article content.'});
                 } else {
                     // SQL query to update the content in the database
                     const sqlUpdate = 'UPDATE artiklid SET artikli_sisu = ?, artikli_pealkiri = ? WHERE artikli_pealkiri = ?';
@@ -625,17 +620,17 @@ app.post('/update-articles', (req, res) => {
                         if (error) {
                             // If an error occurs, send an error response
                             console.error('Error updating content:', error);
-                            res.status(500).json({ error: 'An error occurred while updating content.' });
+                            res.status(500).json({error: 'An error occurred while updating content.'});
                         } else {
                             // If the update was successful, send a success response
                             console.log('Content updated successfully.');
-                            res.json({ success: true });
+                            res.json({success: true});
                         }
                     });
                 }
             } else {
                 // If no existing content found, send an error response
-                res.status(404).json({ error: 'No existing content found for the provided article header.' });
+                res.status(404).json({error: 'No existing content found for the provided article header.'});
             }
         }
     });
@@ -643,20 +638,20 @@ app.post('/update-articles', (req, res) => {
 
 
 app.post('/submit-post', (req, res) => {
-    const { postTitle, postContent, sessionToken, userId, email } = req.body;
+    const {postTitle, postContent, sessionToken, userId, email} = req.body;
 
     // Check if the session exists based on the userId and sessionToken
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Check if postTitle or postContent is empty
     if (!postTitle.trim() || !postContent.trim()) {
         console.log('Post title or content is empty');
-        return res.status(400).json({ success: false, message: 'Postituse pealkiri ega sisu ei tohi olla tühi!' });
+        return res.status(400).json({success: false, message: 'Postituse pealkiri ega sisu ei tohi olla tühi!'});
     }
 
     // Check if the post title already exists
@@ -664,12 +659,12 @@ app.post('/submit-post', (req, res) => {
     db.query(titleCheckQuery, [postTitle], (titleCheckErr, titleCheckResults) => {
         if (titleCheckErr) {
             console.error('Error checking post title:', titleCheckErr);
-            return res.status(500).json({ success: false, message: 'Error checking post title' });
+            return res.status(500).json({success: false, message: 'Error checking post title'});
         }
 
         if (titleCheckResults.length > 0) {
             console.log('Post title already exists');
-            return res.status(400).json({ success: false, message: 'Postituse pealkiri juba eksisteerib!' });
+            return res.status(400).json({success: false, message: 'Postituse pealkiri juba eksisteerib!'});
         }
 
         // Construct MySQL query to insert the post data
@@ -679,11 +674,11 @@ app.post('/submit-post', (req, res) => {
         db.query(sql, [userId, postTitle, postContent], (insertErr, insertResult) => {
             if (insertErr) {
                 console.error('Error inserting data:', insertErr);
-                return res.status(500).json({ success: false, message: 'Error inserting data' });
+                return res.status(500).json({success: false, message: 'Error inserting data'});
             }
 
             console.log('Post inserted successfully');
-            return res.status(200).json({ success: true, message: 'Post inserted successfully' });
+            return res.status(200).json({success: true, message: 'Post inserted successfully'});
         });
     });
 });
@@ -692,27 +687,23 @@ app.post('/submit-post', (req, res) => {
 app.get('/get-posts', (req, res) => {
     // Query to retrieve posts from the database joined with user's name and count of comments
     const sql = `
-        SELECT 
-            f.postituse_pealkiri AS postTitle, 
-            f.foorumi_sisu AS postContent, 
-            k.kasutajanimi AS userName, 
-            f.postitamise_kuupäev as postDate,
-            COUNT(c.kommentaari_id) AS commentCount
-        FROM 
-            foorum f 
-        JOIN 
-            kasutajad k ON f.kasutaja_id = k.kasutaja_id
-        LEFT JOIN 
-            foorumi_kommentaariumid c ON f.postituse_id = c.postituse_id
-        GROUP BY 
-            f.postituse_id
-        ORDER BY 
-            f.postitamise_kuupäev DESC`;
+        SELECT f.postituse_pealkiri    AS postTitle,
+               f.foorumi_sisu          AS postContent,
+               k.kasutajanimi          AS userName,
+               f.postitamise_kuupäev   as postDate,
+               COUNT(c.kommentaari_id) AS commentCount
+        FROM foorum f
+                 JOIN
+             kasutajad k ON f.kasutaja_id = k.kasutaja_id
+                 LEFT JOIN
+             foorumi_kommentaariumid c ON f.postituse_id = c.postituse_id
+        GROUP BY f.postituse_id
+        ORDER BY f.postitamise_kuupäev DESC`;
 
     db.query(sql, (err, result) => {
         if (err) {
             console.error('Error fetching posts:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching posts' });
+            return res.status(500).json({success: false, message: 'Error fetching posts'});
         }
 
         // Transform the result to include the URLs for each post
@@ -720,12 +711,11 @@ app.get('/get-posts', (req, res) => {
             const postTitle = encodeURIComponent(post.postTitle);
             // Create the URL for each post
             const url = `/${postTitle}`;
-            return { ...post, url };
+            return {...post, url};
         });
         res.status(200).json(postsWithUrls);
     });
 });
-
 
 
 app.get('/foorum/:postTitle', (req, res) => {
@@ -736,7 +726,7 @@ app.get('/foorum/:postTitle', (req, res) => {
     db.query(sql, [postTitle], (err, result) => {
         if (err) {
             console.error('Error fetching post content:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching post content' });
+            return res.status(500).json({success: false, message: 'Error fetching post content'});
         }
 
         if (result.length === 0) {
@@ -746,7 +736,7 @@ app.get('/foorum/:postTitle', (req, res) => {
 
         const postContent = result[0].postContent;
         const userName = result[0].userName;
-        const postDateTime = result[0].postDate.toLocaleString('et-EE', { dateStyle: 'medium', timeStyle: 'medium' }); // Formatting date and time according to Estonian standards
+        const postDateTime = result[0].postDate.toLocaleString('et-EE', {dateStyle: 'medium', timeStyle: 'medium'}); // Formatting date and time according to Estonian standards
         const authorId = result[0].authorId;
 
         // Check if the user is logged in
@@ -757,7 +747,7 @@ app.get('/foorum/:postTitle', (req, res) => {
             db.query(userRoleQuery, [userId], (err, results) => {
                 if (err) {
                     console.error('Error fetching user role:', err);
-                    res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                    res.status(500).json({success: false, message: 'Serveripoolne viga!'});
                 } else {
                     const userRole = results[0].rolli_id;
                     let isAuthor = false;
@@ -790,17 +780,15 @@ app.get('/foorum/:postTitle', (req, res) => {
 });
 
 
-
-
 app.post('/submit-comment', (req, res) => {
-    const { postComment, postTitle, email, userId, sessionToken } = req.body;
+    const {postComment, postTitle, email, userId, sessionToken} = req.body;
 
     // Check if the session exists based on the userId and sessionToken
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Fetch the postituse_id based on postTitle
@@ -808,7 +796,7 @@ app.post('/submit-comment', (req, res) => {
     db.query(postIdQuery, [postTitle], (postIdErr, postIdResult) => {
         if (postIdErr) {
             console.error('Error fetching post ID:', postIdErr);
-            return res.status(500).json({ success: false, message: 'Error fetching post ID' });
+            return res.status(500).json({success: false, message: 'Error fetching post ID'});
         }
 
         const postituse_id = postIdResult[0].postituse_id;
@@ -820,11 +808,11 @@ app.post('/submit-comment', (req, res) => {
         db.query(sql, [userId, postComment, postituse_id], (insertErr, insertResult) => {
             if (insertErr) {
                 console.error('Error inserting comment:', insertErr);
-                return res.status(500).json({ success: false, message: 'Error inserting comment' });
+                return res.status(500).json({success: false, message: 'Error inserting comment'});
             }
 
             console.log('Comment inserted successfully');
-            return res.status(200).json({ success: true, message: 'Comment inserted successfully' });
+            return res.status(200).json({success: true, message: 'Comment inserted successfully'});
         });
     });
 });
@@ -837,11 +825,11 @@ app.get('/get-comments', (req, res) => {
     db.query(postQuery, [postTitle], (err, result) => {
         if (err) {
             console.error('Error fetching post ID:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching post ID' });
+            return res.status(500).json({success: false, message: 'Error fetching post ID'});
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ success: false, message: 'Post not found' });
+            return res.status(404).json({success: false, message: 'Post not found'});
         }
 
         const postId = result[0].postituse_id;
@@ -851,7 +839,7 @@ app.get('/get-comments', (req, res) => {
         db.query(commentsQuery, [postId], (err, result) => {
             if (err) {
                 console.error('Error fetching comments:', err);
-                return res.status(500).json({ success: false, message: 'Error fetching comments' });
+                return res.status(500).json({success: false, message: 'Error fetching comments'});
             }
 
             res.status(200).json(result);
@@ -861,13 +849,13 @@ app.get('/get-comments', (req, res) => {
 
 
 app.post('/pin-comment', (req, res) => {
-    const { commentId, commenterName, email, sessionToken, userId } = req.body;
+    const {commentId, commenterName, email, sessionToken, userId} = req.body;
 
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Query to join tables and get kasutaja_id from kasutajad table based on commenterName
@@ -875,11 +863,11 @@ app.post('/pin-comment', (req, res) => {
     db.query(userIdQuery, [commenterName], (err, result) => {
         if (err) {
             console.error('Error fetching user ID:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching user ID' });
+            return res.status(500).json({success: false, message: 'Error fetching user ID'});
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({success: false, message: 'User not found'});
         }
 
         const userId = result[0].kasutaja_id;
@@ -889,23 +877,23 @@ app.post('/pin-comment', (req, res) => {
         db.query(updateQuery, [commentId, userId], (err, result) => {
             if (err) {
                 console.error('Error updating comment:', err);
-                return res.status(500).json({ success: false, message: 'Error updating comment' });
+                return res.status(500).json({success: false, message: 'Error updating comment'});
             }
 
-            res.status(200).json({ success: true, message: 'Comment updated successfully' });
+            res.status(200).json({success: true, message: 'Comment updated successfully'});
         });
     });
 });
 
 app.delete('/delete-post', (req, res) => {
-    const { postTitle, email, userId, sessionToken } = req.body;
+    const {postTitle, email, userId, sessionToken} = req.body;
 
     // Check if the session exists based on the userId and sessionToken
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Construct MySQL query to fetch postituse_id based on postTitle
@@ -913,7 +901,7 @@ app.delete('/delete-post', (req, res) => {
     db.query(postIdQuery, [postTitle], (postIdErr, postIdResult) => {
         if (postIdErr) {
             console.error('Error fetching post ID:', postIdErr);
-            return res.status(500).json({ success: false, message: 'Error fetching post ID' });
+            return res.status(500).json({success: false, message: 'Error fetching post ID'});
         }
 
         const postituse_id = postIdResult[0].postituse_id;
@@ -925,7 +913,7 @@ app.delete('/delete-post', (req, res) => {
         db.query(deleteCommentsQuery, [postituse_id], (deleteCommentsErr, deleteCommentsResult) => {
             if (deleteCommentsErr) {
                 console.error('Error deleting comments:', deleteCommentsErr);
-                return res.status(500).json({ success: false, message: 'Error deleting comments' });
+                return res.status(500).json({success: false, message: 'Error deleting comments'});
             }
 
             // Construct MySQL query to delete the post
@@ -935,30 +923,36 @@ app.delete('/delete-post', (req, res) => {
             db.query(deletePostQuery, [userId, postTitle], (deletePostErr, deletePostResult) => {
                 if (deletePostErr) {
                     console.error('Error deleting post:', deletePostErr);
-                    return res.status(500).json({ success: false, message: 'Error deleting post' });
+                    return res.status(500).json({success: false, message: 'Error deleting post'});
                 }
 
                 if (deletePostResult.affectedRows === 0) {
                     // No post was deleted, likely due to invalid userId or postTitle
                     console.log('Post not found or user does not have permission to delete');
-                    return res.status(404).json({ success: false, message: 'Post not found or user does not have permission to delete' });
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Post not found or user does not have permission to delete'
+                    });
                 }
 
                 console.log('Post and associated comments deleted successfully');
-                return res.status(200).json({ success: true, message: 'Post and associated comments deleted successfully' });
+                return res.status(200).json({
+                    success: true,
+                    message: 'Post and associated comments deleted successfully'
+                });
             });
         });
     });
 });
 app.delete('/delete-comment', (req, res) => {
-    const { email, userId, sessionToken, commentId } = req.body;
+    const {email, userId, sessionToken, commentId} = req.body;
 
     // Check if the session exists based on the userId and sessionToken
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Construct MySQL query to delete the comment
@@ -968,96 +962,92 @@ app.delete('/delete-comment', (req, res) => {
     db.query(sql, [commentId], (deleteErr, deleteResult) => {
         if (deleteErr) {
             console.error('Error deleting comment:', deleteErr);
-            return res.status(500).json({ success: false, message: 'Error deleting comment' });
+            return res.status(500).json({success: false, message: 'Error deleting comment'});
         }
 
         console.log('Comment deleted successfully');
-        return res.status(200).json({ success: true, message: 'Comment deleted successfully' });
+        return res.status(200).json({success: true, message: 'Comment deleted successfully'});
     });
 });
 
 app.post('/get-user-posts', (req, res) => {
-    const { userId, email, sessionToken } = req.body;
+    const {userId, email, sessionToken} = req.body;
 
     // Check if userId, email, and sessionToken are provided
     if (!userId || !email || !sessionToken) {
-        return res.status(400).json({ success: false, message: 'Invalid session data' });
+        return res.status(400).json({success: false, message: 'Invalid session data'});
     }
 
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Query to retrieve posts titles and dates posted by the user
     const sql = `
-        SELECT
-            postituse_pealkiri AS postTitle,
-            postitamise_kuupäev AS postDate
-        FROM
-            foorum
-        WHERE
-            kasutaja_id = ?`;
+        SELECT postituse_pealkiri  AS postTitle,
+               postitamise_kuupäev AS postDate
+        FROM foorum
+        WHERE kasutaja_id = ?`;
 
     db.query(sql, [userId], (err, result) => {
         if (err) {
             console.error('Error fetching user posts:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching user posts' });
+            return res.status(500).json({success: false, message: 'Error fetching user posts'});
         }
 
         // Transform the result to include the titles, dates, and URLs for each post
         const userPosts = result.map(post => {
             const postTitle = encodeURIComponent(post.postTitle);
             const url = `/foorum/${postTitle}`;
-            return { title: post.postTitle, url, date: post.postDate };
+            return {title: post.postTitle, url, date: post.postDate};
         });
 
         res.status(200).json(userPosts);
     });
 });
 app.post('/get-user-comments', (req, res) => {
-    const { userId, email, sessionToken } = req.body;
+    const {userId, email, sessionToken} = req.body;
 
     // Check if userId, email, and sessionToken are provided
     if (!userId || !email || !sessionToken) {
-        return res.status(400).json({ success: false, message: 'Invalid session data' });
+        return res.status(400).json({success: false, message: 'Invalid session data'});
     }
 
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Query to retrieve comments posted by the user
     const commentsQuery = `
-        SELECT 
-            foorumi_kommentaariumid.kommentaari_id AS id,
-            foorumi_kommentaariumid.kommentaari_lisamise_kuupäev AS date,
+        SELECT foorumi_kommentaariumid.kommentaari_id AS id,
+               foorumi_kommentaariumid.kommentaari_lisamise_kuupäev AS date,
             foorum.postituse_pealkiri AS title
-        FROM 
+        FROM
             foorumi_kommentaariumid
-        INNER JOIN 
-            foorum 
-        ON 
+            INNER JOIN
+            foorum
+        ON
             foorumi_kommentaariumid.postituse_id = foorum.postituse_id
-        WHERE 
+        WHERE
             foorumi_kommentaariumid.kasutaja_id = ?`;
 
     db.query(commentsQuery, [userId], (err, results) => {
         if (err) {
             console.error('Error fetching user comments:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching user comments' });
+            return res.status(500).json({success: false, message: 'Error fetching user comments'});
         }
 
         // Transform the result to include the titles, dates, and URLs for each comment
         const userComments = results.map(comment => {
             const postTitle = encodeURIComponent(comment.title);
             const url = `/foorum/${postTitle}`;
-            return { title: comment.title, url, date: comment.date };
+            return {title: comment.title, url, date: comment.date};
         });
 
         res.status(200).json(userComments);
@@ -1065,14 +1055,14 @@ app.post('/get-user-comments', (req, res) => {
 });
 
 app.post('/submit-news', (req, res) => {
-    const { newNewsHeader, summernoteContent, sessionToken, userId, email } = req.body;
+    const {newNewsHeader, summernoteContent, sessionToken, userId, email} = req.body;
 
     // Check if the session exists in the sessions array
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({success: false, message: 'Invalid session'});
     }
 
     // Query to retrieve user's role_id from the database
@@ -1080,12 +1070,12 @@ app.post('/submit-news', (req, res) => {
     db.query(roleSql, [userId], (roleErr, roleResult) => {
         if (roleErr) {
             console.error('Error fetching user role:', roleErr);
-            return res.status(500).json({ success: false, message: 'Error fetching user role' });
+            return res.status(500).json({success: false, message: 'Error fetching user role'});
         }
 
         if (roleResult.length === 0) {
             console.log('User not found');
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({success: false, message: 'User not found'});
         }
 
         const roleId = roleResult[0].rolli_id;
@@ -1093,19 +1083,19 @@ app.post('/submit-news', (req, res) => {
         // Check if the user's role_id is not 2 or 3
         if (roleId !== 2 && roleId !== 3) {
             console.log('User does not have appropriate role');
-            return res.status(403).json({ success: false, message: 'User does not have appropriate role' });
+            return res.status(403).json({success: false, message: 'User does not have appropriate role'});
         }
 
         // Check if newNewsHeader or summernoteContent is empty
         if (!newNewsHeader || !summernoteContent) {
             console.log('New article header or summernote content is empty');
-            return res.status(400).json({ success: false, message: 'Uue uudise pealkiri või sisu ei tohi olla tühi!' });
+            return res.status(400).json({success: false, message: 'Uue uudise pealkiri või sisu ei tohi olla tühi!'});
         }
 
         // Check if summernoteContent is '<p><br></p>'
         if (summernoteContent.trim() === '<p><br></p>') {
             console.log('Summernote content cannot be empty');
-            return res.status(400).json({ success: false, message: 'uudis ei tohi olla tühi!' });
+            return res.status(400).json({success: false, message: 'uudis ei tohi olla tühi!'});
         }
 
         // Remove <script> elements from summernoteContent
@@ -1116,7 +1106,7 @@ app.post('/submit-news', (req, res) => {
 
             if (headerResult.length > 0 && newNewsHeader === headerResult[0].uudise_pealkiri) {
                 console.log('uudis on juba olemas');
-                return res.status(400).json({ success: false, message: 'uudis on juba olemas!' });
+                return res.status(400).json({success: false, message: 'uudis on juba olemas!'});
             } else {
                 if (headerResult.length === 0) {
                     // No matching news found, proceed with insertion
@@ -1124,16 +1114,16 @@ app.post('/submit-news', (req, res) => {
                     db.query(sql, [userId, newNewsHeader, sanitizedContent], (err, result) => {
                         if (err) {
                             console.error('Error inserting data:', err);
-                            res.status(500).json({ success: false, message: 'Error inserting data' });
+                            res.status(500).json({success: false, message: 'Error inserting data'});
                         } else {
                             console.log('Data inserted successfully');
-                            res.status(200).json({ success: true, message: 'Data inserted successfully' });
+                            res.status(200).json({success: true, message: 'Data inserted successfully'});
                         }
                     });
                 } else {
                     // news with the same header already exists, return appropriate error message
                     console.log('Article with the same header already exists');
-                    return res.status(400).json({ success: false, message: 'uudise pealkiri on juba olemas!' });
+                    return res.status(400).json({success: false, message: 'uudise pealkiri on juba olemas!'});
                 }
             }
         });
@@ -1141,7 +1131,7 @@ app.post('/submit-news', (req, res) => {
 });
 
 
-app.get('/get-news',  (req, res) => {
+app.get('/get-news', (req, res) => {
     // Query to retrieve news from the database
     const sql = "SELECT u.uudise_pealkiri AS newsHeader, u.uudise_sisu AS summernoteContent, k.kasutajanimi AS newsAuthor, DATE_FORMAT(u.postitamise_kuupäev, '%d-%m-%Y') as newsDate FROM vocoliikumine.uudised u JOIN vocoliikumine.kasutajad k ON u.kasutaja_id = k.kasutaja_id ORDER BY u.postitamise_kuupäev DESC;"
 
@@ -1149,7 +1139,7 @@ app.get('/get-news',  (req, res) => {
     db.query(sql, (err, result) => {
         if (err) {
             console.error('Error fetching news:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching news' });
+            return res.status(500).json({success: false, message: 'Error fetching news'});
         }
 
 // Transform the result to include the URLs for news
@@ -1157,7 +1147,7 @@ app.get('/get-news',  (req, res) => {
             const newsHeader = encodeURIComponent(news.newsHeader);
             // Create the URL for each news
             const url = `/uudised/${newsHeader}`;
-            return { ...news, url };
+            return {...news, url};
         });
 
         res.status(200).json(newsWithUrls);
@@ -1172,7 +1162,7 @@ app.get('/uudised/:newsHeader', (req, res, next) => {
     db.query(sql, [newsHeader], (err, result) => {
         if (err) {
             console.error('Error fetching news content:', err);
-            return res.status(500).json({ success: false, message: 'Error fetching news content' });
+            return res.status(500).json({success: false, message: 'Error fetching news content'});
         }
 
         if (result.length === 0) {
@@ -1194,7 +1184,7 @@ app.get('/uudised/:newsHeader', (req, res, next) => {
             db.query(userRoleQuery, [userId], (err, results) => {
                 if (err) {
                     console.error('Error fetching user role:', err);
-                    res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                    res.status(500).json({success: false, message: 'Serveripoolne viga!'});
                 } else {
                     const userRole = results[0].rolli_id;
                     res.render('uudis', {
@@ -1214,14 +1204,15 @@ app.get('/uudised/:newsHeader', (req, res, next) => {
                 newsAuthor: newsAuthor,
                 newsDate: newsDate,
                 wrappedContent: wrappedContent,
-                userRole: 0            });
+                userRole: 0
+            });
         }
     });
 });
 
 app.post('/update-news', (req, res) => {
     // Extract content from the request body
-    const { newsHeader, newsContent, editNewsHeader } = req.body;
+    const {newsHeader, newsContent, editNewsHeader} = req.body;
 
     // Sanitize newsContent to remove <script> elements
     const sanitizedContent = newsContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
@@ -1234,7 +1225,7 @@ app.post('/update-news', (req, res) => {
         if (error) {
             // If an error occurs, send an error response
             console.error('Error retrieving existing content:', error);
-            res.status(500).json({ error: 'An error occurred while retrieving existing content.' });
+            res.status(500).json({error: 'An error occurred while retrieving existing content.'});
         } else {
             // If retrieval was successful
             if (results.length > 0) {
@@ -1242,7 +1233,7 @@ app.post('/update-news', (req, res) => {
                 // Check if the new content is the same as the existing content
                 if (existingContent === sanitizedContent && newsHeader === editNewsHeader) {
                     // If content is the same, inform frontend that no changes were made
-                    res.json({ success: false, message: 'No changes were made to the news content.' });
+                    res.json({success: false, message: 'No changes were made to the news content.'});
                 } else {
                     // SQL query to update the content in the database
                     const sqlUpdate = 'UPDATE uudised SET uudise_sisu = ?, uudise_pealkiri = ? WHERE uudise_pealkiri = ?';
@@ -1252,17 +1243,17 @@ app.post('/update-news', (req, res) => {
                         if (error) {
                             // If an error occurs, send an error response
                             console.error('Error updating content:', error);
-                            res.status(500).json({ error: 'An error occurred while updating content.' });
+                            res.status(500).json({error: 'An error occurred while updating content.'});
                         } else {
                             // If the update was successful, send a success response
                             console.log('Content updated successfully.');
-                            res.json({ success: true });
+                            res.json({success: true});
                         }
                     });
                 }
             } else {
                 // If no existing content found, send an error response
-                res.status(404).json({ error: 'No existing content found for the provided news header.' });
+                res.status(404).json({error: 'No existing content found for the provided news header.'});
             }
         }
     });
@@ -1302,34 +1293,54 @@ app.post('/search', (req, res, next) => {
         results.forEach(row => {
             switch (row.type) {
                 case 'article':
-                    data.articleTitles.push({ title: row.title, username: row.username });
+                    data.articleTitles.push({title: row.title, username: row.username});
                     break;
                 case 'news':
-                    data.newsTitles.push({ title: row.title, username: row.username });
+                    data.newsTitles.push({title: row.title, username: row.username});
                     break;
                 case 'post':
-                    data.postTitles.push({ title: row.title, username: row.username });
+                    data.postTitles.push({title: row.title, username: row.username});
                     break;
                 default:
                     break;
             }
         });
         const url = `/otsi/${encodeURIComponent(userInput)}/tulemused`;
-        res.status(200).json({ success: true, url, data }); // Sending titles along with URL
+        res.status(200).json({success: true, url, data}); // Sending titles along with URL
     });
 });
 
+app.post('/search-users', (req, res, next) => {
+    const userInput = req.body.query;
 
+    // Your database query to search for users based on userInput
+    const query = `
+        SELECT k.kasutajanimi, k.telefon, k.email, r.rolli_nimetus 
+        FROM kasutajad k 
+        JOIN rollid r ON k.rolli_id = r.rolli_id
+        WHERE LOWER(k.kasutajanimi) LIKE LOWER('%${userInput}%')
+           OR LOWER(k.email) LIKE LOWER('%${userInput}%')
+           OR LOWER(k.telefon) LIKE LOWER('%${userInput}%')
+           OR LOWER(r.rolli_nimetus) LIKE LOWER('%${userInput}%')
+    `;
 
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error executing database query:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+
+        // Process the results and send them back as JSON
+        res.json(results);
+    });
+});
 
 
 app.get('/otsi/:input/tulemused', (req, res) => {
     const userInput = req.params.input;
     const data = JSON.parse(req.query.data); // Parse the JSON string to convert it back to an object
-    res.render('otsingu_tulemused', { userInput, data }); // Pass data to the template
+    res.render('otsingu_tulemused', {userInput, data}); // Pass data to the template
 });
-
-
 
 
 // Render the admin page or redirect to /sisene if not authenticated
@@ -1342,42 +1353,398 @@ app.get('/admin', (req, res) => {
         db.query(userRoleQuery, [userId], (err, results) => {
             if (err) {
                 console.error('Error fetching user role:', err);
-                res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+                res.status(500).json({success: false, message: 'Serveripoolne viga!'});
             } else {
                 const userRole = results[0].rolli_id;
 
                 // Render admin page with userRole
-                res.render('admin', { userRole });
+                res.render('admin', {userRole});
             }
         });
     } else {
         const userRole = null; // Assuming userRole is not relevant if the user is not authenticated
-        res.render('admin', { userRole });
+        res.render('admin', {userRole});
     }
 });
 
+app.post('/admin-update-role', (req, res) => {
+    const { newRole, PreviousRole, accountEmail, accountUsername, sessionToken, userId, email } = req.body;
 
+    // Check if the session exists in the sessions array
+    const validSession = sessions.find(session =>
+        session.userId == userId && session.email === email && session.sessionToken == sessionToken
+    );
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    const userRoleQuery = 'SELECT rolli_id FROM kasutajad WHERE kasutaja_id = ?';
+
+    db.query(userRoleQuery, [userId], (error, results, fields) => {
+        if (error) {
+            console.error('Error querying the database:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error',
+            });
+        }
+
+        const userRole = results[0] && results[0].rolli_id;
+
+        if (userRole !== 3) {
+            return res.status(403).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const newRoleId = parseInt(newRole);
+
+        if (!newRoleId) {
+            return res.status(400).json({ success: false, message: 'Invalid role information' });
+        }
+
+        // Check if the previous role was admin
+        if (PreviousRole === 'admin') {
+            // Check if there is at least one user with admin role after the update
+            const adminCheckQuery = 'SELECT COUNT(*) AS adminCount FROM kasutajad WHERE rolli_id = ?';
+
+            db.query(adminCheckQuery, [3], (adminCheckError, adminCheckResults) => {
+                if (adminCheckError) {
+                    console.error('Error checking admin count:', adminCheckError);
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Internal server error',
+                    });
+                }
+
+                const adminCount = adminCheckResults[0] && adminCheckResults[0].adminCount - 1;
+
+                console.log('Admin Count:', adminCount);
+
+                if (adminCount < 1) {
+                    // Revert the role update since it would result in no admin users
+                    return res.status(400).json({ success: false, message: 'Cannot remove the last admin role' });
+                }
+
+                // Role updated successfully for admin roles
+                const updateQuery = 'UPDATE kasutajad SET rolli_id = ? WHERE kasutajanimi = ? AND email = ?';
+
+                db.query(updateQuery, [newRoleId, accountUsername, accountEmail], (updateError, updateResults) => {
+                    if (updateError) {
+                        console.error('Error updating the user role:', updateError);
+                        return res.status(500).json({
+                            success: false,
+                            message: 'Internal server error',
+                        });
+                    }
+
+                    // Role updated successfully for admin roles
+                    return res.status(200).json({ success: true, message: 'Role updated successfully' });
+                });
+            });
+        } else {
+            // Role updated successfully for non-admin roles
+            const updateQuery = 'UPDATE kasutajad SET rolli_id = ? WHERE kasutajanimi = ? AND email = ?';
+
+            db.query(updateQuery, [newRoleId, accountUsername, accountEmail], (updateError, updateResults) => {
+                if (updateError) {
+                    console.error('Error updating the user role:', updateError);
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Internal server error',
+                    });
+                }
+
+                // Role updated successfully for non-admin roles
+                return res.status(200).json({ success: true, message: 'Role updated successfully' });
+            });
+        }
+    });
+});
+
+
+app.post('/admin-update-username', (req, res) => {
+    const { newUserName, accountEmail, accountUsername, sessionToken, userId, email } = req.body;
+
+    // Check if the session exists in the sessions array
+    const validSession = sessions.find(session =>
+        session.userId == userId && session.email === email && session.sessionToken == sessionToken
+    );
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    const rolequery = 'SELECT rolli_id FROM kasutajad WHERE kasutaja_id = ?';
+
+    db.query(rolequery, [userId], (error, results, fields) => {
+        if (error) {
+            console.error('Error querying the database:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error',
+            });
+        }
+
+        const userRole = results[0] && results[0].rolli_id;
+
+        if (userRole === 3) {
+
+            const newUsername = newUserName;
+
+            if (!newUsername) {
+                return res.status(400).json({ success: false, message: 'Invalid new username' });
+            }
+
+            // Check if the new username is already taken
+            const usernameCheckQuery = 'SELECT * FROM kasutajad WHERE kasutajanimi = ?';
+
+            db.query(usernameCheckQuery, [newUsername], (checkError, checkResults) => {
+                if (checkError) {
+                    console.error('Error checking username availability:', checkError);
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Internal server error',
+                    });
+                }
+
+                if (checkResults.length > 0) {
+                    // The new username is already taken
+                    return res.status(400).json({ success: false, message: 'Username is already taken' });
+                }
+
+                // Proceed with updating the username
+                const updateQuery = 'UPDATE kasutajad SET kasutajanimi = ? WHERE kasutajanimi = ? AND email = ?';
+
+                db.query(updateQuery, [newUsername, accountUsername, accountEmail], (updateError, updateResults) => {
+                    if (updateError) {
+                        console.error('Error updating the user role:', updateError);
+                        return res.status(500).json({
+                            success: false,
+                            message: 'Internal server error',
+                        });
+                    }
+
+                    if (updateResults.affectedRows === 0) {
+                        // No user was updated (no matching username and email)
+                        return res.status(400).json({ success: false, message: 'Invalid username or email' });
+                    }
+
+                    return res.status(200).json({ success: true, message: 'Username updated successfully' });
+                });
+            });
+        } else {
+            return res.status(403).json({ success: false, message: 'Unauthorized' });
+        }
+    });
+});
+
+
+app.post('/admin-update-email', (req, res) => {
+    const {oldEmail, newEmail, username, sessionToken, userId, email } = req.body;
+// Check if the session exists in the sessions array
+    const validSession = sessions.find(session =>
+        session.userId == userId && session.email === email && session.sessionToken == sessionToken
+    );
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    const rolequery = 'SELECT rolli_id FROM kasutajad WHERE kasutaja_id = ?';
+
+    db.query(rolequery, [userId], (error, results, fields) => {
+        if (error) {
+            console.error('Error querying the database:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error',
+            });
+        }
+
+        const userRole = results[0] && results[0].rolli_id;
+
+        if (userRole === 3) {
+
+            const newemail = newEmail; // Use the same case as the declaration
+
+            if (!newemail) {
+                return res.status(400).json({ success: false, message: 'Invalid new username' });
+            }
+
+            // Check if the new email is already taken
+            const emailCheckQuery = 'SELECT * FROM kasutajad WHERE email = ?';
+
+            db.query(emailCheckQuery, [newemail], (checkError, checkResults) => {
+                if (checkError) {
+                    console.error('Error checking username availability:', checkError);
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Internal server error',
+                    });
+                }
+
+                if (checkResults.length > 0) {
+                    // The new username is already taken
+                    return res.status(400).json({ success: false, message: 'email is already taken' });
+                }
+
+                // Proceed with updating the username
+                const updateQuery = 'UPDATE kasutajad SET email = ? WHERE kasutajanimi = ? AND email = ?';
+
+                db.query(updateQuery, [newemail, username, oldEmail], (updateError, updateResults) => {
+                    if (updateError) {
+                        console.error('Error updating the user email:', updateError);
+                        return res.status(500).json({
+                            success: false,
+                            message: 'Internal server error',
+                        });
+                    }
+
+                    if (updateResults.affectedRows === 0) {
+                        // No user was updated (no matching username and email)
+                        return res.status(400).json({ success: false, message: 'Invalid username or email' });
+                    }
+
+                    return res.status(200).json({ success: true, message: 'Email updated successfully' });
+                });
+            });
+        } else {
+            return res.status(403).json({ success: false, message: 'Unauthorized' });
+        }
+    });
+});
+app.post('/admin-update-phone', (req, res) => {
+    const {textBeforeEdit, newPhone, Username, sessionToken, userId, email } = req.body;
+    console.log(req.body)
+
+    // Check if the session exists in the sessions array
+    const validSession = sessions.find(session =>
+        session.userId == userId && session.email === email && session.sessionToken == sessionToken
+    );
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+    }
+
+    const rolequery = 'SELECT rolli_id FROM kasutajad WHERE kasutaja_id = ?';
+
+    db.query(rolequery, [userId], (error, results, fields) => {
+        if (error) {
+            console.error('Error querying the database:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error',
+            });
+        }
+
+        const userRole = results[0] && results[0].rolli_id;
+
+        if (userRole === 3) {
+
+            const newphone = newPhone; // Use the same case as the declaration
+
+            if (!newphone) {
+                return res.status(400).json({ success: false, message: 'Invalid new phone' });
+            }
+
+            // Check if the new email is already taken
+            const phoneCheckQuery = 'SELECT * FROM kasutajad WHERE telefon = ?';
+
+            db.query(phoneCheckQuery, [newphone], (checkError, checkResults) => {
+                if (checkError) {
+                    console.error('Error checking phone availability:', checkError);
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Internal server error',
+                    });
+                }
+
+                if (checkResults.length > 0) {
+                    // The new username is already taken
+                    return res.status(400).json({ success: false, message: 'phone is already taken' });
+                }
+
+
+                // Proceed with updating the username
+                const updateQuery = 'UPDATE kasutajad SET telefon = ? WHERE kasutajanimi = ? AND telefon = ?';
+
+                db.query(updateQuery, [newphone, Username, textBeforeEdit], (updateError, updateResults) => {
+                    if (updateError) {
+                        console.error('Error updating the user email:', updateError);
+                        return res.status(500).json({
+                            success: false,
+                            message: 'Internal server error',
+                        });
+                    }
+
+                    if (updateResults.affectedRows === 0) {
+                        // No user was updated (no matching username and email)
+                        return res.status(400).json({ success: false, message: 'Invalid username or email' });
+                    }
+
+                    return res.status(200).json({ success: true, message: 'Email updated successfully' });
+                });
+            });
+        } else {
+            return res.status(403).json({ success: false, message: 'Unauthorized' });
+        }
+    });
+});
 
 // Endpoint to retrieve data from the 'kasutajad' table
 app.get('/kasutajad', (req, res) => {
-    const query = 'SELECT k.*, r.rolli_nimetus FROM kasutajad k JOIN rollid r ON k.rolli_id = r.rolli_id';
+    const userId = req.query.userId;
+    const email = req.query.email;
+    const sessionToken = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+
+    // Check if the session exists in the sessions array
+    const validSession = sessions.find(session =>
+        session.userId == userId && session.email === email && session.sessionToken == sessionToken
+    );
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({success: false, message: 'Invalid session'});
+    }
+
+    const query = 'SELECT k.*, r.rolli_nimetus FROM kasutajad k JOIN rollid r ON k.rolli_id = r.rolli_id order by kasutaja_id desc limit 10';
     db.query(query, (error, results, fields) => {
         if (error) {
             console.error('Error executing query:', error);
-            res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+            res.status(500).json({success: false, message: 'Serveripoolne viga!'});
             return;
         }
         res.json(results);
     });
 });
 
+
 app.get('/sessions', (req, res) => {
+    const userId = req.query.userId;
+    const email = req.query.email;
+    const sessionToken = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+
+    // Check if the session exists in the sessions array
+    const validSession = sessions.find(session =>
+        session.userId == userId && session.email === email && session.sessionToken == sessionToken
+    );
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({success: false, message: 'Invalid session'});
+    }
+
+
     const userIds = sessions.map(session => session.userId);
     const query = 'SELECT kasutaja_id, kasutajanimi FROM kasutajad WHERE kasutaja_id IN (?)';
     db.query(query, [userIds], (error, results) => {
         if (error) {
             console.error('Error fetching usernames:', error);
-            res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
+            res.status(500).json({success: false, message: 'Serveripoolne viga!'});
             return;
         }
         // Map usernames to their corresponding sessions
@@ -1393,7 +1760,6 @@ app.get('/sessions', (req, res) => {
         res.json(sessionData);
     });
 });
-
 
 
 // Endpoint to logout a specific user
@@ -1436,21 +1802,19 @@ app.get('/sessions', (req, res) => {
 // });
 
 
-
-
 // MUST BE AT THE END OF THIS PAGE EVERY MIDDLEWARE AND ENDPOINT GO ABOUVE THIS
 
 // MAKE SURE TO EDIT THIS SO THAT IT REDIRECTS TO ANOTHER CUSTOM PAGE TELLING THE USER WHAT HAPPENED AND WHERE TO CLICK NEXT!!
 app.use((err, req, res, next) => {
     if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
         // Handle JSON parse error
-        return res.status(400).json({ success: false, message: 'Invalid JSON' });
+        return res.status(400).json({success: false, message: 'Invalid JSON'});
     } else if (err.status === 500) {
-        return res.status(500).json({ success: false, message: 'Invalid JSON' });
+        return res.status(500).json({success: false, message: 'Invalid JSON'});
 
     } else {
         // For other errors, send the default error message
-        return res.status(err.status || 500).json({ success: false, message: err.message });
+        return res.status(err.status || 500).json({success: false, message: err.message});
     }
 });
 
@@ -1462,4 +1826,3 @@ app.use((req, res, next) => {
 app.listen(port, () => {
     console.log(`Server is running on port http://localhost:${port}/`);
 });
-
