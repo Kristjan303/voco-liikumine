@@ -115,14 +115,20 @@
                 </div>
             </div>
 
+
+<!--            edit this  true value-->
             <section id="holdEdit">
                 <div id="holdEditHeader" style="display: none">
                     <p>Artikli pealkiri: </p>
-                    <input type="text" name="editArticleHeader" id="editArticleHeader"  value="<%= articleHeader %>">
+                    <input type="text" name="editArticleHeader" id="editArticleHeader">
                 </div>
                 <div id="summernote" style="display: none;"></div>
             </section>
+
+
             <script>
+                document.getElementById('editArticleHeader').value = '<%= articleHeader %>';
+
                 document.addEventListener("DOMContentLoaded", function() {
                     var isSummernoteVisible = false;
                     var summernoteDiv = document.getElementById("summernote");
@@ -203,11 +209,25 @@
                             .then(response => response.json())
                             .then(data => {
                                 if (data.success) {
+                                    // Decode the article header from HTML
+                                    const decodedHeader = document.createElement('textarea');
+                                    decodedHeader.innerHTML = editArticleHeader.value;
+                                    const decodedHeaderValue = decodedHeader.value;
                                     // Alert the user upon successful update
                                     alert('Artikli sisu edukalt uuendatud!');
-                                    const encodedHeader = encodeURIComponent(editArticleHeader.value);
+                                    // Encode the decoded article header before redirecting
+                                    let encodedHeader = encodeURIComponent(decodedHeaderValue);
+                                    // Replace %22 with "
+                                    encodedHeader = encodedHeader.replace(/%22/g, '"');
+                                    // Replace %3E with >
+                                    encodedHeader = encodedHeader.replace(/%3E/g, '>');
+                                    // Replace %3C with <
+                                    encodedHeader = encodedHeader.replace(/%3C/g, '<');
+                                    console.log(decodedHeaderValue);
+                                    console.log(encodedHeader);
                                     window.location.href = '/artiklid/' + encodedHeader;
-                                } else {
+                                }
+                                else {
                                     if (data.message === 'No changes were made to the article content.') {
                                         // Alert the user that no changes were made
                                         alert('Muudatusi pole tehtud!');
@@ -217,14 +237,14 @@
                                     }
                                 }
                             })
-
-                                .catch(error => {
+                            .catch(error => {
                                 console.error('Error updating article content:', error);
                                 // Handle the error scenario appropriately
                             });
                     });
                 });
             </script>
+
 
 
         <% } %>

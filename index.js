@@ -516,11 +516,12 @@ app.get('/get-articles', (req, res) => {
             return res.status(500).json({success: false, message: 'Error fetching articles'});
         }
 
-// Transform the result to include the URLs for articles
+        // Transform the result to include the URLs for articles
         const articlesWithUrls = result.map(article => {
-            const articleHeader = encodeURIComponent(article.articleHeader);
+            // Encode special characters in article header
+            const encodedArticleHeader = encodeURIComponent(article.articleHeader);
             // Create the URL for each article
-            const url = `/artiklid/${articleHeader}`;
+            const url = `/artiklid/${encodedArticleHeader}`;
             return {...article, url};
         });
 
@@ -532,9 +533,12 @@ app.get('/get-articles', (req, res) => {
 app.get('/artiklid/:articleHeader', (req, res) => {
     const articleHeader = req.params.articleHeader;
 
+    // Decode encoded article header
+    const decodedArticleHeader = decodeURIComponent(articleHeader);
+
     // Query to retrieve a specific article content based on the header
     const sql = "SELECT a.artikli_sisu AS summernoteContent, k.kasutajanimi AS articleAuthor, DATE_FORMAT(a.postitamise_kuupäev, '%d-%m-%Y') AS articleDate FROM vocoliikumine.artiklid a JOIN vocoliikumine.kasutajad k ON a.kasutaja_id = k.kasutaja_id WHERE a.artikli_pealkiri = ?";
-    db.query(sql, [articleHeader], (err, result) => {
+    db.query(sql, [decodedArticleHeader], (err, result) => {
         if (err) {
             console.error('Error fetching article content:', err);
             return res.status(500).json({success: false, message: 'Error fetching article content'});
@@ -587,9 +591,17 @@ app.get('/artiklid/:articleHeader', (req, res) => {
 
 
 // Endpoint to handle updating Summernote content
+const he = require('he');
+
 app.post('/update-articles', (req, res) => {
     // Extract content from the request body
-    const {articleHeader, articleContent, editArticleHeader} = req.body;
+    const { articleHeader, articleContent, editArticleHeader } = req.body;
+
+    // Decode the articleHeader to handle special characters properly
+    const decodedArticleHeader = he.decode(articleHeader);
+    // Decode the editArticleHeader as well
+    const decodedEditArticleHeader = he.decode(editArticleHeader);
+
 
     // Sanitize articleContent to remove <script> elements
     const sanitizedContent = articleContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
@@ -598,43 +610,46 @@ app.post('/update-articles', (req, res) => {
     const sqlRetrieve = 'SELECT artikli_sisu FROM artiklid WHERE artikli_pealkiri = ?';
 
     // Execute the SQL query to retrieve existing content
-    db.query(sqlRetrieve, [articleHeader], (error, results, fields) => {
+    db.query(sqlRetrieve, [decodedArticleHeader], (error, results, fields) => {
         if (error) {
             // If an error occurs, send an error response
             console.error('Error retrieving existing content:', error);
-            res.status(500).json({error: 'An error occurred while retrieving existing content.'});
+            res.status(500).json({ error: 'An error occurred while retrieving existing content.' });
         } else {
             // If retrieval was successful
             if (results.length > 0) {
                 const existingContent = results[0].artikli_sisu;
                 // Check if the new content is the same as the existing content
-                if (existingContent === sanitizedContent && articleHeader === editArticleHeader) {
+                if (existingContent === sanitizedContent && decodedEditArticleHeader === decodedArticleHeader) {
                     // If content is the same, inform frontend that no changes were made
-                    res.json({success: false, message: 'No changes were made to the article content.'});
+                    res.json({ success: false, message: 'No changes were made to the article content.' });
                 } else {
                     // SQL query to update the content in the database
                     const sqlUpdate = 'UPDATE artiklid SET artikli_sisu = ?, artikli_pealkiri = ? WHERE artikli_pealkiri = ?';
 
                     // Execute the SQL query to update the content
-                    db.query(sqlUpdate, [sanitizedContent, editArticleHeader, articleHeader], (error, results, fields) => {
+                    db.query(sqlUpdate, [sanitizedContent, decodedEditArticleHeader, decodedArticleHeader], (error, results, fields) => {
                         if (error) {
                             // If an error occurs, send an error response
                             console.error('Error updating content:', error);
-                            res.status(500).json({error: 'An error occurred while updating content.'});
+                            res.status(500).json({ error: 'An error occurred while updating content.' });
                         } else {
                             // If the update was successful, send a success response
                             console.log('Content updated successfully.');
-                            res.json({success: true});
+                            res.json({ success: true });
                         }
                     });
                 }
             } else {
                 // If no existing content found, send an error response
-                res.status(404).json({error: 'No existing content found for the provided article header.'});
+                res.status(404).json({ error: 'No existing content found for the provided article header.' });
             }
         }
     });
 });
+
+
+
 
 
 app.post('/submit-post', (req, res) => {
@@ -1214,6 +1229,10 @@ app.post('/update-news', (req, res) => {
     // Extract content from the request body
     const {newsHeader, newsContent, editNewsHeader} = req.body;
 
+    // Decode the newsHeader and editNewsHeader to handle special characters properly
+    const decodedNewsHeader = he.decode(newsHeader);
+    const decodedEditNewsHeader = he.decode(editNewsHeader);
+
     // Sanitize newsContent to remove <script> elements
     const sanitizedContent = newsContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
@@ -1221,7 +1240,7 @@ app.post('/update-news', (req, res) => {
     const sqlRetrieve = 'SELECT uudise_sisu FROM uudised WHERE uudise_pealkiri = ?';
 
     // Execute the SQL query to retrieve existing content
-    db.query(sqlRetrieve, [newsHeader], (error, results, fields) => {
+    db.query(sqlRetrieve, [decodedNewsHeader], (error, results, fields) => {
         if (error) {
             // If an error occurs, send an error response
             console.error('Error retrieving existing content:', error);
@@ -1231,7 +1250,7 @@ app.post('/update-news', (req, res) => {
             if (results.length > 0) {
                 const existingContent = results[0].uudise_sisu;
                 // Check if the new content is the same as the existing content
-                if (existingContent === sanitizedContent && newsHeader === editNewsHeader) {
+                if (existingContent === sanitizedContent && decodedNewsHeader === decodedEditNewsHeader) {
                     // If content is the same, inform frontend that no changes were made
                     res.json({success: false, message: 'No changes were made to the news content.'});
                 } else {
@@ -1239,7 +1258,7 @@ app.post('/update-news', (req, res) => {
                     const sqlUpdate = 'UPDATE uudised SET uudise_sisu = ?, uudise_pealkiri = ? WHERE uudise_pealkiri = ?';
 
                     // Execute the SQL query to update the content
-                    db.query(sqlUpdate, [sanitizedContent, editNewsHeader, newsHeader], (error, results, fields) => {
+                    db.query(sqlUpdate, [sanitizedContent, decodedEditNewsHeader, decodedNewsHeader], (error, results, fields) => {
                         if (error) {
                             // If an error occurs, send an error response
                             console.error('Error updating content:', error);

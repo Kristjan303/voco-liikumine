@@ -20,6 +20,8 @@ body {
 .login p {
     margin: 30px;
     font-size: 12px;
+    display: flex;
+    justify-content: space-between;
 }
 .login h1 {
     text-align: center;
@@ -113,4 +115,10 @@ img {
     width: 100%;
     margin: auto;
     display: flex;
+}
+.jatka-kulalisena{
+    font-size: 90%;
+    color: #2980b9;
+    cursor: pointer;
+    text-decoration: none;
 }

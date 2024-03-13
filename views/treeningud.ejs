@@ -344,8 +344,18 @@
                                     });
                                 });
                                 calendar.render(); // Render the calendar
+
+                                // Check if any events are displayed
+                                if (calendar.getEvents().length === 0) {
+                                    // If no events are displayed, hide the h2 and calendar
+                                    document.querySelector('h2').style.display = 'none';
+                                    document.getElementById('registreeritud trennid').style.display = 'none';
+                                    calendarEl.style.display = 'none';
+                                }
                             } else {
-                                // If no data or invalid session, hide the calendar
+                                // If no data or invalid session, hide the h2 and calendar
+                                document.querySelector('h2').style.display = 'none';
+                                document.getElementById('registreeritud trennid').style.display = 'none';
                                 calendarEl.style.display = 'none';
                             }
                         })
@@ -354,7 +364,6 @@
                 } else {
                     console.error('Invalid session data');
                 }
-
             });
         </script>
 
@@ -814,7 +823,7 @@
 
         <% if (userRole === 1) { %>
         <div class="subTitle">
-            <h2>Registreeritud trennid</h2>
+            <h2 id="registreeritud trennid">Registreeritud trennid</h2>
         </div>
 
         <section class="minu-trennid">

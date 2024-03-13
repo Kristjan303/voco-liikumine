@@ -203,9 +203,22 @@
                             .then(response => response.json())
                             .then(data => {
                                 if (data.success) {
+                                    // Decode the article header from HTML
+                                    const decodedHeader = document.createElement('textarea');
+                                    decodedHeader.innerHTML = editNewsHeader.value;
+                                    const decodedHeaderValue = decodedHeader.value;
                                     // Alert the user upon successful update
-                                    alert('uudise sisu edukalt uuendatud!');
-                                    const encodedHeader = encodeURIComponent(editNewsHeader.value);
+                                    alert('Uudise sisu edukalt uuendatud!');
+                                    // Encode the decoded article header before redirecting
+                                    let encodedHeader = encodeURIComponent(decodedHeaderValue);
+                                    // Replace %22 with "
+                                    encodedHeader = encodedHeader.replace(/%22/g, '"');
+                                    // Replace %3E with >
+                                    encodedHeader = encodedHeader.replace(/%3E/g, '>');
+                                    // Replace %3C with <
+                                    encodedHeader = encodedHeader.replace(/%3C/g, '<');
+                                    console.log(decodedHeaderValue);
+                                    console.log(encodedHeader);
                                     window.location.href = '/uudised/' + encodedHeader;
                                 } else {
                                     if (data.message === 'No changes were made to the news content.') {

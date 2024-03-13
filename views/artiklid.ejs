@@ -465,12 +465,12 @@
                     const articleDiv = document.createElement('div');
                     articleDiv.classList.add('article-preview');
                     articleDiv.innerHTML = `
-                <p class="article-author">Autor: ${article.articleAuthor}</p>
-                <p class="article-date">${article.articleDate}</p>
-                <h2>${article.articleHeader}</h2>
-                <div>${article.summernoteContent}</div>
-                <a href="${article.url}">Loe rohkem →</a>
-            `;
+                    <p class="article-author">Autor: ${article.articleAuthor}</p>
+                    <p class="article-date">${article.articleDate}</p>
+                    <h2>${article.articleHeader}</h2>
+                    <div>${article.summernoteContent}</div>
+                    <a href="${article.url}">Loe rohkem →</a>
+                `;
 
                     // Find the first image inside the div
                     const imgElements = articleDiv.querySelectorAll('img');

@@ -20,6 +20,8 @@ body {
 .register p {
     margin: 30px;
     font-size: 12px;
+    display: flex;
+    justify-content: space-between;
 }
 .register h1 {
     text-align: center;
@@ -135,4 +137,10 @@ body {
 .hold-header img {
     width: 100px;
     height: 100px;
+}
+.jatka-kulalisena{
+    font-size: 90%;
+    color: #2980b9;
+    cursor: pointer;
+    text-decoration: none;
 }
