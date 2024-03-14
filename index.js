@@ -1178,6 +1178,7 @@ app.get('/uudised/:newsHeader', (req, res, next) => {
         if (err) {
             console.error('Error fetching news content:', err);
             return res.status(500).json({success: false, message: 'Error fetching news content'});
+
         }
 
         if (result.length === 0) {
@@ -2279,17 +2280,16 @@ app.use((err, req, res, next) => {
 
         return res.status(400).json({success: false, message: 'Invalid JSON'});
     } else if (err.status === 500) {
-        console.error('Error parsing JSON:', err);
-
-        return res.status(500).json({success: false, message: 'Invalid JSON'});
+        console.error('Internal server error:', err);
 
     } else {
-        console.error('Error parsing JSON:', err);
+        console.error('Unexpected error:', err);
 
         // For other errors, send the default error message
         return res.status(err.status || 500).json({success: false, message: err.message});
     }
 });
+
 
 // Define a route handler for handling 404 errors (page not found)
 app.use((req, res, next) => {
