@@ -488,6 +488,28 @@
 
                 <button type="button" id="addEventButton">Lisa trenn</button>
             </form>
+            <form class="hidden" id="broneeringuForm">
+<!--                inputs for broneeringu koht, broneerinug start time and end time, broneeringu -->
+                <h2>Broneeri</h2>
+                <div class="form-group">
+                    <label class="nimi" for="broneeringuKoht">Broneeringu koht:</label>
+                    <input type="text" id="broneeringuKoht" class="form-control" placeholder="Tenniseväljak" required>
+                </div>
+                <div class="form-group
+                ">
+                    <label class="nimi" for="broneeringuAlgusaeg">Broneeringu algusaeg:</label>
+                    <input type="datetime-local"
+                           id="broneeringuAlgusaeg" class="form-control" required>
+                </div>
+                <div class="form-group
+                ">
+                    <label class="nimi" for="broneeringuLõpuaeg">Broneeringu lõpuaeg:</label>
+                    <input type="datetime-local"
+                           id="broneeringuLõpuaeg" class="form-control" required>
+                </div>
+                <button type="button" id="addBroneeringButton">Broneeri</button>
+
+            </form>
 
             <div class="current-trenn">
                 <h2>Halda trenne</h2>
@@ -831,15 +853,20 @@
         </section>
         <% } %>
 
-        <% if (userRole !== 2) { %>
-        <div class="subTitle">
-            <h2>Liitu trennidega!</h2>
-        </div>
+            <% if (userRole !== 2) { %>
+                <div class="subTitle">
+                    <h2>Liitu trennidega!</h2>
+                </div>
+            <% } else { %>
+                <div class="subTitle">
+                    <h2>Registreeri õpilasi</h2>
+                </div>
+            <% } %>
 
-        <section class="join-trennid">
+            <section class="join-trennid">
+                <!-- Display the same content here -->
+            </section>
 
-        </section>
-        <% } %>
     </main>
 
     <% if (userRole === 1) { %>
@@ -960,6 +987,7 @@
         }
         </script>
     <% } %>
+
     <script>
         // Function to fetch data from the endpoint
         async function fetchData() {
@@ -972,7 +1000,7 @@
             }
         }
 
-        <% if (userRole === 1) { %>
+        <% if (userRole === 1 ) { %>
 
         // Function to handle leaving trennist
         async function leaveTrennist(userId, trenniId) {
@@ -1228,11 +1256,13 @@
 <script>
     const myToggleButton = document.querySelector('#toggle-button');
     const myTargetElement = document.querySelector('#trenniForm');
+    const myTargetElement2 = document.querySelector('#broneeringuForm');
 
     let isHidden = false;
 
     myToggleButton.onclick = function() {
         myTargetElement.classList.toggle('hidden');
+        myTargetElement2.classList.toggle('hidden');
         if (isHidden) {
             myToggleButton.innerHTML = '<i class="fa-regular fa-eye fa-lg"></i>';
         } else {
@@ -1243,6 +1273,56 @@
 
 
 </script>
+
+    <script>
+        //handle form broneerimiseFrom
+        document.getElementById('addBroneeringButton').addEventListener('click', function () {
+            // Retrieve user data from sessionStorage
+            var email = sessionStorage.getItem('email');
+            var userId = sessionStorage.getItem('userId');
+            var sessionToken = sessionStorage.getItem('sessionToken');
+
+            // Check if user data exists
+            if (!email || !userId || !sessionToken) {
+                console.error('User data not found in sessionStorage');
+                return;
+            }
+
+            // Prepare form data
+            var formData = {
+                koht: document.getElementById('broneeringuKoht').value,
+                algusaeg: document.getElementById('broneeringuAlgusaeg').value,
+                lõppaeg: document.getElementById('broneeringuLõpuaeg').value,
+                email: email,
+                userId: userId,
+                sessionToken: sessionToken
+            };
+
+            console.log(formData);
+            // Send form data to server
+            fetch('/submit-broneering', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Optionally, do something after successful submission
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Optionally, handle errors here
+                });
+        });
+    </script>
 
 <script>
     document.getElementById('addEventButton').addEventListener('click', function () {

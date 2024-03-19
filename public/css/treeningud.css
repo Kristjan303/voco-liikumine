@@ -492,4 +492,91 @@ width: 100%;
     cursor: pointer;
 }
 
+/*broneeringu form*/
+#broneeringuForm {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    background-color: ghostwhite;
+    border-radius: 10px;
+    border: 1px solid #f3f3f3;
+    max-width: 100%;
+    margin-bottom: 50px;
+    margin-right: auto;
+
+}
+#broneeringuForm textarea {
+    height: 100px;
+    width: 100%;
+    padding: 10px 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+    resize: none;
+    font-family: "Montserrat", sans-serif;
+}
+#broneeringuForm textarea:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+#broneeringuForm #eventTitle {
+    width: 100%;
+    padding: 10px 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+#broneeringuForm #eventTitle:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+#broneeringuForm #broneeringuAlgusaeg {
+    padding: 5px 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+#broneeringuForm #broneeringuAlgusaeg:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+#broneeringuForm #broneeringuLõpuaeg {
+    padding: 5px 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+#broneeringuForm #broneeringuLõpuaeg:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
+#broneeringuForm #addBroneeringButton {
+    padding: 10px 20px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: "Montserrat", sans-serif;
+}
+#broneeringuForm #addBroneeringButton:hover {
+    background-color: #1c6a8c;
+}
+#broneeringuForm #broneeringuKoht {
+    padding: 5px 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+}
+#broneeringuForm #broneeringuKoht:focus {
+    outline: none;
+    border: 1px solid #2980b9;
+}
 

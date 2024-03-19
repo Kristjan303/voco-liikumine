@@ -308,7 +308,7 @@ app.get('/galerii/folders', (req, res) => {
             res.status(500).json({error: 'Internal Server Error'});
             return;
         }
-
+        // I was here
         // Filter out only directories
         const folders = files.filter(file => fs.statSync(path.join(galeriiPath, file)).isDirectory());
 
@@ -1786,6 +1786,66 @@ app.get('/fetch-opetajad', (req, res) => {
     });
 
 })
+
+// endpoint for saving the broneering koht, algusaeg, l'õppaeg lisamise_kuupäev kasutaja_id
+app.post('/submit-broneering', (req, res) => {
+    const {koht, algusaeg, lõppaeg,
+         sessionToken, email, userId} = req.body;
+
+    if (!koht || !algusaeg || !lõppaeg || !sessionToken || !email || !userId) {
+        return res.status(400).json({error: 'Missing required fields'});
+    }
+
+    // Check if the session exists based on the userId and sessionToken
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({success: false, message: 'Invalid session'});
+    }
+
+    const sql = `INSERT INTO broneerimine (koht, algusaeg, lõppaeg, lisamise_kuupäev, kasutaja_id)
+                 VALUES (?, ?, ?, NOW(), ?)`;
+
+    db.query(sql, [koht, algusaeg, lõppaeg, userId], (error, results) => {
+        if (error) {
+            console.error('Error inserting data:', error);
+            res.status(500).json({error: 'Internal server error'});
+            return;
+        }
+        res.status(200).json({message: 'Data inserted successfully'});
+    });
+
+})
+// endpoint to fetch broneeringud for everyone
+app.get('/fetch-broneeringud', (req, res) => {
+    const query = 'SELECT b.broneeringu_id, b.koht, b.algusaeg, b.lõppaeg, b.lisamise_kuupäev, k.kasutajanimi FROM broneerimine b JOIN kasutajad k ON b.kasutaja_id = k.kasutaja_id';
+    db.query(query, (error, results) => {
+        if (error) {
+            console.error('Error fetching data:', error);
+            res.status(500).json({error: 'Internal server error'});
+            return;
+        }
+
+        const formattedEvents = results.map(event => ({
+            id: event.broneeringu_id,
+            title: event.koht,
+            start: event.algusaeg,
+            end: event.lõppaeg,
+            addedDate: event.lisamise_kuupäev,
+            username: event.kasutajanimi
+        }));
+
+        res.status(200).json(formattedEvents);
+    });
+});
+
+
+
+
+
+
+
 
 
 // Render the admin page or redirect to /sisene if not authenticated

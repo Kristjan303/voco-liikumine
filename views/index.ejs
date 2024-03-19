@@ -10,13 +10,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
                 editable: false,
-                height: 700,
+                height: 500,
                 allDaySlot: false,
                 eventClassNames: 'trenni-hover',
                 firstDay: 1,
@@ -112,6 +113,37 @@
                     calendar.render();
                 })
                 .catch(error => console.error('Error fetching data:', error));
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('broneeringCalendar');
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                height: 700,
+                aspectRatio: 0.5,
+                contentHeight: 500,
+
+                events: '/fetch-broneeringud', // Endpoint to fetch events
+                eventDidMount: function(info) {
+                    // Manipulate event rendering if needed
+                },
+                // button text estonksi
+                buttonText: {
+                    today: 'Täna',
+                    month: 'Kuu',
+                    week: 'Nädal',
+                    day: 'Päev',
+                    list: 'Nimekiri'
+                },
+            });
+            // render tha darn thing for the element id is broneeringCalendar
+            // estonski
+            calendar.setOption('locale', 'et');
+            // initial day monaday
+            calendar.setOption('firstDay', 1);
+            calendar.render();
         });
     </script>
 </head>
@@ -291,6 +323,10 @@
         <h2>Toimuvad trennid:</h2>
         <section class="hold-calendar">
             <div id="calendar"></div>
+        </section>
+        <h2>Broneeritud kohad:</h2>
+        <section class="hold-calendar">
+            <div id="broneeringCalendar"></div>
         </section>
     </div>
 </section>
@@ -598,10 +634,6 @@
     // Auto-advance slider every 5 seconds
     timer = setInterval(gotoNext, 5000);
 </script>
-
-
-
-
 
 
 
