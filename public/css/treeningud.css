@@ -102,6 +102,14 @@
     border: 1px solid #f3f3f3;
     padding: 20px;
 }
+#broneeringCalendar {
+    margin-bottom: 50px;
+    width: 100%;
+    background-color: ghostwhite;
+    border-radius: 10px;
+    border: 1px solid #f3f3f3;
+    padding: 20px;
+}
 
 .fc .fc-toolbar-title {
     font-size: 1.2em;

@@ -186,10 +186,16 @@
                     submitEditButton.addEventListener("click", function() {
                         var newsHeader = "<%= newsHeader %>";
                         var newsContent = $('#summernote').summernote('code');
+                        var sessionToken = sessionStorage.getItem("sessionToken");
+                        var email = sessionStorage.getItem("email");
+                        var userId = sessionStorage.getItem("userId");
                         var data = {
                             newsHeader: newsHeader,
                             newsContent: newsContent,
-                            editNewsHeader: editNewsHeader.value
+                            editNewsHeader: editNewsHeader.value,
+                            sessionToken: sessionToken,
+                            email: email,
+                            userId: userId
                         };
 
                         // Send a POST request to the backend endpoint to update the news content
@@ -231,13 +237,14 @@
                                 }
                             })
 
-                                .catch(error => {
+                            .catch(error => {
                                 console.error('Error updating news content:', error);
                                 // Handle the error scenario appropriately
                             });
                     });
                 });
             </script>
+
 
 
         <% } %>

@@ -9,6 +9,7 @@ const uuid = require('uuid');
 const cors = require('cors');
 const fs = require('fs');
 const multer = require('multer');
+const nodemailer = require('nodemailer');
 
 
 const app = express();
@@ -595,7 +596,38 @@ const he = require('he');
 
 app.post('/update-articles', (req, res) => {
     // Extract content from the request body
-    const { articleHeader, articleContent, editArticleHeader } = req.body;
+    const { articleHeader, articleContent, editArticleHeader, email, sessionToken, userId } = req.body;
+
+
+    // Check if the session exists based on the userId and sessionToken
+
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        return res.status(401).json({success: false, message: 'Invalid session'});
+    }
+
+    // check if user role is 2 or 3
+    const roleSql = "SELECT rolli_id FROM kasutajad WHERE kasutaja_id = ?";
+
+    db.query(roleSql, [userId], (roleErr, roleResult) => {
+        if (roleErr) {
+            console.error('Error fetching user role:', roleErr);
+            return res.status(500).json({success: false, message: 'Error fetching user role'});
+        }
+
+        if (roleResult.length === 0) {
+            console.log('User not found');
+            return res.status(404).json({success: false, message: 'User not found'});
+        }
+
+        const roleId = roleResult[0].rolli_id;
+
+        // Check if the user's role_id is not 2 or 3
+        if (roleId !== 2 && roleId !== 3) {
+            console.log('User does not have appropriate role');
+            return res.status(403).json({success: false, message: 'User does not have appropriate role'});
+        }});
 
     // Decode the articleHeader to handle special characters properly
     const decodedArticleHeader = he.decode(articleHeader);
@@ -1227,7 +1259,37 @@ app.get('/uudised/:newsHeader', (req, res, next) => {
 
 app.post('/update-news', (req, res) => {
     // Extract content from the request body
-    const {newsHeader, newsContent, editNewsHeader} = req.body;
+    const {newsHeader, newsContent, editNewsHeader, sessionToken, userId, email} = req.body;
+
+    // Check if the session exists based on the userId and sessionToken
+
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        return res.status(401).json({success: false, message: 'Invalid session'});
+    }
+
+    // check if user role is 2 or 3
+    const roleSql = "SELECT rolli_id FROM kasutajad WHERE kasutaja_id = ?";
+
+    db.query(roleSql, [userId], (roleErr, roleResult) => {
+        if (roleErr) {
+            console.error('Error fetching user role:', roleErr);
+            return res.status(500).json({success: false, message: 'Error fetching user role'});
+        }
+
+        if (roleResult.length === 0) {
+            console.log('User not found');
+            return res.status(404).json({success: false, message: 'User not found'});
+        }
+
+        const roleId = roleResult[0].rolli_id;
+
+        // Check if the user's role_id is not 2 or 3
+        if (roleId !== 2 && roleId !== 3) {
+            console.log('User does not have appropriate role');
+            return res.status(403).json({success: false, message: 'User does not have appropriate role'});
+    }});
 
     // Decode the newsHeader and editNewsHeader to handle special characters properly
     const decodedNewsHeader = he.decode(newsHeader);
@@ -1474,30 +1536,87 @@ app.get('/fetch-user-trennid', (req, res) => {
 
 });
 
+require('dotenv').config();
+
+
 // Endpoint to handle form submission
 app.post('/submit-student-registration', (req, res) => {
-    const {trenniId, firstName, lastName, group, gender, userId, email, sessionToken} = req.body;
+    const { trenniId, firstName, lastName, group, gender, userId, email, sessionToken } = req.body;
 
     // Check if the session exists based on the userId and sessionToken
     const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
 
     if (!validSession) {
         console.log('Invalid session');
-        return res.status(401).json({success: false, message: 'Invalid session'});
+        return res.status(401).json({ success: false, message: 'Invalid session' });
     }
 
-    // Insert submitted data into MySQL database
-    const sql = `INSERT INTO trennis_käijad (nimi, õppegrupp, sugu, trenni_id, kasutaja_id)
-                 VALUES (?, ?, ?, ?, ?)`;
-    db.query(sql, [`${firstName} ${lastName}`, group, gender, trenniId, userId], (err, result) => {
+    // SQL query to fetch trenni_nimi based on trenniId
+    const trenniQuery = `SELECT trenni_nimi, trenni_selgitus, asukoht FROM trennid WHERE trenni_id = ?`;
+    db.query(trenniQuery, [trenniId], (err, result) => {
         if (err) {
-            console.error('Error inserting data into database:', err);
-            res.status(500).json({success: false, message: 'Internal Server Error'});
-            // send user to /sisene
-
-        } else {
-            res.status(200).json({success: true, message: 'Data submitted successfully!'});
+            console.error('Error fetching trenni_nimi:', err);
+            return res.status(500).json({ success: false, message: 'Error fetching trenni_nimi' });
         }
+        // Function to send email
+        function sendEmail(firstName, email) {
+            // Create a Nodemailer transporter using your SMTP settings
+            const transporter = nodemailer.createTransport({
+                host: 'ikt.khk.ee', // Replace with the actual hostname of your SMTP server
+                port: 587, // Port number for SMTP (587 is commonly used for non-secure connections)
+                secure: false, // false for non-secure connections, true if using SSL/TLS
+                auth: {
+                    user: process.env.EMAIL_USER, // Your email address from environment variable
+                    pass: process.env.EMAIL_PASS // Your email password from environment variable
+                }
+            });
+
+            // Email template
+            const mailOptions = {
+                from: 'noreply@voco.ee',
+                to: email,
+                subject: 'Treeningule registreerimise kinnitus',
+                html: `
+                    <p>Tere ${firstName},</p>
+                    <p>Täname Sind registreerimise eest! Oleme rõõmsad, et otsustasid meiega liituda.</p>
+                    <h2>Registreerimise info:</h2>
+                    <p>Treening: ${result[0].trenni_nimi}</p>
+                    <p>selgitus: ${result[0].trenni_selgitus}</p>
+                    <p>Asukoht: ${result[0].asukoht}</p>
+                    <br>
+                    <p>Palun veendu, et oled kohal õigeaegselt ning varustatud sobiva treeningvarustusega. Kui Sul tekib küsimusi või vajad täiendavat informatsiooni, võta meiega julgelt ühendust.</p>
+                    <p>Näete treeninguid <a href="192.168.23.179:3000/treeningud">siit</a></p>
+                    <br>
+                    <p>Kohtumiseni treeningul!</p>
+                    <p>Parimate soovidega,</p>
+                    <p>VOCO Liikumine<br/>[Treeningu korraldaja/klubi nimi]<br/>[Kontaktandmed]</p>
+                `
+            };
+
+            // Send mail with defined transport object
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error('Error sending email:', error);
+                    res.status(500).json({ success: false, message: 'Error sending email' });
+                } else {
+                    console.log('Email sent:', info.response);
+                    // Insert submitted data into MySQL database
+                    const sql = `INSERT INTO trennis_käijad (nimi, õppegrupp, sugu, trenni_id, kasutaja_id)
+                                 VALUES (?, ?, ?, ?, ?)`;
+                    db.query(sql, [`${firstName} ${lastName}`, group, gender, trenniId, userId], (err, result) => {
+                        if (err) {
+                            console.error('Error inserting data into database:', err);
+                            res.status(500).json({ success: false, message: 'Error inserting data into database' });
+                        } else {
+                            res.status(200).json({ success: true, message: 'Data submitted successfully!' });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Call the function to send email with the fetched event name
+        sendEmail(firstName, email);
     });
 });
 

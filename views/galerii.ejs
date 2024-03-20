@@ -97,6 +97,8 @@
         <h1>Galerii</h1>
         <% if (userRole === 2 || userRole === 3) { %>
         <section class="hold-upload-galerii">
+            <img src="/images/uploaduh.svg">
+
             <div>
             <p>Lisa uus kaust:</p>
             <div class="new-directory">
@@ -126,6 +128,7 @@
                 <ul id="fileList" onclick="removeFile(event)"></ul>
             </div>
             </div>
+
         </section>
         <% } %>
     </div>

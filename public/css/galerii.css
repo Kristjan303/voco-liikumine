@@ -37,7 +37,6 @@ input[type="file"] {
 
 .custom-button {
     padding: 5px;
-    background-color: #ffffff;
     border-radius: 10px;
     height: 40px;
     width: 40px;
@@ -47,6 +46,9 @@ input[type="file"] {
     cursor: pointer;
     transition: 0.2s;
     margin-right: 10px;
+    border-style: none;
+    border: 1px solid #cccccc;
+    background-color: #f8f8f8;
 }
 .custom-button:hover {
     color: #2980b9;
@@ -74,14 +76,11 @@ input[type="file"] {
 
 .upload {
     margin-bottom: 20px;
-    width: 250px;
     display: flex;
     flex-direction: column;
     word-break: break-word;
     align-items: center;
-    background-color: #dddddd;
-    padding-top: 20px;
-    border-radius: 10px;
+
 }
 
 .upload p {
@@ -176,6 +175,9 @@ input[type="file"] {
     border-style: none;
     border-radius: 10px;
     width: 130px;
+    background-color: #f8f8f8;
+    border: 1px solid #cccccc;
+
 }
 
 /* show images*/
@@ -328,4 +330,10 @@ input[type="file"] {
     border: 1px solid #f3f3f3;
     justify-items: start;
     justify-content: space-evenly;
+
+}
+.hold-upload-galerii img {
+    width: 200px;
+    object-fit: cover;
+    margin: 10px;
 }

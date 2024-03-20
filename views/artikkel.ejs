@@ -192,10 +192,16 @@
                     submitEditButton.addEventListener("click", function() {
                         var articleHeader = "<%= articleHeader %>";
                         var articleContent = $('#summernote').summernote('code');
+                        var sessionToken = sessionStorage.getItem("sessionToken");
+                        var email = sessionStorage.getItem("email");
+                        var userId = sessionStorage.getItem("userId");
                         var data = {
                             articleHeader: articleHeader,
                             articleContent: articleContent,
-                            editArticleHeader: editArticleHeader.value
+                            editArticleHeader: editArticleHeader.value,
+                            sessionToken: sessionToken,
+                            email: email,
+                            userId: userId
                         };
 
                         // Send a POST request to the backend endpoint to update the article content

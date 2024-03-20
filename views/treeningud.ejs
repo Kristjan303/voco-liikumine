@@ -12,6 +12,37 @@
 
 
     <% if (userRole === 2 || userRole === 3) { %>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var calendarEl = document.getElementById('broneeringCalendar');
+
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    height: 500,
+                    aspectRatio: 0.5,
+                    contentHeight: 500,
+
+                    events: '/fetch-broneeringud', // Endpoint to fetch events
+                    eventDidMount: function(info) {
+                        // Manipulate event rendering if needed
+                    },
+                    // button text estonksi
+                    buttonText: {
+                        today: 'Täna',
+                        month: 'Kuu',
+                        week: 'Nädal',
+                        day: 'Päev',
+                        list: 'Nimekiri'
+                    },
+                });
+                // render tha darn thing for the element id is broneeringCalendar
+                // estonski
+                calendar.setOption('locale', 'et');
+                // initial day monaday
+                calendar.setOption('firstDay', 1);
+                calendar.render();
+            });
+        </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
@@ -220,6 +251,8 @@
     <% if (userRole === 2 || userRole === 3) { %>
     <h2 style="margin-right: auto">Minu trennid:</h2>
         <div id="calendar"></div>
+    <h2 style="margin-right: auto">Broneeringud: </h2>
+        <div id="broneeringCalendar"></div>
     <% } %>
 
     <% if (userRole === 1) { %>
@@ -857,15 +890,12 @@
                 <div class="subTitle">
                     <h2>Liitu trennidega!</h2>
                 </div>
-            <% } else { %>
-                <div class="subTitle">
-                    <h2>Registreeri õpilasi</h2>
-                </div>
+                <section class="join-trennid">
+                    <!-- Display the same content here -->
+                </section>
             <% } %>
 
-            <section class="join-trennid">
-                <!-- Display the same content here -->
-            </section>
+
 
     </main>
 
