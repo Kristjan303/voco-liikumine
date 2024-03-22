@@ -15,6 +15,10 @@ This repository contains the data source file for the MySQL server. To run the d
 🖥️  
 * [Data source](https://github.com/Kristjan303/voco-liikumine/files/13860451/message.txt)
 
+You'll also need to create /galerii folder 📁 in the project root where the images will be saved and new directories created.
+Once all of the above has been accomplished run: ```npm install``` ▶️ to download all the dependencies. 
+
+
 
 
 
