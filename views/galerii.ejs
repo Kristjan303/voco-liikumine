@@ -309,6 +309,7 @@
                 console.error('Error fetching folders:', error);
             });
     }
+
     function fetchImagesInFolder(folder) {
         var folderList = document.getElementById('fileTree');
 
@@ -331,8 +332,84 @@
                         window.open('/galerii/' + folder + '/' + image, '_blank');
                     });
 
+                    // Create span for FontAwesome icon
+                    var iconSpan = document.createElement('span');
+                    iconSpan.classList.add('fa-solid', 'fa-trash-can', 'fa-sm');
+                    iconSpan.style.display = 'none'; // Initially hide the span
+                    <% if (userRole === 2 || userRole === 3) { %>
+
+                    // Show icon span on image hover
+                    imgElement.addEventListener('mouseenter', function () {
+                        iconSpan.style.display = 'inline-block';
+                        iconSpan.style.position = 'absolute';
+                        // make the icon span appear on top of the image right corner
+                        iconSpan.style.top = imgElement.offsetTop + 'px';
+                        iconSpan.style.left = imgElement.offsetLeft + imgElement.width - 20 + 'px';
+                        iconSpan.style.zIndex = '1';
+                        iconSpan.style.color = 'red';
+                        iconSpan.style.cursor = 'pointer';
+                        iconSpan.style.filter = 'drop-shadow(0 0 2px black)';
+                        // if hover over the icon span, don't hide it
+                        iconSpan.addEventListener('mouseenter', function () {
+                            iconSpan.style.display = 'inline-block';
+                        });
+                        // if mouse leaves the icon span, hide it
+                        iconSpan.addEventListener('mouseleave', function () {
+                            iconSpan.style.display = 'none';
+                        });
+
+                    });
+                    <% } %>
+
+
+                    // Hide icon span when mouse leaves image
+                    imgElement.addEventListener('mouseleave', function () {
+                        iconSpan.style.display = 'none';
+                    });
+
+                    // Append icon span to image item
+                    imageItem.appendChild(iconSpan);
                     imageItem.appendChild(imgElement);
                     folderList.appendChild(imageItem);
+
+                    <% if (userRole === 2 || userRole === 3) { %>
+
+                    // Add click event to delete image
+                    iconSpan.addEventListener('click', function () {
+                        var sessionToken = sessionStorage.getItem('sessionToken');
+                        var userId = sessionStorage.getItem('userId');
+                        var email = sessionStorage.getItem('email');
+                        var imagePath = '/galerii/' + folder + '/' + image;
+                        console.log('Deleting image:', imagePath);
+
+                        // Send session data and image path to server endpoint for deletion
+                        fetch('/deleteImage', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                sessionToken: sessionToken,
+                                userId: userId,
+                                email: email,
+                                imagePath: imagePath
+                            }),
+
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    // If image deleted successfully, remove image from DOM
+                                    imageItem.remove();
+                                } else {
+                                    console.error('Failed to delete image:', response.statusText);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error deleting image:', error);
+                            });
+
+                    });
+                    <% } %>
                 });
 
                 // Show the image list
@@ -342,6 +419,7 @@
                 console.error('Error fetching images in folder:', error);
             });
     }
+
 
 
 

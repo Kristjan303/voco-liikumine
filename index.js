@@ -428,6 +428,74 @@ app.get('/galerii/latest-images', (req, res) => {
     });
 });
 
+// endpoint for deleting the image
+
+app.post('/deleteImage', (req, res) => {
+    const { sessionToken, userId, email, imagePath } = req.body;
+
+    // Check if the session exists in the sessions array
+    const validSession = sessions.find(session => session.userId == userId && session.email === email && session.sessionToken == sessionToken);
+
+    if (!validSession) {
+        console.log('Invalid session');
+        return res.status(401).json({success: false, message: 'Invalid session'});
+    }
+
+    // Check if user has the role 2 or 3
+    const roleSql = "SELECT rolli_id FROM kasutajad WHERE kasutaja_id = ?";
+    db.query(roleSql, [userId], (roleErr, roleResult) => {
+        if (roleErr) {
+            console.error('Error fetching user role:', roleErr);
+            return res.status(500).json({success: false, message: 'Error fetching user role'});
+        }
+
+        if (roleResult.length === 0) {
+            console.log('User not found');
+            return res.status(404).json({success: false, message: 'User not found'});
+        }
+
+        const roleId = roleResult[0].rolli_id;
+
+        // Check if the user's role_id is not 2 or 3
+        if (roleId !== 2 && roleId !== 3) {
+            console.log('User does not have appropriate role');
+            return res.status(403).json({success: false, message: 'User does not have appropriate role'});
+        }
+
+        // Normalize the provided image path to match the format stored in the database
+        const normalizedImagePath = imagePath.replace(/\//g, path.sep);
+
+        // Resolve the absolute path to the image file relative to the project's root directory
+        const absoluteImagePath = path.join(__dirname, normalizedImagePath);
+
+        // Construct SQL query to delete row from 'galerii' table
+        const deleteQuery = `DELETE FROM galerii WHERE media = ?`;
+
+        // Execute the query
+        db.query(deleteQuery, [normalizedImagePath], (err, result) => {
+            if (err) {
+                console.error('Error deleting row from galerii table:', err);
+                res.status(500).json({ error: 'Internal server error' });
+                return;
+            }
+
+            // Delete the actual image file from the filesystem
+            fs.unlink(absoluteImagePath, (unlinkErr) => {
+                if (unlinkErr) {
+                    console.error('Error deleting image file:', unlinkErr);
+                    res.status(500).json({ error: 'Internal server error' });
+                    return;
+                }
+
+                console.log('Image file deleted successfully');
+                res.status(200).json({ message: 'Image deleted successfully' });
+            });
+        });
+    });
+});
+
+
+
 app.post('/submit-article', (req, res) => {
     const {newArticleHeader, summernoteContent, sessionToken, userId, email} = req.body;
 
