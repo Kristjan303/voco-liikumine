@@ -1578,20 +1578,21 @@ app.post('/submit-student-registration', (req, res) => {
                 subject: 'Treeningule registreerimise kinnitus',
                 html: `
                     <p>Tere ${firstName},</p>
-                    <p>Täname Sind registreerimise eest! Oleme rõõmsad, et otsustasid meiega liituda.</p>
-                    <h2>Registreerimise info:</h2>
-                    <p>Treening: ${result[0].trenni_nimi}</p>
-                    <p>selgitus: ${result[0].trenni_selgitus}</p>
-                    <p>Asukoht: ${result[0].asukoht}</p>
+                    <p>Täname Sind registreerimise eest! Oleme rõõmsad, et otsustasid meiega koos liikuda.</p>
+                    <br>
+                    <strong>Treening: ${result[0].trenni_nimi}.</strong>
+                    <strong>Täpsemalt: ${result[0].trenni_selgitus}.</strong>
+                    <strong>Asukoht: ${result[0].asukoht}.</strong>
                     <br>
                     <p>Palun veendu, et oled kohal õigeaegselt ning varustatud sobiva treeningvarustusega. Kui Sul tekib küsimusi või vajad täiendavat informatsiooni, võta meiega julgelt ühendust.</p>
-                    <p>Näete treeninguid <a href="192.168.23.179:3000/treeningud">siit</a></p>
+                    <p>Näete treeninguid <a href="http://192.168.21.12:3000/treeningud">siit</a></p>
                     <br>
                     <p>Kohtumiseni treeningul!</p>
                     <p>Parimate soovidega,</p>
-                    <p>VOCO Liikumine<br/>[Treeningu korraldaja/klubi nimi]<br/>[Kontaktandmed]</p>
+                    <p>VOCO Liikumine</p>
                 `
             };
+
 
             // Send mail with defined transport object
             transporter.sendMail(mailOptions, (error, info) => {
