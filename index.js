@@ -144,7 +144,7 @@ app.post('/signup', async (req, res) => {
 const sessions = []; // Object to store active sessions
 
 app.post('/login', async (req, res) => {
-    const {email, password} = req.body;
+    const { email, password } = req.body;
 
     try {
         // Check if username exists
@@ -152,12 +152,12 @@ app.post('/login', async (req, res) => {
         db.query(checkQuery, [email], async (checkErr, checkResults) => {
             if (checkErr) {
                 console.error('Error checking existing username:', checkErr);
-                return res.status(500).json({success: false, message: 'Serveripoolne viga!'});
+                return res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
             }
 
             if (checkResults.length === 0) {
                 // Username does not exist
-                return res.status(400).json({success: false, message: 'Emailiga pole registreeritud!'});
+                return res.status(400).json({ success: false, message: 'Emailiga pole registreeritud!' });
             }
 
             // Check if password is correct
@@ -165,12 +165,23 @@ app.post('/login', async (req, res) => {
             const passwordCorrect = await bcrypt.compare(password, user.parool);
 
             if (passwordCorrect) {
+                // Check if user has an existing session
+                const existingSessionIndex = sessions.findIndex(session =>
+                    session.userId === user.kasutaja_id
+                );
+
+                if (existingSessionIndex !== -1) {
+                    // Remove the existing session
+                    sessions.splice(existingSessionIndex, 1);
+                    console.log('Old session removed for user:', user.kasutaja_id);
+                }
+
                 // Fetch the user's rolli_id
                 const rolliQuery = 'SELECT rolli_id FROM kasutajad WHERE kasutaja_id = ?';
                 db.query(rolliQuery, [user.kasutaja_id], async (rolliErr, rolliResults) => {
                     if (rolliErr) {
                         console.error('Error fetching rolli_id:', rolliErr);
-                        return res.status(500).json({success: false, message: 'Serveripoolne viga!'});
+                        return res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
                     }
 
                     // Generate a random session token using uuid
@@ -189,7 +200,6 @@ app.post('/login', async (req, res) => {
                         email: user.email,
                         sessionToken: sessionToken,
                         pushTime: currentTime // Current time
-
                         // Add more user-related information if needed
                     });
 
@@ -203,14 +213,15 @@ app.post('/login', async (req, res) => {
                     });
                 });
             } else {
-                res.status(400).json({success: false, message: 'Ebakorrektne parool!'});
+                res.status(400).json({ success: false, message: 'Ebakorrektne parool!' });
             }
         });
     } catch (error) {
         console.error('Error comparing passwords:', error);
-        res.status(500).json({success: false, message: 'Serveripoolne viga!'});
+        res.status(500).json({ success: false, message: 'Serveripoolne viga!' });
     }
 });
+
 
 
 // Update the server-side code
@@ -238,12 +249,6 @@ app.get('/logout', (req, res) => {
     });
 });
 
-
-//admin view for active-sessions
-app.get('/active-sessions', (req, res) => {
-    res.json({activeSessions: sessions});
-    console.log(sessions);
-});
 // get folder from folderform
 
 app.post('/create-directory', (req, res) => {
