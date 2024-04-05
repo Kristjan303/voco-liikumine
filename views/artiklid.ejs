@@ -468,7 +468,21 @@
                     <p class="article-author">Autor: ${article.articleAuthor}</p>
                     <p class="article-date">${article.articleDate}</p>
                     <h2>${article.articleHeader}</h2>
-                    <div>${article.summernoteContent}</div>
+                    <div class="hold-summernote" style="
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+    width: 300px;
+    height: 300px;
+    margin: 15px;
+    border-radius: 10px;
+    /* background-color: #dfdfdf; */
+    padding: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    word-break: break-word;
+">${article.summernoteContent}</div>
                     <a href="${article.url}">Loe rohkem →</a>
                 `;
 

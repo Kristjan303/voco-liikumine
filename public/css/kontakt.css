@@ -26,7 +26,7 @@
     background-color: ghostwhite;
     border-radius: 10px;
     border: 1px solid #f3f3f3;
-    height: 200px;
+    min-height: 200px;
     margin: 15px;
     padding: 10px;
     overflow-x: hidden;

@@ -38,22 +38,21 @@
     margin-bottom: 50px;
 }
 
-.articles-content .article-preview div {
-    display: flex;
-    flex-direction: column;
-    align-content: center;
-    align-items: center;
-    /*width: 300px;*/
-     height: 300px;
-    margin: 15px;
-    /* border-radius: 10px; */
-    /* background-color: #dfdfdf; */
-     padding: 10px;
-    /* overflow-y: auto; */
-    overflow-x: hidden;
-    word-break: break-word;
-
-}
+/*.articles-content .article-preview div {*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    align-content: center;*/
+/*    align-items: center;*/
+/*    !*width: 300px;*!*/
+/*     height: 300px;*/
+/*    margin: 15px;*/
+/*    !* border-radius: 10px; *!*/
+/*    !* background-color: #dfdfdf; *!*/
+/*     padding: 10px;*/
+/*    !* overflow-y: auto; *!*/
+/*    overflow-x: hidden;*/
+/*    word-break: break-word;*/
+/*}*/
 
 .articles-content .article-preview {
     display: flex;
